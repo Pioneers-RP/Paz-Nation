@@ -1,6 +1,7 @@
 {
     "name": "paz-nation-bot",
-    "main": "./index.js",
+    "version": "0.0.1",
+    "main": "index.js",
     "dependencies": {
         "@discordjs/builders": "^0.12.0",
         "@discordjs/rest": "^0.3.0",
@@ -9,6 +10,7 @@
         "discord.js": "^13.6.0"
     },
     "scripts": {
-        "start": "./index.js"
+        "start": "node .",
+        "lint": "eslint ."
     }
 }
