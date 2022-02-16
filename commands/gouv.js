@@ -4,19 +4,21 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('gouv')
-        .setDescription('Menu du gouvernement'),
+        .setDescription(`Menu du gouvernement`),
 
     async execute(interaction) {
 
         const embed = {
             author: {
-                name: '<\\Nom du pays>',
+                name: `<\\Nom du pays>`,
                 icon_url: interaction.member.displayAvatarURL()
             },
-            thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
-            title: 'Menu du gouvernement',
+            thumbnail: {
+                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+            },
+            title: `Menu du gouvernement`,
             fields: [{
-                name: 'Forme de gouvernement : ',
+                name: `Forme de gouvernement : `,
                 value: `Work in Progress`
             }, {
                 name: `Idéologie : `,
@@ -32,7 +34,8 @@ module.exports = {
                 value: `Work in Progress`
             }],
             color: interaction.member.displayHexColor,
-            footer: { text: 'Suède, Travail, Investissement' }
+            timestamp: new Date(),
+            footer: { text: `Suède, Travail, Investissement` }
         };
 
         await interaction.reply({ embeds: [embed] });
