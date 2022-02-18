@@ -32,12 +32,12 @@ module.exports = {
                 text: `Paz Nation, le meilleur serveur Discord Français`
             },
         };
-        interaction.member.setNickname(`[` + cité + `] ` + interaction.member.displayName);
+        interaction.member.setNickname(`[${cité}] ${interaction.member.displayName}`);
 
         const salon_carte = interaction.client.channels.cache.get('845932447652380702');
 
         const annonce = {
-            description: `**<@` + interaction.member.id + `>` + ` a fondé une nouvelle Cité : ` + cité + `**`,
+            description: `**<@${interaction.member.id}> a fondé une nouvelle Cité : ${cité}`,
             image: {
                 url: 'https://media.discordapp.net/attachments/703348479065325609/774478972054405130/militantroguedrawing.png?width=840&height=473',
             },
