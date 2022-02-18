@@ -235,6 +235,251 @@ module.exports = {
 
                     interaction.reply({ embeds: [embed] })
                 }
+                if (interaction.values == 'champ') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Champ`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+                if (interaction.values == 'centrale_éléctrique') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Centrale électrique`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+                if (interaction.values == 'mine') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Mine`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+                if (interaction.values == 'pompe_à_eau') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Pompe à eau`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+                if (interaction.values == 'pumpjack') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Pumpjack`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+                if (interaction.values == 'scierie') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Scierie`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+                if (interaction.values == 'usine_bienconso') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        title: `Usine : Biens de consommation`,
+                        fields: [{
+                                name: `\u200B`,
+                                value: `Nombre d'usines total : \nTerritoire total :`
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
+                            },
+                            {
+                                name: `Production :`,
+                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
             }; //FIN DU CODE POUR LES MENUS
         };
     }
