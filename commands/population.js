@@ -2,20 +2,8 @@ const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('im')
-        .setDescription(`Offres internationalles`)
-        .addStringOption(option =>
-            option.setName('ressource')
-            .setDescription(`Le nom de la ressource`)
-            .setRequired(true)
-            .addChoice(`Biens de consommation`, 'biens de consommation')
-            .addChoice(`Bois`, 'bois')
-            .addChoice(`Brique`, 'brique')
-            .addChoice(`Eau`, 'eau')
-            .addChoice(`Métaux`, 'métaux')
-            .addChoice(`Nourriture`, 'nouriture')
-            .addChoice(`Pétrole`, 'pétrole')
-        ),
+        .setName('population')
+        .setDescription(`Menu de votre population`),
 
     async execute(interaction) {
 
@@ -27,7 +15,12 @@ module.exports = {
             thumbnail: {
                 url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
             },
-            title: `Marché International (IM) :`,
+            title: `Menu de l'économie`,
+            description: `\nPopulation :\n\n <\\total pop>\n` +
+                `Habitation :\n\n> <\\total de maison / pop>` +
+                `\n\nBonheur \n\n> <\\Bonheur de la pop>` +
+                ` _Taux de personne hébérgés/chomage ..._\n\n` +
+                `📊 Taux d'emplois \n\n> <\\taux d'employé>`,
             fields: [{
                 name: `Work in Progress`,
                 value: `Work in Progress`

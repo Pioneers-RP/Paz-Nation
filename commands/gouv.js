@@ -1,4 +1,3 @@
-const { MessageEmbed } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
 
 module.exports = {
@@ -18,21 +17,26 @@ module.exports = {
             },
             title: `Menu du gouvernement`,
             fields: [{
-                name: `Forme de gouvernement : `,
-                value: `Work in Progress`
-            }, {
-                name: `Idéologie : `,
-                value: `Work in Progress`
-            }, {
-                name: `Rang : `,
-                value: `Work in Progress`
-            }, {
-                name: `Nom de l'Etat : `,
-                value: `Work in Progress`
-            }, {
-                name: `Devise : `,
-                value: `Work in Progress`
-            }],
+                    name: `Nom de l'Etat : `,
+                    value: `Work in Progress`
+                },
+                {
+                    name: `Rang : `,
+                    value: `Work in Progress`
+                },
+                {
+                    name: `Forme de gouvernement : `,
+                    value: `Work in Progress`
+                },
+                {
+                    name: `Idéologie : `,
+                    value: `Work in Progress`
+                },
+                {
+                    name: `Devise : `,
+                    value: `Work in Progress`
+                }
+            ],
             color: interaction.member.displayHexColor,
             timestamp: new Date(),
             footer: { text: `Suède, Travail, Investissement` }

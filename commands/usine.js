@@ -65,9 +65,9 @@ module.exports = {
                         value: 'scierie',
                     },
                     {
-                        label: `Usine biens de consommation`,
+                        label: `Usine civile`,
                         description: `Produit des Biens de consommation`,
-                        value: 'usine_bienconso',
+                        value: 'usine_civile',
                     },
                 ]),
             );

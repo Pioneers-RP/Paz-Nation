@@ -17,7 +17,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Menu de l\'économie :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -38,7 +40,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Menu de la population :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -59,7 +63,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Menu du gouvernement :`,
                     fields: [{
                         name: `Forme de gouvernement : `,
@@ -91,7 +97,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Menu de l\'armée :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -108,11 +116,13 @@ module.exports = {
                 //International market
             } else if (interaction.customId === 'menu_IM') {
                 const embed = {
-                    thumbnail: `https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png`,
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Marché International (IM) :`,
                     fields: [{
-                        "name": `Work in Progress`,
-                        "value": `Work in Progress`
+                        name: `Work in Progress`,
+                        value: `Work in Progress`
                     }],
                     color: interaction.member.displayHexColor,
                 };
@@ -121,7 +131,9 @@ module.exports = {
                 //Quick Sell
             } else if (interaction.customId === 'menu_QS') {
                 const embed = {
-                    thumbnail: `https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png`,
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Quick Sell (QS) :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -138,7 +150,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Négociation en cours :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -159,7 +173,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Négociation armée en cours :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -180,7 +196,9 @@ module.exports = {
                         name: `<\\Nom du pays>`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
-                    thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                    thumbnail: {
+                        url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    },
                     title: `Vous avez envoyer l\'armée :`,
                     fields: [{
                         name: `Work in Progress`,
@@ -207,24 +225,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Briqueterie`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : brique\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -242,24 +286,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Champ`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : nourriture\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -277,24 +347,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Centrale électrique`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : électricité\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -312,24 +408,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Mine`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : métaux\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -347,24 +469,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Pompe à eau`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : eau\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -382,24 +530,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Pumpjack`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : pétrole\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -417,24 +591,50 @@ module.exports = {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
                         title: `Usine : Scierie`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : bois\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -445,31 +645,57 @@ module.exports = {
 
                     interaction.reply({ embeds: [embed] })
                 }
-                if (interaction.values == 'usine_bienconso') {
+                if (interaction.values == 'usine_civile') {
 
                     const embed = {
                         author: {
                             name: `<\\Nom du pays>`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
-                        thumbnail: 'https://media.discordapp.net/attachments/845932351811878913/934778568846762054/flag.png?width=757&height=473',
-                        title: `Usine : Biens de consommation`,
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Civile`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
                         fields: [{
-                                name: `\u200B`,
-                                value: `Nombre d'usines total : \nTerritoire total :`
+                                name: `Production :`,
+                                value: `Ressource : biens de consommation\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
                             },
                             {
                                 name: `Consommation :`,
-                                value: `- Par usine : \n<ressource1> :\n<ressource2>:\n<ressource3>:\n- Totale : \n<ressource1>:\n<ressource2>:\n<ressource3>:`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
                                 inline: true
                             },
                             {
                                 name: `Construction :`,
-                                value: `*pour une usine* \n<ressource1>:\n<ressource2>:\n<ressource3>:`
-                            },
-                            {
-                                name: `Production :`,
-                                value: `Par usine : \nTotale :\n\n**En réserve :**`
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
                         ],
                         color: interaction.member.displayHexColor,
