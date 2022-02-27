@@ -11,6 +11,8 @@ module.exports = {
 
     async execute(interaction) {
 
+        const devise = interaction.options.getString('définir');
+
         if (devise.length <= 60) {
 
             const annonce = {

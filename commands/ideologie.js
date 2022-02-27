@@ -7,13 +7,13 @@ module.exports = {
         .addStringOption(ideologie =>
             ideologie.setName('ideologie')
             .setDescription(`Choisissez votre idéologie`)
-            .addChoice(`Libéralisme`, 'libéralisme')
-            .addChoice(`Capitalisme`, 'capitalisme')
-            .addChoice(`Oligarchique`, 'oligarchique')
-            .addChoice(`Centriste`, 'centriste')
-            .addChoice(`Socialisme`, 'socialisme')
-            .addChoice(`Maxisme`, 'maxisme')
-            .addChoice(`Anarchisme`, 'anarchisme')
+            .addChoice(`Libéralisme`, 'Libéralisme')
+            .addChoice(`Capitalisme`, 'Capitalisme')
+            .addChoice(`Oligarchique`, 'Oligarchique')
+            .addChoice(`Centriste`, 'Centriste')
+            .addChoice(`Socialisme`, 'Socialisme')
+            .addChoice(`Maxisme`, 'Maxisme')
+            .addChoice(`Anarchisme`, 'Anarchisme')
             .setRequired(true)),
 
     async execute(interaction) {
@@ -28,7 +28,7 @@ module.exports = {
             thumbnail: {
                 url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
             },
-            title: `Une nouvelle idéologie a été adoptée : ${ideologiue}`,
+            title: `Une nouvelle idéologie a été adoptée : ${ideologie}`,
             color: interaction.member.displayHexColor
         };
         const salon_annonce = interaction.client.channels.cache.get('882168634967982121');

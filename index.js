@@ -1,6 +1,24 @@
 const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
-const { token } = require('./config.json');
+const dotenv = require('dotenv');
+dotenv.config();
+const mysql = require('mysql');
+
+const connection = new mysql.createConnection({
+    host: 'eu01-sql.pebblehost.com',
+    user: 'customer_260507_paznation',
+    password: 'lidmGbk8edPkKXv1#ZO',
+    database: 'customer_260507_paznation'
+})
+
+connection.connect(function(err) {
+    if (err) {
+        console.error('Il y a eu une erreur en se connectant à la base de données ' + err.stack);
+        return;
+    }
+
+    console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
+});
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
 
@@ -37,5 +55,17 @@ client.on('interactionCreate', async interaction => {
     }
 });
 
+process.on('exit', code => {
+    console.log(`Le bot a crash à cause du code: ${code} !`)
+});
+process.on('uncaughtException', (err, origin) => {
+    console.log(`UNCAUGHT_EXCEPTION: ${err}`, `Origine: ${origin}`)
+});
+process.on('unhandledRejection', (reason, promise) => {
+    console.log(`UNHANDLE_REJECTION: ${reason}\n-----\n`, promise)
+});
+process.on('warning', (...args) => {
+    console.log(...args)
+});
 
-client.login(token);
+client.login(process.env.TOKEN);
