@@ -2,7 +2,7 @@ const fs = require('fs');
 const { Client, Collection, Intents } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
-const mysql = require('mysql');
+var mysql = require('mysql');
 
 const connection = new mysql.createConnection({
     host: 'eu01-sql.pebblehost.com',
@@ -18,6 +18,10 @@ connection.connect(function(err) {
     }
 
     console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
+});
+
+connection.end(function(err) {
+    // The connection is terminated now
 });
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });

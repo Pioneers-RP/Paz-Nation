@@ -15,6 +15,12 @@ module.exports = {
 
         if (devise.length <= 60) {
 
+            var newdevise = "";
+
+            for (var i = 0; i < devise.length; i++)
+                if (!(devise[i] == '\n' || devise[i] == '\r'))
+                    newdevise += devise[i];
+
             const annonce = {
                 author: {
                     name: `<\\Nom du pays>`,
@@ -24,7 +30,7 @@ module.exports = {
                     url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
                 },
                 title: `Une nouvelle 📑 devise a été adoptée :`,
-                description: `${devise}`,
+                description: `${newdevise}`,
                 color: interaction.member.displayHexColor
             };
             const salon_annonce = interaction.client.channels.cache.get('882168634967982121');

@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const dotenv = require('dotenv');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -12,10 +13,43 @@ module.exports = {
     async execute(interaction) {
 
         const cité = interaction.options.getString('cité');
+        const salon_carte = interaction.client.channels.cache.get(process.env.SALON_CARTE);
+
+        var mysql = require('mysql');
+        const connection = new mysql.createConnection({
+            host: 'eu01-sql.pebblehost.com',
+            user: 'customer_260507_paznation',
+            password: 'lidmGbk8edPkKXv1#ZO',
+            database: 'customer_260507_paznation'
+        })
+
+        connection.query(`INSERT INTO pays SET id_joueur=${interaction.member.id}, nom="${cité}"`)
+
+        connection.end(function(err) {
+            // The connection is terminated now
+        });
+
+        interaction.guild.channels.create(`${cité}`, {
+            type: "GUILD_TEXT",
+            permissionOverwrites: [{
+                    id: interaction.guild.roles.everyone,
+                    deny: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'READ_MESSAGE_HISTORY']
+                },
+                {
+                    id: interaction.member.id,
+                    allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_ROLES'],
+                }
+            ],
+            parent: process.env.CATEGORY_PAYS,
+        });
+        interaction.member.setNickname(`[${cité}] ${interaction.member.displayName}`);
+
+        let role = interaction.guild.roles.cache.find(r => r.name === "👤 » Joueur");
+        interaction.member.roles.add(role)
 
         const ville = {
             author: {
-                name: `Cité de ` + cité,
+                name: `Cité de ${cité}`,
                 icon_url: interaction.member.displayAvatarURL()
             },
             thumbnail: {
@@ -23,8 +57,8 @@ module.exports = {
             },
             title: `Vous avez fondé votre Cité !`,
             fields: [{
-                name: `Work in Progress`,
-                value: `Work in Progress`
+                name: `Place de votre gouvernement :`,
+                value: `<#lechannel>`
             }],
             color: interaction.member.displayHexColor,
             timestamp: new Date(),
@@ -32,12 +66,9 @@ module.exports = {
                 text: `Paz Nation, le meilleur serveur Discord Français`
             },
         };
-        interaction.member.setNickname(`[${cité}] ${interaction.member.displayName}`);
-
-        const salon_carte = interaction.client.channels.cache.get('845932447652380702');
 
         const annonce = {
-            description: `**<@${interaction.member.id}> a fondé une nouvelle Cité : ${cité}`,
+            description: `**<@${interaction.member.id}> a fondé une nouvelle Cité : ${cité}**`,
             image: {
                 url: 'https://media.discordapp.net/attachments/703348479065325609/774478972054405130/militantroguedrawing.png?width=840&height=473',
             },
@@ -50,5 +81,5 @@ module.exports = {
         salon_carte.send({ embeds: [annonce] });
 
         await interaction.reply({ embeds: [ville] });
-    },
+    }
 };
