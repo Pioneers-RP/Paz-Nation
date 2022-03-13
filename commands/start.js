@@ -23,7 +23,10 @@ module.exports = {
             database: 'customer_260507_paznation'
         })
 
-        connection.query(`INSERT INTO pays SET id_joueur=${interaction.member.id}, nom="${cité}"`)
+        connection.query(`
+        INSERT INTO pays SET 
+        id_joueur=${interaction.member.id}, 
+        nom="${cité}"`)
 
         connection.end(function(err) {
             // The connection is terminated now

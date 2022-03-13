@@ -1,84 +1,99 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
+var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('pays')
-        .setDescription(`Statistiques de votre pays`)
-        .addUserOption(option =>
-            option.setName('joueur')
-            .setDescription(`Statistique d\'un joueur`)),
+        .setDescription(`Statistiques de votre pays`),
 
     async execute(interaction) {
 
-        const embed = {
-            author: {
-                name: `<\\Nom du pays>`,
-                icon_url: interaction.member.displayAvatarURL()
-            },
-            thumbnail: {
-                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-            },
-            title: `📊 Stats`,
-            fields: [{
-                    name: `**__Argent :__**`,
-                    value: `9,693,181,630 ♞`
-                },
-                {
-                    name: `**__Population__**`,
-                    value: `9,693`
-                },
-                {
-                    name: `**__Territoire :__**`,
-                    value: `693 km² total\n` +
-                        `438 km² libre`
-                },
-                {
-                    name: `**__Points d’action diplomatique :__**`,
-                    value: `181`
-                },
-                {
-                    name: `**__Prestige :__**`,
-                    value: `328`
-                }
-            ],
-            color: interaction.member.displayHexColor,
-            footer: {
-                text: `Suède, Travail, Investissement`
-            },
-        };
+        const connection = new mysql.createConnection({
+            host: 'eu01-sql.pebblehost.com',
+            user: 'customer_260507_paznation',
+            password: 'lidmGbk8edPkKXv1#ZO',
+            database: 'customer_260507_paznation',
+            multipleStatements: true
+        })
 
-        const row = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                .setLabel(`Economie`)
-                .setEmoji(`💵`)
-                .setCustomId('menu_économie')
-                .setStyle('SUCCESS'),
-            )
-            .addComponents(
-                new MessageButton()
-                .setLabel(`Population`)
-                .setEmoji(`👪`)
-                .setCustomId('menu_population')
-                .setStyle('SECONDARY'),
-            )
-            .addComponents(
-                new MessageButton()
-                .setLabel(`Gouvernement`)
-                .setEmoji(`🏛`)
-                .setCustomId('menu_gouvernement')
-                .setStyle('PRIMARY'),
-            )
-            .addComponents(
-                new MessageButton()
-                .setLabel(`Armée`)
-                .setEmoji(`⚔`)
-                .setCustomId('menu_armée')
-                .setStyle('DANGER')
-                .setDisabled(true),
-            )
+        var sql = `
+        SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
 
-        await interaction.reply({ embeds: [embed], components: [row] });
+        connection.query(sql, async(err, results) => {
+            if (err) {
+                throw err;
+            }
+
+            var embed = {
+                author: {
+                    name: `${results[0].rang} de ${results[0].nom}`,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                thumbnail: {
+                    url: `${results[0].drapeau}`,
+                },
+                title: `📊 Stats`,
+                fields: [{
+                        name: `**__Argent :__**`,
+                        value: `${results[0].cash} ♞`
+                    },
+                    {
+                        name: `**__Population__**`,
+                        value: `${results[0].population}`
+                    },
+                    {
+                        name: `**__Territoire :__**`,
+                        value: `${results[0].T_total} km² total\n
+                        ${results[0].T_libre}² libre`
+                    },
+                    {
+                        name: `**__Points d’action diplomatique :__**`,
+                        value: `${results[0].cash_diplo}`
+                    },
+                    {
+                        name: `**__Prestige :__**`,
+                        value: `${results[0].prestige}`
+                    }
+                ],
+                color: interaction.member.displayHexColor,
+                footer: {
+                    text: `Suède, Travail, Investissement`
+                },
+            };
+
+            const row = new MessageActionRow()
+                .addComponents(
+                    new MessageButton()
+                    .setLabel(`Economie`)
+                    .setEmoji(`💵`)
+                    .setCustomId('menu_économie')
+                    .setStyle('SUCCESS'),
+                )
+                .addComponents(
+                    new MessageButton()
+                    .setLabel(`Population`)
+                    .setEmoji(`👪`)
+                    .setCustomId('menu_population')
+                    .setStyle('SECONDARY'),
+                )
+                .addComponents(
+                    new MessageButton()
+                    .setLabel(`Gouvernement`)
+                    .setEmoji(`🏛`)
+                    .setCustomId('menu_gouvernement')
+                    .setStyle('PRIMARY'),
+                )
+                .addComponents(
+                    new MessageButton()
+                    .setLabel(`Armée`)
+                    .setEmoji(`⚔`)
+                    .setCustomId('menu_armée')
+                    .setStyle('DANGER')
+                    .setDisabled(true),
+                )
+
+            await interaction.reply({ embeds: [embed], components: [row] });
+        });
     },
 };
