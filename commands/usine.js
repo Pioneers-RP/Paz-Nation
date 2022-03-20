@@ -1,5 +1,6 @@
 const { MessageActionRow, MessageSelectMenu } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
+var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -28,45 +29,45 @@ module.exports = {
             .addComponents(
                 new MessageSelectMenu()
                 .setCustomId('usine')
-                .setPlaceholder(`Le type d\'Usine`)
+                .setPlaceholder(`Le type d\'usine`)
                 .addOptions([{
                         label: `Briqueterie`,
-                        description: `Produit de la Brique`,
+                        description: `Produit de la brique`,
                         value: 'briqueterie',
                     },
                     {
                         label: `Champ`,
-                        description: `Produit de la Nourriture`,
+                        description: `Produit de la nourriture`,
                         value: 'champ',
                     },
                     {
                         label: `Centrale électrique`,
                         description: `Produit de l\'électricité`,
-                        value: 'centrale_éléctrique',
+                        value: 'centrale_électrique',
                     },
                     {
                         label: `Mine`,
-                        description: `Produit des Métaux`,
+                        description: `Produit des métaux`,
                         value: 'mine',
                     },
                     {
                         label: `Pompe à eau`,
-                        description: `Produit de l\'Eau`,
+                        description: `Produit de l\'eau`,
                         value: 'pompe_à_eau',
                     },
                     {
                         label: `Pumpjack`,
-                        description: `Produit du Pétrole`,
+                        description: `Produit du pétrole`,
                         value: 'pumpjack',
                     },
                     {
                         label: `Scierie`,
-                        description: `Produit du Bois`,
+                        description: `Produit du bois`,
                         value: 'scierie',
                     },
                     {
                         label: `Usine civile`,
-                        description: `Produit des Biens de consommation`,
+                        description: `Produit des biens de consommation`,
                         value: 'usine_civile',
                     },
                 ]),

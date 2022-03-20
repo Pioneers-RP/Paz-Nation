@@ -1,15 +1,17 @@
 {
     "name": "paz-nation-bot",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "main": "index.js",
     "dependencies": {
         "@discordjs/builders": "0.12.0",
         "@discordjs/rest": "0.3.0",
         "@sapphire/framework": "2.4.0",
+        "@stdlib/assert-is-uri": "0.0.8",
         "discord-api-types": "0.26.1",
         "discord.js": "13.6.0",
         "dotenv": "16.0.0",
         "global-box": "1.2.0",
+        "image-url-validator": "^1.0.4",
         "mysql": "2.18.1"
     },
     "scripts": {

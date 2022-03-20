@@ -340,7 +340,7 @@ module.exports = {
 
                     interaction.reply({ embeds: [embed] })
                 }
-                if (interaction.values == 'centrale_éléctrique') {
+                if (interaction.values == 'centrale_électrique') {
 
                     const embed = {
                         author: {

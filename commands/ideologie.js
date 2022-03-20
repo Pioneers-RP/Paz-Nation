@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
+var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()

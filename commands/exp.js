@@ -1,5 +1,6 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
+var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()

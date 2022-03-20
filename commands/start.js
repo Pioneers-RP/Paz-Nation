@@ -24,9 +24,7 @@ module.exports = {
         })
 
         connection.query(`
-        INSERT INTO pays SET 
-        id_joueur=${interaction.member.id}, 
-        nom="${cité}"`)
+        INSERT INTO pays SET id_joueur=${interaction.member.id}, nom="${cité}"`)
 
         connection.end(function(err) {
             // The connection is terminated now
@@ -73,11 +71,11 @@ module.exports = {
         const annonce = {
             description: `**<@${interaction.member.id}> a fondé une nouvelle Cité : ${cité}**`,
             image: {
-                url: 'https://media.discordapp.net/attachments/703348479065325609/774478972054405130/militantroguedrawing.png?width=840&height=473',
+                url: 'https://media.discordapp.net/attachments/848913340737650698/947508565415981096/zefghyiuuie.png',
             },
             color: interaction.member.displayHexColor,
             footer: {
-                text: `Suède, Travail, Investissement`
+                text: `Paz Nation, le meilleur serveur Discord Français`
             },
         };
 

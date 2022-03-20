@@ -33,32 +33,34 @@ module.exports = {
                 thumbnail: {
                     url: `${results[0].drapeau}`,
                 },
-                title: `📊 Stats`,
+                title: `\`Vue globale du pays\``,
                 fields: [{
-                        name: `**__Argent :__**`,
-                        value: `${results[0].cash} ♞`
+                        name: `__Argent :__`,
+                        value: `${results[0].cash} 💵`
                     },
                     {
-                        name: `**__Population__**`,
+                        name: `__Population__`,
                         value: `${results[0].population}`
                     },
                     {
-                        name: `**__Territoire :__**`,
-                        value: `${results[0].T_total} km² total\n
+                        name: `__Territoire :__`,
+                        value: `
+                        ${results[0].T_total} km² total
                         ${results[0].T_libre}² libre`
                     },
                     {
-                        name: `**__Points d’action diplomatique :__**`,
+                        name: `__Points d’action diplomatique :__`,
                         value: `${results[0].cash_diplo}`
                     },
                     {
-                        name: `**__Prestige :__**`,
+                        name: `__Prestige :__`,
                         value: `${results[0].prestige}`
                     }
                 ],
                 color: interaction.member.displayHexColor,
+                timestamp: new Date(),
                 footer: {
-                    text: `Suède, Travail, Investissement`
+                    text: `${results[0].devise}`
                 },
             };
 
