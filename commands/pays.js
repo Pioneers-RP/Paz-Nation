@@ -31,30 +31,29 @@ module.exports = {
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${results[0].drapeau}`,
+                    url: `${results[0].drapeau}`
                 },
                 title: `\`Vue globale du pays\``,
                 fields: [{
-                        name: `__Argent :__`,
-                        value: `${results[0].cash} 💵`
+                        name: `💵 **Argent**`,
+                        value: `${results[0].cash} $\n\u200B`
                     },
                     {
-                        name: `__Population__`,
-                        value: `${results[0].population}`
+                        name: `👪 **Population**`,
+                        value: `${results[0].population}\n\u200B`
                     },
                     {
-                        name: `__Territoire :__`,
-                        value: `
-                        ${results[0].T_total} km² total
-                        ${results[0].T_libre}² libre`
+                        name: `🌄 **Territoire**`,
+                        value: `${results[0].T_total} km² total\n` +
+                            `${results[0].T_libre} km² libre\n\u200B`
                     },
                     {
-                        name: `__Points d’action diplomatique :__`,
-                        value: `${results[0].cash_diplo}`
+                        name: `☎️ **Diplomatique**`,
+                        value: `${results[0].action_diplo} points d'action diplomatique\n\u200B`
                     },
                     {
-                        name: `__Prestige :__`,
-                        value: `${results[0].prestige}`
+                        name: `🎖️ __Prestige :__`,
+                        value: `${results[0].prestige}\n\u200B`
                     }
                 ],
                 color: interaction.member.displayHexColor,

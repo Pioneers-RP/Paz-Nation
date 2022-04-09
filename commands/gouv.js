@@ -32,26 +32,26 @@ module.exports = {
                 thumbnail: {
                     url: `${results[0].drapeau}`
                 },
-                title: `Menu du gouvernement`,
+                title: `\`Menu du gouvernement\``,
                 fields: [{
                         name: `Nom de l'Etat : `,
-                        value: `${results[0].nom}`,
+                        value: `${results[0].nom}\n\u200B`,
                     },
                     {
                         name: `Rang : `,
-                        value: `${results[0].rang}`
+                        value: `${results[0].rang}\n\u200B`
                     },
                     {
                         name: `Forme de gouvernement : `,
-                        value: `${results[0].gouv_forme}`
+                        value: `${results[0].gouv_forme}\n\u200B`
                     },
                     {
                         name: `Idéologie : `,
-                        value: `${results[0].ideologie}`
+                        value: `${results[0].ideologie}\n\u200B`
                     },
                     {
                         name: `Devise : `,
-                        value: `${results[0].devise}`
+                        value: `${results[0].devise}\n\u200B`
                     }
                 ],
                 color: interaction.member.displayHexColor,

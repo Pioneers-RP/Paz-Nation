@@ -21,21 +21,49 @@ module.exports = {
 
         const ideologie = interaction.options.getString('ideologie');
 
-        const annonce = {
-            author: {
-                name: `<\\Nom du pays>`,
-                icon_url: interaction.member.displayAvatarURL()
-            },
-            thumbnail: {
-                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-            },
-            title: `Une nouvelle idéologie a été adoptée : ${ideologie}`,
-            color: interaction.member.displayHexColor
-        };
-        const salon_annonce = interaction.client.channels.cache.get('882168634967982121');
-        salon_annonce.send({ embeds: [annonce] });
-        var reponse = `Votre annonce a été publié dans <#882168634967982121>`;
+        const connection = new mysql.createConnection({
+            host: 'eu01-sql.pebblehost.com',
+            user: 'customer_260507_paznation',
+            password: 'lidmGbk8edPkKXv1#ZO',
+            database: 'customer_260507_paznation',
+            multipleStatements: true
+        });
 
-        await interaction.reply({ content: reponse });
+        var sql = `
+        UPDATE pays SET ideologie="${ideologie}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
+
+        connection.query(sql, async(err, results) => {
+            if (err) {
+                throw err;
+            }
+        });
+
+        var sql = `
+        SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+
+        connection.query(sql, async(err, results) => {
+            if (err) {
+                throw err;
+            }
+
+            const annonce = {
+                author: {
+                    name: `${results[0].rang} de ${results[0].nom}`,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                thumbnail: {
+                    url: `${results[0].drapeau}`,
+                },
+                title: `Une nouvelle idéologie a été mis en place :`,
+                description: `${results[0].ideologie}`,
+                color: interaction.member.displayHexColor
+            };
+
+            const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+            salon_annonce.send({ embeds: [annonce] });
+            var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
+
+            await interaction.reply({ content: reponse });
+        });
     },
 };

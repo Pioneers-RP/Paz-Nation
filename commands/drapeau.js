@@ -50,7 +50,7 @@ module.exports = {
                     image: {
                         url: results[0].drapeau,
                     },
-                    title: `Une nouveau drapeau a été adopté :`,
+                    title: `\`Une nouveau drapeau a été adopté :\``,
                     timestamp: new Date(),
                     color: interaction.member.displayHexColor,
                     footer: {

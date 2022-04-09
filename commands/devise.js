@@ -55,8 +55,8 @@ module.exports = {
                     thumbnail: {
                         url: results[0].drapeau,
                     },
-                    title: `Une nouvelle devise a été adopté :`,
-                    description: `${newdevise}`,
+                    title: `\`Une nouvelle devise a été adopté :\``,
+                    description: `> *${newdevise}*`,
                     timestamp: new Date(),
                     color: interaction.member.displayHexColor
                 };

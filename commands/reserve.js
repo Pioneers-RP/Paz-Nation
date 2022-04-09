@@ -32,14 +32,13 @@ module.exports = {
                     url: `${results[0].drapeau}`
                 },
                 title: `\`Réserve :\``,
-                description: `
-                        Biens de consommation : ${results[0].bc}\n
-                        Bois : ${results[0].bois}\n
-                        Brique : ${results[0].brique}\n
-                        Eau : ${results[0].eau}\n
-                        Métaux : ${results[0].métaux}\n
-                        Nourriture : ${results[0].nourriture}\n
-                        Pétrole : ${results[0].pétrole}\n`,
+                description: `Biens de consommation : ${results[0].bc}\n` +
+                    `Bois : ${results[0].bois}\n` +
+                    `Brique : ${results[0].brique}\n` +
+                    `Eau : ${results[0].eau}\n` +
+                    `Métaux : ${results[0].métaux}\n` +
+                    `Nourriture : ${results[0].nourriture}\n` +
+                    `Pétrole : ${results[0].pétrole}\n`,
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {

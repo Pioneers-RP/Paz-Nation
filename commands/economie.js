@@ -8,35 +8,48 @@ module.exports = {
 
     async execute(interaction) {
 
-        const embed = {
-            author: {
-                name: `<\\Nom du pays>`,
-                icon_url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png'
-            },
-            thumbnail: {
-                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-            },
-            title: `Menu de l'économie`,
-            fields: [{
-                    name: `Nombre d'usine total :`,
-                    value: `<>`
-                },
-                {
-                    name: `Stockage des ressources :`,
-                    value: `<>/<>`
-                },
-                {
-                    name: `Banque :`,
-                    value: `<>`
-                },
-                {
-                    name: `Electrité :`,
-                    value: `<>/<>`
-                }
-            ],
-            color: interaction.member.displayHexColor,
-        };
+        const connection = new mysql.createConnection({
+            host: 'eu01-sql.pebblehost.com',
+            user: 'customer_260507_paznation',
+            password: 'lidmGbk8edPkKXv1#ZO',
+            database: 'customer_260507_paznation',
+            multipleStatements: true
+        });
 
-        await interaction.reply({ embeds: [embed] });
+        var sql = `
+            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+
+        connection.query(sql, async(err, results) => {
+            if (err) {
+                throw err;
+            }
+
+            const embed = {
+                author: {
+                    name: `${results[0].rang} de ${results[0].nom}`,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                thumbnail: {
+                    url: results[0].drapeau
+                },
+                title: `\`Menu de l'économie\``,
+                fields: [{
+                        name: `Argent :`,
+                        value: `${results[0].cash} 💵\n\u200B`
+                    },
+                    {
+                        name: `Nombre d'usine total :`,
+                        value: `${results[0].usine_total}\n\u200B`
+                    },
+                    {
+                        name: `Electrité :`,
+                        value: `${results[0].need_électricité}/${results[0].prod_électricité}\n\u200B`
+                    }
+                ],
+                color: interaction.member.displayHexColor,
+            };
+
+            await interaction.reply({ embeds: [embed] });
+        })
     },
 };

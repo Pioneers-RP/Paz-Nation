@@ -51,7 +51,7 @@ module.exports = {
                 thumbnail: {
                     url: `${results[0].drapeau}`,
                 },
-                title: `Vous vous étendez désormais vers le ${direction}`,
+                title: `\`Vous vous étendez désormais vers le ${direction}\``,
                 color: interaction.member.displayHexColor
             };
 
