@@ -768,10 +768,9 @@ module.exports = {
 
                         interaction.reply({ embeds: [embed] })
                 } else if (interaction.values == 'scierie') {
-                    
-                        prod_T_mine = process.env.PROD_MINE * results[0].mine;
-                        conso_T_mine_bois = process.env.CONSO_MINE_BOIS * results[0].mine;
-                        conso_T_mine_petrole = process.env.CONSO_MINE_PETROLE * results[0].mine;
+
+                        prod_T_scierie = process.env.PROD_SCIERIE * results[0].scierie;
+                        conso_T_scierie_petrole = process.env.CONSO_SCIERIE_PETROLE * results[0].scierie;
 
                         const embed = {
                             author: {
@@ -781,32 +780,30 @@ module.exports = {
                             thumbnail: {
                                 url: `${results[0].drapeau}`,
                             },
-                            title: `\`Usine : Mine\``,
+                            title: `\`Usine : Scierie\``,
                             fields: [{
                                     name: `> Consommation :`,
                                     value: `- Par usine : \n` +
-                                        `Bois : ${process.env.CONSO_MINE_BOIS}\n` +
-                                        `Pétrole : ${process.env.CONSO_MINE_PETROLE}\n` +
+                                        `Pétrole : ${process.env.CONSO_SCIERIE_PETROLE}\n` +
                                         `\u200B`,
                                     inline: true
                                 },
                                 {
                                     name: `\u200B`,
                                     value: `- Totale : \n` +
-                                        `Bois : ${conso_T_mine_bois}\n` +
-                                        `Pétrole : ${conso_T_mine_petrole}`,
+                                        `Pétrole : ${conso_T_sciere_petrole}`,
                                     inline: true
                                 },
                                 {
                                     name: `> Production :`,
-                                    value: `Ressource : Métaux\n` +
-                                        `Par usine  ${process.env.PROD_MINE}\n` +
-                                        `Totale : ${prod_T_mine}` +
+                                    value: `Ressource : Bois\n` +
+                                        `Par usine  ${process.env.PROD_SCIERIE}\n` +
+                                        `Totale : ${prod_T_scierie}`
                                         `\u200B`
                                 },
                                 {
                                     name: `> En réserve :`,
-                                    value: `${results[0].metaux}`
+                                    value: `${results[0].bois}`
                                 },
                             ],
                             color: interaction.member.displayHexColor,
@@ -816,65 +813,52 @@ module.exports = {
 
                         interaction.reply({ embeds: [embed] })
                 } else if (interaction.values == 'usine_civile') {
+                        prod_T_usine_civile = process.env.PROD_USINE_CIVILE * results[0].usine_civile;
+                        conso_T_usine_civile_metaux = process.env.CONSO_USINE_CIVILE_METAUX * results[0].usine_civile;
+                        conso_T_usine_civile_petrole = process.env.CONSO_USINE_CIVILE_PETROLE * results[0].usine_civile;
 
-                    const embed = {
-                        author: {
-                            name: `<\\Nom du pays>`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-                        },
-                        title: `Usine : Civile`,
-                        description: `Nombre d'usines total : \n` +
-                            `Territoire utilisé :`,
-                        fields: [{
-                                name: `Production :`,
-                                value: `Ressource : biens de consommation\n` +
-                                    `Par usine : \n` +
-                                    `Totale :`,
-                                inline: true
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
                             },
-                            {
-                                name: `En réserve :`,
-                                value: `<>`,
-                                inline: true
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
                             },
-                            {
-                                name: '\u200B',
-                                value: '\u200B'
-                            },
-                            {
-                                name: `Consommation :`,
-                                value: `- Par usine : \n` +
-                                    `<ressource1> :\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:\n`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `- Totale : \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`,
-                                inline: true
-                            },
-                            {
-                                name: `Construction :`,
-                                value: `*pour une usine* \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`
-                            }
-                        ],
-                        color: interaction.member.displayHexColor,
-                        footer: {
-                            text: `Suède, Travail, Investissement`
-                        }
-                    };
+                            title: `\`Usine : Usine civile\``,
+                            fields: [{
+                                    name: `> Consommation :`,
+                                    value: `- Par usine : \n` +
+                                        `Métaux : ${process.env.CONSO_USINE_CIVILE_METAUX}\n` +
+                                        `Pétrole : ${process.env.CONSO_USINE_CIVILE_PETROLE}\n` +
+                                        `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `\u200B`,
+                                    value: `- Totale : \n` +
+                                        `Usine civile : ${conso_T_usine_civile_metaux}\n` +
+                                        `Pétrole : ${conso_T_usine_civile_petrole}`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> Production :`,
+                                    value: `Ressource : Biens de cosommation\n` +
+                                        `Par usine  ${process.env.PROD_USINE_CIVILE}\n` +
+                                        `Totale : ${prod_T_mine}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].biens_de_consommation}`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
 
-                    interaction.reply({ embeds: [embed] })
+                        interaction.reply({ embeds: [embed] })
                 }
             }; //FIN DU CODE POUR LES MENUS
         };
