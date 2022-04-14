@@ -54,8 +54,11 @@ module.exports = {
                     url: `${results[0].drapeau}`,
                 },
                 title: `Une nouveau gouvernement a été mis en place :`,
-                description: `${results[0].gouv_forme}`,
-                color: interaction.member.displayHexColor
+                color: interaction.member.displayHexColor,
+                timestamp: new Date(),
+                footer: {
+                    text: `${results[0].devise}`
+                },
             };
 
             const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);

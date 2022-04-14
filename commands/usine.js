@@ -27,13 +27,12 @@ module.exports = {
 
             surface_T_briqueterie = process.env.SURFACE_BRIQUETERIE * results[0].briqueterie
             surface_T_champ = process.env.SURFACE_CHAMP * results[0].champ
-            surface_T_centrale_électrique = process.env.SURFACE_CENTRALE_ELECTRIQUE * results[0].centrale_électrique
             surface_T_mine = process.env.SURFACE_MINE * results[0].mine
             surface_T_pompe_à_eau = process.env.SURFACE_POMPE_A_EAU * results[0].pompe_à_eau
             surface_T_pumpjack = process.env.SURFACE_PUMPJACK * results[0].pumpjack
             surface_T_scierie = process.env.SURFACE_SCIERIE * results[0].scierie
             surface_T_usine_civile = process.env.SURFACE_USINE_CIVILE * results[0].usine_civile
-            surface_T = surface_T_briqueterie + surface_T_champ + surface_T_centrale_électrique + surface_T_pompe_à_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
+            surface_T = surface_T_briqueterie + surface_T_champ + surface_T_pompe_à_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
 
             const embed = {
                 author: {
@@ -44,7 +43,7 @@ module.exports = {
                     url: `${results[0].drapeau}`
                 },
                 title: `\`Menu des usines\``,
-                description: `Nombre d'usines totale : ${results[0].usine_total}` +
+                description: `Nombre d'usines totale : ${results[0].usine_total}\n` +
                     `Surface totale : ${surface_T}`,
                 fields: [{
                         name: `Briqueterie :`,
@@ -55,11 +54,6 @@ module.exports = {
                         name: `Champ :`,
                         value: `Nombre d'usine : ${results[0].champ}\n` +
                             `Surface totale : ${surface_T_champ} km²`
-                    },
-                    {
-                        name: `Centrale électrique :`,
-                        value: `Nombre d'usine : ${results[0].centrale_électrique}\n` +
-                            `Surface totale : ${surface_T_centrale_électrique} km²`
                     },
                     {
                         name: `Mine :`,
@@ -110,11 +104,6 @@ module.exports = {
                             value: 'champ',
                         },
                         {
-                            label: `Centrale électrique`,
-                            description: `Produit de l\'électricité`,
-                            value: 'centrale_électrique',
-                        },
-                        {
                             label: `Mine`,
                             description: `Produit des métaux`,
                             value: 'mine',
@@ -122,7 +111,7 @@ module.exports = {
                         {
                             label: `Pompe à eau`,
                             description: `Produit de l\'eau`,
-                            value: 'pompe_à_eau',
+                            value: 'pompe_a_eau',
                         },
                         {
                             label: `Pumpjack`,

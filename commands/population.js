@@ -41,10 +41,6 @@ module.exports = {
                         value: `${results[0].population} habitants\n\u200B`
                     },
                     {
-                        name: ` **Maison**`,
-                        value: `${results[0].maison} \n\u200B`
-                    },
-                    {
                         name: ` **Densité**`,
                         value: `${densité} habitants/km²\n\u200B`
                     }

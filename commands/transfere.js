@@ -28,7 +28,7 @@ module.exports = {
         });
 
         var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
         connection.query(sql, async(err, results) => {
             if (err) {
@@ -38,8 +38,8 @@ module.exports = {
             if (results[0].cash >= montant) {
 
                 var sql2 = `
-                UPDATE pays SET cash=cash-${montant} WHERE id_joueur=${interaction.member.id};
-                UPDATE pays SET cash=cash+${montant} WHERE id_joueur=${user.id}`;
+                UPDATE pays SET cash=cash-${montant} WHERE id_joueur='${interaction.member.id}';
+                UPDATE pays SET cash=cash+${montant} WHERE id_joueur='${user.id}'`;
 
                 connection.query(sql2, async(err, results) => {
                     if (err) {
@@ -48,7 +48,7 @@ module.exports = {
                 })
 
                 var sql3 = `
-                SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
                 connection.query(sql3, async(err, results) => {
                     if (err) {
@@ -95,7 +95,7 @@ module.exports = {
                 })
 
                 var sql4 = `
-                SELECT * FROM pays WHERE id_joueur=${user.id}`;
+                SELECT * FROM pays WHERE id_joueur='${user.id}'`;
 
                 connection.query(sql4, async(err, results) => {
                     if (err) {

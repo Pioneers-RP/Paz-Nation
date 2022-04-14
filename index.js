@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { Client, Collection, Intents } = require('discord.js');
+const { Client, Collection, Intents, Guild } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
 var mysql = require('mysql');
@@ -52,7 +52,7 @@ client.on('interactionCreate', async interaction => {
     if (!command) return;
 
     try {
-        await command.execute(interaction, client);
+        await command.execute(interaction);
     } catch (error) {
         console.error(error);
         await interaction.reply({ content: 'Il y a eu une erreur !', ephemeral: true });

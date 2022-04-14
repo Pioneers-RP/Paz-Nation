@@ -26,7 +26,7 @@ module.exports = {
             });
 
             var sql = `
-            UPDATE pays SET drapeau="${drapeau}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
+            UPDATE pays SET drapeau="${drapeau}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
 
             connection.query(sql, async(err, results) => {
                 if (err) {
@@ -35,7 +35,7 @@ module.exports = {
             });
 
             var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
             connection.query(sql, async(err, results) => {
                 if (err) {

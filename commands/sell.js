@@ -1,4 +1,5 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
+const { MessageActionRow, MessageButton } = require('discord.js');
 var mysql = require('mysql');
 
 module.exports = {
@@ -12,20 +13,29 @@ module.exports = {
             .addChoice(`Bois`, 'Bois')
             .addChoice(`Brique`, 'Brique')
             .addChoice(`Eau`, 'Eau')
-            .addChoice(`Métaux`, 'Métaux')
+            .addChoice(`Métaux`, 'Metaux')
             .addChoice(`Nourriture`, 'Nourriture')
-            .addChoice(`Pétrole`, 'Pétrole')
+            .addChoice(`Pétrole`, 'Petrole')
             .setRequired(true))
         .addIntegerOption(quantité =>
             quantité.setName('quantité')
             .setDescription(`La quantité de ressource que vous voulez vendre`)
             .setRequired(true))
-        .addIntegerOption(prix =>
+        .addNumberOption(prix =>
             prix.setName('prix')
-            .setDescription(`Le prix pour la quantité de ressource`)
+            .setDescription(`Le prix à l'unité pour la quantité de ressource`)
             .setRequired(true)),
 
     async execute(interaction) {
+
+        const connection = new mysql.createConnection({
+            host: 'eu01-sql.pebblehost.com',
+            user: 'customer_260507_paznation',
+            password: 'lidmGbk8edPkKXv1#ZO',
+            database: 'customer_260507_paznation',
+            multipleStatements: true
+        });
+
         var sql = `
         SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
 
@@ -36,65 +46,80 @@ module.exports = {
 
             const ressource = interaction.options.getString('ressource');
             var quantité = interaction.options.getInteger('quantité');
-            var prix = interaction.options.getInteger('prix');
-            var prix_u = quantité / prix;
-            prix_u = prix_u.toFixed(2);
+            var prix = interaction.options.getNumber('prix');
+
+            prix = prix.toFixed(2);
+            var prix_t = quantité * prix;
             if (quantité >= 1000000) {
-                quantité = quantité / 1000000;
-                quantité = quantité + 'M';
+                e_quantité = quantité / 1000000;
+                e_quantité = e_quantité + 'M';
             } else {
-                quantité = quantité / 1000;
-                quantité = quantité + 'k';
+                e_quantité = quantité / 1000;
+                e_quantité = e_quantité + 'k';
             }
-            if (prix >= 1000000) {
-                prix = prix / 1000000;
-                prix = prix + 'M';
+            if (prix_t >= 1000000) {
+                e_prix_t = prix_t / 1000000;
+                e_prix_t = e_prix_t + 'M';
             } else {
-                prix = prix / 1000;
-                prix = prix + 'k';
+                e_prix_t = prix_t / 1000;
+                e_prix_t = e_prix_t + 'k';
             }
 
-            const salon_commerce = interaction.client.channels.cache.get('878676556543844443');
+            const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
             const thread = await salon_commerce.threads
                 .create({
-                    name: `[${ressource}] à ${prix_u} | u~ ${quantité} | ${prix} $ | ${interaction.member.displayName}`,
-                    autoArchiveDuration: 3600
+                    name: `${e_quantité} [${ressource}] à ${prix} | ${e_prix_t} $ | ${interaction.member.displayName}`
                 });
+
+            var sql1 = `
+                INSERT INTO trade SET id_joueur="${interaction.user.id}", id_salon="${thread.id}", ressource="${ressource}", quantite='${quantité}', prix='${prix_t}', prix_u='${prix}'`;
+
+            connection.query(sql1, async(err, results) => {
+                if (err) {
+                    throw err;
+                }
+            });
 
             const embed = {
                 author: {
-                    name: `<\\Nom du pays>`,
+                    name: `${results[0].rang} de ${results[0].nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    url: results[0].drapeau
                 },
-                title: `Nouvelle offre :`,
+                title: `\`Nouvelle offre :\``,
                 fields: [{
                         name: `Ressource :`,
                         value: `${ressource}`
                     },
                     {
                         name: `Quantité :`,
-                        value: `${quantité}`
+                        value: `${e_quantité}`
                     },
                     {
                         name: `Prix :`,
-                        value: `Au total : ${prix}
-                        A l'unité : ${prix_u}`
+                        value: `Au total : ${e_prix_t}
+                        A l'unité : ${prix}`
                     }
                 ],
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
-                    text: `Paz Nation, le meilleur serveur Discord Français`
+                    text: `${results[0].devise}`
                 },
             };
+            const row = new MessageActionRow()
+                .addComponents(
+                    new MessageButton()
+                    .setLabel(`Acheter`)
+                    .setEmoji(`💵`)
+                    .setCustomId('acheter-' + thread.id)
+                    .setStyle('SUCCESS'),
+                )
+            thread.send({ embeds: [embed], components: [row] })
 
-            thread.send({ embeds: [embed] })
-
-            await interaction.reply({ content: `Votre offre a été publié : ${thread}` });
+            await interaction.reply({ content: `Votre offre a été publié pour 1 jour : ${thread}` });
         })
-
     },
 };

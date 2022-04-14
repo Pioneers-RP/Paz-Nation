@@ -36,7 +36,7 @@ module.exports = {
                 console.log(`Pays créé`)
 
                 var sql = `
-                INSERT INTO pays SET id_joueur=${interaction.member.id}, nom="${cité}"`;
+                INSERT INTO pays SET id_joueur="${interaction.user.id}", nom="${cité}"`;
 
                 connection.query(sql, async(err, results) => {
                     if (err) {
@@ -44,7 +44,7 @@ module.exports = {
                     }
                 });
 
-                const salon_id = await interaction.guild.channels.create(`${cité}`, {
+                const salon = await interaction.guild.channels.create(`${cité}`, {
                     type: "GUILD_TEXT",
                     permissionOverwrites: [{
                             id: interaction.guild.roles.everyone,
@@ -59,7 +59,7 @@ module.exports = {
                 });
 
                 var sql = `
-                UPDATE pays SET salon_id="${salon_id.id}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
+                UPDATE pays SET id_salon="${salon.id}" WHERE id_joueur="${interaction.member.id}" LIMIT 1`;
 
                 connection.query(sql, async(err, results) => {
                     if (err) {
@@ -83,7 +83,7 @@ module.exports = {
                     title: `\`Vous avez fondé votre cité !\``,
                     fields: [{
                         name: `Place de votre gouvernement :`,
-                        value: `${salon_id}`
+                        value: `${salon}`
                     }],
                     color: interaction.member.displayHexColor,
                     timestamp: new Date(),
@@ -125,7 +125,7 @@ module.exports = {
 
                 salon_carte.send({ embeds: [annonce] });
 
-                salon_id.send({ content: `<@${interaction.member.id}>`, embeds: [nouveau_salon] })
+                salon.send({ content: `<@${interaction.member.id}>`, embeds: [nouveau_salon] })
 
                 await interaction.reply({ embeds: [ville] });
             } else {

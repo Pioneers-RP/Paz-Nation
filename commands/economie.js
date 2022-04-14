@@ -17,7 +17,7 @@ module.exports = {
         });
 
         var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
         connection.query(sql, async(err, results) => {
             if (err) {
@@ -41,12 +41,12 @@ module.exports = {
                         name: `Nombre d'usine total :`,
                         value: `${results[0].usine_total}\n\u200B`
                     },
-                    {
-                        name: `Electrité :`,
-                        value: `${results[0].need_électricité}/${results[0].prod_électricité}\n\u200B`
-                    }
                 ],
                 color: interaction.member.displayHexColor,
+                timestamp: new Date(),
+                footer: {
+                    text: `${results[0].devise}`
+                },
             };
 
             await interaction.reply({ embeds: [embed] });

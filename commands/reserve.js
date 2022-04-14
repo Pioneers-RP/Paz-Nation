@@ -36,9 +36,9 @@ module.exports = {
                     `Bois : ${results[0].bois}\n` +
                     `Brique : ${results[0].brique}\n` +
                     `Eau : ${results[0].eau}\n` +
-                    `Métaux : ${results[0].métaux}\n` +
+                    `Métaux : ${results[0].metaux}\n` +
                     `Nourriture : ${results[0].nourriture}\n` +
-                    `Pétrole : ${results[0].pétrole}\n`,
+                    `Pétrole : ${results[0].petrole}\n`,
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
