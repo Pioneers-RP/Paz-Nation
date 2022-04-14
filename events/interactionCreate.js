@@ -584,65 +584,50 @@ module.exports = {
                         interaction.reply({ embeds: [embed] })
                     })
                 } else if (interaction.values == 'champ') {
+                    
+                        prod_T_champ = process.env.PROD_BRIQUETERIE * results[0].champ;
+                        conso_T_champ_eau = process.env.CONSO_CHAMP_EAU * results[0].champ;
 
-                    const embed = {
-                        author: {
-                            name: `<\\Nom du pays>`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-                        },
-                        title: `Usine : Champ`,
-                        description: `Nombre d'usines total : \n` +
-                            `Territoire utilisé :`,
-                        fields: [{
-                                name: `Production :`,
-                                value: `Ressource : nourriture\n` +
-                                    `Par usine : \n` +
-                                    `Totale :`,
-                                inline: true
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
                             },
-                            {
-                                name: `En réserve :`,
-                                value: `<>`,
-                                inline: true
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
                             },
-                            {
-                                name: '\u200B',
-                                value: '\u200B'
-                            },
-                            {
-                                name: `Consommation :`,
-                                value: `- Par usine : \n` +
-                                    `<ressource1> :\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:\n`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `- Totale : \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`,
-                                inline: true
-                            },
-                            {
-                                name: `Construction :`,
-                                value: `*pour une usine* \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`
-                            }
-                        ],
-                        color: interaction.member.displayHexColor,
-                        footer: {
-                            text: `Suède, Travail, Investissement`
-                        }
-                    };
+                            title: `\`Usine : Champ\``,
+                            fields: [{
+                                    name: `> Consommation :`,
+                                    value: `- Par usine : \n` +
+                                        `Eau : ${process.env.CONSO_CHAMP_EAU}\n` +
+                                        `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `\u200B`,
+                                    value: `- Totale : \n` +
+                                        `Eau : ${conso_T_champ_eau}`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> Production :`,
+                                    value: `Ressource : brique\n` +
+                                        `Par usine  ${process.env.PROD_CHAMP}\n` +
+                                        `Totale : ${prod_T_nourriture}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].nourriture}`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
 
-                    interaction.reply({ embeds: [embed] })
+                        interaction.reply({ embeds: [embed] })
 
                 } else if (interaction.values == 'mine') {
 
