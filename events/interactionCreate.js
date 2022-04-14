@@ -566,8 +566,8 @@ module.exports = {
                                 },
                                 {
                                     name: `> Production :`,
-                                    value: `Ressource : brique\n` +
-                                        `Par usine  ${process.env.PROD_BRIQUETERIE}\n` +
+                                    value: `Ressource : Brique\n` +
+                                    `Par usine  ${process.env.PROD_BRIQUETERIE}\n` +
                                         `Totale : ${prod_T_briqueterie}` +
                                         `\u200B`
                                 },
@@ -585,7 +585,7 @@ module.exports = {
                     })
                 } else if (interaction.values == 'champ') {
                     
-                        prod_T_champ = process.env.PROD_BRIQUETERIE * results[0].champ;
+                        prod_T_champ = process.env.PROD_CHAMP * results[0].champ;
                         conso_T_champ_eau = process.env.CONSO_CHAMP_EAU * results[0].champ;
 
                         const embed = {
@@ -612,7 +612,7 @@ module.exports = {
                                 },
                                 {
                                     name: `> Production :`,
-                                    value: `Ressource : brique\n` +
+                                    value: `Ressource : Nourriture\n` +
                                         `Par usine  ${process.env.PROD_CHAMP}\n` +
                                         `Totale : ${prod_T_nourriture}` +
                                         `\u200B`
@@ -631,244 +631,190 @@ module.exports = {
 
                 } else if (interaction.values == 'mine') {
 
-                    const embed = {
-                        author: {
-                            name: `<\\Nom du pays>`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-                        },
-                        title: `Usine : Mine`,
-                        description: `Nombre d'usines total : \n` +
-                            `Territoire utilisé :`,
-                        fields: [{
-                                name: `Production :`,
-                                value: `Ressource : métaux\n` +
-                                    `Par usine : \n` +
-                                    `Totale :`,
-                                inline: true
-                            },
-                            {
-                                name: `En réserve :`,
-                                value: `<>`,
-                                inline: true
-                            },
-                            {
-                                name: '\u200B',
-                                value: '\u200B'
-                            },
-                            {
-                                name: `Consommation :`,
-                                value: `- Par usine : \n` +
-                                    `<ressource1> :\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:\n`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `- Totale : \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`,
-                                inline: true
-                            },
-                            {
-                                name: `Construction :`,
-                                value: `*pour une usine* \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`
-                            }
-                        ],
-                        color: interaction.member.displayHexColor,
-                        footer: {
-                            text: `Suède, Travail, Investissement`
-                        }
-                    };
+                        prod_T_mine = process.env.PROD_MINE * results[0].mine;
+                        conso_T_mine_bois = process.env.CONSO_MINE_BOIS * results[0].mine;
+                        conso_T_mine_petrole = process.env.CONSO_MINE_PETROLE * results[0].mine;
 
-                    interaction.reply({ embeds: [embed] })
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
+                            },
+                            title: `\`Usine : Mine\``,
+                            fields: [{
+                                    name: `> Consommation :`,
+                                    value: `- Par usine : \n` +
+                                        `Bois : ${process.env.CONSO_MINE_BOIS}\n` +
+                                        `Pétrole : ${process.env.CONSO_MINE_PETROLE}\n` +
+                                        `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `\u200B`,
+                                    value: `- Totale : \n` +
+                                        `Bois : ${conso_T_mine_bois}\n` +
+                                        `Pétrole : ${conso_T_mine_petrole}`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> Production :`,
+                                    value: `Ressource : Métaux\n` +
+                                        `Par usine  ${process.env.PROD_MINE}\n` +
+                                        `Totale : ${prod_T_mine}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].metaux}`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
+
+                        interaction.reply({ embeds: [embed] })
                 } else if (interaction.values == 'pompe_a_eau') {
 
-                    const embed = {
-                        author: {
-                            name: `<\\Nom du pays>`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-                        },
-                        title: `Usine : Pompe à eau`,
-                        description: `Nombre d'usines total : \n` +
-                            `Territoire utilisé :`,
-                        fields: [{
-                                name: `Production :`,
-                                value: `Ressource : eau\n` +
-                                    `Par usine : \n` +
-                                    `Totale :`,
-                                inline: true
-                            },
-                            {
-                                name: `En réserve :`,
-                                value: `<>`,
-                                inline: true
-                            },
-                            {
-                                name: '\u200B',
-                                value: '\u200B'
-                            },
-                            {
-                                name: `Consommation :`,
-                                value: `- Par usine : \n` +
-                                    `<ressource1> :\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:\n`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `- Totale : \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`,
-                                inline: true
-                            },
-                            {
-                                name: `Construction :`,
-                                value: `*pour une usine* \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`
-                            }
-                        ],
-                        color: interaction.member.displayHexColor,
-                        footer: {
-                            text: `Suède, Travail, Investissement`
-                        }
-                    };
+                        prod_T_pompe_a_eau = process.env.PROD_POMPE_A_EAU * results[0].pompe_a_eau;
+                        conso_T_pompe_a_eau_petrole = process.env.CONSO_POMPE_A_EAU_PETROLE * results[0].pompe_a_eau;
 
-                    interaction.reply({ embeds: [embed] })
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
+                            },
+                            title: `\`Usine : Pompe à eau\``,
+                            fields: [{
+                                    name: `> Consommation :`,
+                                    value: `- Par usine : \n` +
+                                        `Pétrole : ${process.env.CONSO_POMPE_A_EAU_PETROLE}\n` +
+                                        `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `\u200B`,
+                                    value: `- Totale : \n` +
+                                        `Pétrole : ${conso_T_pompe_a_eau_petrole}`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> Production :`,
+                                    value: `Ressource : Eau\n` +
+                                        `Par usine  ${process.env.PROD_POMPE_A_EAU}\n` +
+                                        `Totale : ${prod_T_mine}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].eau}`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
+
+                        interaction.reply({ embeds: [embed] })
                 } else if (interaction.values == 'pumpjack') {
 
-                    const embed = {
-                        author: {
-                            name: `<\\Nom du pays>`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-                        },
-                        title: `Usine : Pumpjack`,
-                        description: `Nombre d'usines total : \n` +
-                            `Territoire utilisé :`,
-                        fields: [{
-                                name: `Production :`,
-                                value: `Ressource : pétrole\n` +
-                                    `Par usine : \n` +
-                                    `Totale :`,
-                                inline: true
-                            },
-                            {
-                                name: `En réserve :`,
-                                value: `<>`,
-                                inline: true
-                            },
-                            {
-                                name: '\u200B',
-                                value: '\u200B'
-                            },
-                            {
-                                name: `Consommation :`,
-                                value: `- Par usine : \n` +
-                                    `<ressource1> :\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:\n`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `- Totale : \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`,
-                                inline: true
-                            },
-                            {
-                                name: `Construction :`,
-                                value: `*pour une usine* \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`
-                            }
-                        ],
-                        color: interaction.member.displayHexColor,
-                        footer: {
-                            text: `Suède, Travail, Investissement`
-                        }
-                    };
+                        prod_T_pumpjack = process.env.PROD_PUMPJACK * results[0].pumpjack;
+                        conso_T_pumpjack_petrole = process.env.CONSO_PUMPJACK_PETROLE * results[0].pumpjack;
 
-                    interaction.reply({ embeds: [embed] })
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
+                            },
+                            title: `\`Usine : Pumpjack\``,
+                            fields: [{
+                                    name: `> Consommation :`,
+                                    value: `- Par usine : \n` +
+                                        `Pétrole : ${process.env.CONSO_PUMPJACK_PETROLE}\n` +
+                                        `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `\u200B`,
+                                    value: `- Totale : \n` +
+                                        `Eau : ${conso_T_pumpjack_petrole}`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> Production :`,
+                                    value: `Ressource : Pétrole\n` +
+                                        `Par usine  ${process.env.PROD_PUMPJACK}\n` +
+                                        `Totale : ${prod_T_petrole}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].petrole}`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
+
+                        interaction.reply({ embeds: [embed] })
                 } else if (interaction.values == 'scierie') {
+                    
+                        prod_T_mine = process.env.PROD_MINE * results[0].mine;
+                        conso_T_mine_bois = process.env.CONSO_MINE_BOIS * results[0].mine;
+                        conso_T_mine_petrole = process.env.CONSO_MINE_PETROLE * results[0].mine;
 
-                    const embed = {
-                        author: {
-                            name: `<\\Nom du pays>`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-                        },
-                        title: `Usine : Scierie`,
-                        description: `Nombre d'usines total : \n` +
-                            `Territoire utilisé :`,
-                        fields: [{
-                                name: `Production :`,
-                                value: `Ressource : bois\n` +
-                                    `Par usine : \n` +
-                                    `Totale :`,
-                                inline: true
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
                             },
-                            {
-                                name: `En réserve :`,
-                                value: `<>`,
-                                inline: true
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
                             },
-                            {
-                                name: '\u200B',
-                                value: '\u200B'
-                            },
-                            {
-                                name: `Consommation :`,
-                                value: `- Par usine : \n` +
-                                    `<ressource1> :\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:\n`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `- Totale : \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`,
-                                inline: true
-                            },
-                            {
-                                name: `Construction :`,
-                                value: `*pour une usine* \n` +
-                                    `<ressource1>:\n` +
-                                    `<ressource2>:\n` +
-                                    `<ressource3>:`
-                            }
-                        ],
-                        color: interaction.member.displayHexColor,
-                        footer: {
-                            text: `Suède, Travail, Investissement`
-                        }
-                    };
+                            title: `\`Usine : Mine\``,
+                            fields: [{
+                                    name: `> Consommation :`,
+                                    value: `- Par usine : \n` +
+                                        `Bois : ${process.env.CONSO_MINE_BOIS}\n` +
+                                        `Pétrole : ${process.env.CONSO_MINE_PETROLE}\n` +
+                                        `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `\u200B`,
+                                    value: `- Totale : \n` +
+                                        `Bois : ${conso_T_mine_bois}\n` +
+                                        `Pétrole : ${conso_T_mine_petrole}`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> Production :`,
+                                    value: `Ressource : Métaux\n` +
+                                        `Par usine  ${process.env.PROD_MINE}\n` +
+                                        `Totale : ${prod_T_mine}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].metaux}`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
 
-                    interaction.reply({ embeds: [embed] })
+                        interaction.reply({ embeds: [embed] })
                 } else if (interaction.values == 'usine_civile') {
 
                     const embed = {
