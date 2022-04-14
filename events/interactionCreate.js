@@ -519,445 +519,433 @@ module.exports = {
                         //Choix dissuasif
                     }) //FIN DU CODE POUR LES BOUTONS
                     //code pour les menus
-            } else if (interaction.isSelectMenu()) {
+            }
+        } else if (interaction.isSelectMenu()) {
 
-                console.log(`${interaction.user.tag} a utilisé un menu dans #${interaction.channel.name}.`);
+            console.log(`${interaction.user.tag} a utilisé un menu dans #${interaction.channel.name}.`);
 
-                if (interaction.customId == 'usine') {
+            if (interaction.customId == 'usine') {
 
-                    var sql = `
+                var sql = `
                     SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
 
-                    if (interaction.values == 'briqueterie') {
+                if (interaction.values == 'briqueterie') {
 
-                        connection.query(sql, async(err, results) => {
-                            if (err) {
-                                throw err;
-                            }
+                    connection.query(sql, async(err, results) => {
+                        if (err) {
+                            throw err;
+                        }
 
-                            prod_T_briqueterie = process.env.PROD_BRIQUETERIE * results[0].briqueterie;
-                            conso_T_briqueterie_bois = process.env.CONSO_BRIQUETERIE_BOIS * results[0].briqueterie;
-                            conso_T_briqueterie_eau = process.env.CONSO_BRIQUETERIE_EAU * results[0].briqueterie;
-
-                            const embed = {
-                                author: {
-                                    name: `${results[0].rang} de ${results[0].nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: `${results[0].drapeau}`,
-                                },
-                                title: `\`Usine : Briqueterie\``,
-                                fields: [{
-                                        name: `Production :`,
-                                        value: `Ressource : brique\n` +
-                                            `Par usine :${process.env.PROD_BRIQUETERIE}\n` +
-                                            `Totale : ${prod_T_briqueterie}`,
-                                        inline: true
-                                    },
-                                    {
-                                        name: `En réserve :`,
-                                        value: `${results[0].brique}`,
-                                        inline: true
-                                    },
-                                    {
-                                        name: '\u200B',
-                                        value: '\u200B'
-                                    },
-                                    {
-                                        name: `Consommation :`,
-                                        value: `- Par usine : \n` +
-                                            `Bois : ${process.env.CONSO_BRIQUETERIE_BOIS}\n` +
-                                            `Eau : ${process.env.CONSO_BRIQUETERIE_EAU}\n`,
-                                        inline: true
-                                    },
-                                    {
-                                        name: `\u200B`,
-                                        value: `- Totale : \n` +
-                                            `Bois : ${conso_T_briqueterie_bois}\n` +
-                                            `Eau : ${conso_T_briqueterie_eau}`,
-                                        inline: true
-                                    },
-                                    {
-                                        name: `Construction :`,
-                                        value: `*pour une usine* \n` +
-                                            `Bois : ${process.env.CONST_BRIQUETERIE_BOIS}\n` +
-                                            `Brique : ${process.env.CONST_BRIQUETERIE_BRIQUE}\n` +
-                                            `Métaux: ${process.env.CONST_BRIQUETERIE_METAUX}\n` +
-                                            `Surface : ${process.env.SURFACE_BRIQUETERIE} km²`
-                                    }
-                                ],
-                                color: interaction.member.displayHexColor,
-                                timestamp: new Date(),
-                                footer: { text: `${results[0].devise}` }
-                            };
-
-                            interaction.reply({ embeds: [embed] })
-                        })
-                    } else if (interaction.values == 'champ') {
+                        prod_T_briqueterie = process.env.PROD_BRIQUETERIE * results[0].briqueterie;
+                        conso_T_briqueterie_bois = process.env.CONSO_BRIQUETERIE_BOIS * results[0].briqueterie;
+                        conso_T_briqueterie_eau = process.env.CONSO_BRIQUETERIE_EAU * results[0].briqueterie;
 
                         const embed = {
                             author: {
-                                name: `<\\Nom du pays>`,
+                                name: `${results[0].rang} de ${results[0].nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
                             },
                             thumbnail: {
-                                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                                url: `${results[0].drapeau}`,
                             },
-                            title: `Usine : Champ`,
-                            description: `Nombre d'usines total : \n` +
-                                `Territoire utilisé :`,
+                            title: `\`Usine : Briqueterie\``,
                             fields: [{
-                                    name: `Production :`,
-                                    value: `Ressource : nourriture\n` +
-                                        `Par usine : \n` +
-                                        `Totale :`,
-                                    inline: true
-                                },
-                                {
-                                    name: `En réserve :`,
-                                    value: `<>`,
-                                    inline: true
-                                },
-                                {
-                                    name: '\u200B',
-                                    value: '\u200B'
-                                },
-                                {
-                                    name: `Consommation :`,
+                                    name: `> Consommation :`,
                                     value: `- Par usine : \n` +
-                                        `<ressource1> :\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:\n`,
+                                        `Bois : ${process.env.CONSO_BRIQUETERIE_BOIS}\n` +
+                                        `Eau : ${process.env.CONSO_BRIQUETERIE_EAU}\n` +
+                                        `\u200B`,
                                     inline: true
                                 },
                                 {
                                     name: `\u200B`,
                                     value: `- Totale : \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`,
+                                        `Bois : ${conso_T_briqueterie_bois}\n` +
+                                        `Eau : ${conso_T_briqueterie_eau}`,
                                     inline: true
                                 },
                                 {
-                                    name: `Construction :`,
-                                    value: `*pour une usine* \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`
-                                }
+                                    name: `> Production :`,
+                                    value: `Ressource : brique\n` +
+                                        `Par usine  ${process.env.PROD_BRIQUETERIE}\n` +
+                                        `Totale : ${prod_T_briqueterie}` +
+                                        `\u200B`
+                                },
+                                {
+                                    name: `> En réserve :`,
+                                    value: `${results[0].brique}`
+                                },
                             ],
                             color: interaction.member.displayHexColor,
-                            footer: {
-                                text: `Suède, Travail, Investissement`
-                            }
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
                         };
 
                         interaction.reply({ embeds: [embed] })
+                    })
+                } else if (interaction.values == 'champ') {
 
-                    } else if (interaction.values == 'mine') {
-
-                        const embed = {
-                            author: {
-                                name: `<\\Nom du pays>`,
-                                icon_url: interaction.member.displayAvatarURL()
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Champ`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
+                        fields: [{
+                                name: `Production :`,
+                                value: `Ressource : nourriture\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
                             },
-                            thumbnail: {
-                                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
                             },
-                            title: `Usine : Mine`,
-                            description: `Nombre d'usines total : \n` +
-                                `Territoire utilisé :`,
-                            fields: [{
-                                    name: `Production :`,
-                                    value: `Ressource : métaux\n` +
-                                        `Par usine : \n` +
-                                        `Totale :`,
-                                    inline: true
-                                },
-                                {
-                                    name: `En réserve :`,
-                                    value: `<>`,
-                                    inline: true
-                                },
-                                {
-                                    name: '\u200B',
-                                    value: '\u200B'
-                                },
-                                {
-                                    name: `Consommation :`,
-                                    value: `- Par usine : \n` +
-                                        `<ressource1> :\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:\n`,
-                                    inline: true
-                                },
-                                {
-                                    name: `\u200B`,
-                                    value: `- Totale : \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`,
-                                    inline: true
-                                },
-                                {
-                                    name: `Construction :`,
-                                    value: `*pour une usine* \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`
-                                }
-                            ],
-                            color: interaction.member.displayHexColor,
-                            footer: {
-                                text: `Suède, Travail, Investissement`
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
-                        };
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
 
-                        interaction.reply({ embeds: [embed] })
-                    } else if (interaction.values == 'pompe_a_eau') {
+                    interaction.reply({ embeds: [embed] })
 
-                        const embed = {
-                            author: {
-                                name: `<\\Nom du pays>`,
-                                icon_url: interaction.member.displayAvatarURL()
+                } else if (interaction.values == 'mine') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Mine`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
+                        fields: [{
+                                name: `Production :`,
+                                value: `Ressource : métaux\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
                             },
-                            thumbnail: {
-                                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
                             },
-                            title: `Usine : Pompe à eau`,
-                            description: `Nombre d'usines total : \n` +
-                                `Territoire utilisé :`,
-                            fields: [{
-                                    name: `Production :`,
-                                    value: `Ressource : eau\n` +
-                                        `Par usine : \n` +
-                                        `Totale :`,
-                                    inline: true
-                                },
-                                {
-                                    name: `En réserve :`,
-                                    value: `<>`,
-                                    inline: true
-                                },
-                                {
-                                    name: '\u200B',
-                                    value: '\u200B'
-                                },
-                                {
-                                    name: `Consommation :`,
-                                    value: `- Par usine : \n` +
-                                        `<ressource1> :\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:\n`,
-                                    inline: true
-                                },
-                                {
-                                    name: `\u200B`,
-                                    value: `- Totale : \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`,
-                                    inline: true
-                                },
-                                {
-                                    name: `Construction :`,
-                                    value: `*pour une usine* \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`
-                                }
-                            ],
-                            color: interaction.member.displayHexColor,
-                            footer: {
-                                text: `Suède, Travail, Investissement`
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
-                        };
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
 
-                        interaction.reply({ embeds: [embed] })
-                    } else if (interaction.values == 'pumpjack') {
+                    interaction.reply({ embeds: [embed] })
+                } else if (interaction.values == 'pompe_a_eau') {
 
-                        const embed = {
-                            author: {
-                                name: `<\\Nom du pays>`,
-                                icon_url: interaction.member.displayAvatarURL()
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Pompe à eau`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
+                        fields: [{
+                                name: `Production :`,
+                                value: `Ressource : eau\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
                             },
-                            thumbnail: {
-                                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
                             },
-                            title: `Usine : Pumpjack`,
-                            description: `Nombre d'usines total : \n` +
-                                `Territoire utilisé :`,
-                            fields: [{
-                                    name: `Production :`,
-                                    value: `Ressource : pétrole\n` +
-                                        `Par usine : \n` +
-                                        `Totale :`,
-                                    inline: true
-                                },
-                                {
-                                    name: `En réserve :`,
-                                    value: `<>`,
-                                    inline: true
-                                },
-                                {
-                                    name: '\u200B',
-                                    value: '\u200B'
-                                },
-                                {
-                                    name: `Consommation :`,
-                                    value: `- Par usine : \n` +
-                                        `<ressource1> :\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:\n`,
-                                    inline: true
-                                },
-                                {
-                                    name: `\u200B`,
-                                    value: `- Totale : \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`,
-                                    inline: true
-                                },
-                                {
-                                    name: `Construction :`,
-                                    value: `*pour une usine* \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`
-                                }
-                            ],
-                            color: interaction.member.displayHexColor,
-                            footer: {
-                                text: `Suède, Travail, Investissement`
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
-                        };
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
 
-                        interaction.reply({ embeds: [embed] })
-                    } else if (interaction.values == 'scierie') {
+                    interaction.reply({ embeds: [embed] })
+                } else if (interaction.values == 'pumpjack') {
 
-                        const embed = {
-                            author: {
-                                name: `<\\Nom du pays>`,
-                                icon_url: interaction.member.displayAvatarURL()
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Pumpjack`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
+                        fields: [{
+                                name: `Production :`,
+                                value: `Ressource : pétrole\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
                             },
-                            thumbnail: {
-                                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
                             },
-                            title: `Usine : Scierie`,
-                            description: `Nombre d'usines total : \n` +
-                                `Territoire utilisé :`,
-                            fields: [{
-                                    name: `Production :`,
-                                    value: `Ressource : bois\n` +
-                                        `Par usine : \n` +
-                                        `Totale :`,
-                                    inline: true
-                                },
-                                {
-                                    name: `En réserve :`,
-                                    value: `<>`,
-                                    inline: true
-                                },
-                                {
-                                    name: '\u200B',
-                                    value: '\u200B'
-                                },
-                                {
-                                    name: `Consommation :`,
-                                    value: `- Par usine : \n` +
-                                        `<ressource1> :\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:\n`,
-                                    inline: true
-                                },
-                                {
-                                    name: `\u200B`,
-                                    value: `- Totale : \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`,
-                                    inline: true
-                                },
-                                {
-                                    name: `Construction :`,
-                                    value: `*pour une usine* \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`
-                                }
-                            ],
-                            color: interaction.member.displayHexColor,
-                            footer: {
-                                text: `Suède, Travail, Investissement`
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
-                        };
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
 
-                        interaction.reply({ embeds: [embed] })
-                    } else if (interaction.values == 'usine_civile') {
+                    interaction.reply({ embeds: [embed] })
+                } else if (interaction.values == 'scierie') {
 
-                        const embed = {
-                            author: {
-                                name: `<\\Nom du pays>`,
-                                icon_url: interaction.member.displayAvatarURL()
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Scierie`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
+                        fields: [{
+                                name: `Production :`,
+                                value: `Ressource : bois\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
                             },
-                            thumbnail: {
-                                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
                             },
-                            title: `Usine : Civile`,
-                            description: `Nombre d'usines total : \n` +
-                                `Territoire utilisé :`,
-                            fields: [{
-                                    name: `Production :`,
-                                    value: `Ressource : biens de consommation\n` +
-                                        `Par usine : \n` +
-                                        `Totale :`,
-                                    inline: true
-                                },
-                                {
-                                    name: `En réserve :`,
-                                    value: `<>`,
-                                    inline: true
-                                },
-                                {
-                                    name: '\u200B',
-                                    value: '\u200B'
-                                },
-                                {
-                                    name: `Consommation :`,
-                                    value: `- Par usine : \n` +
-                                        `<ressource1> :\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:\n`,
-                                    inline: true
-                                },
-                                {
-                                    name: `\u200B`,
-                                    value: `- Totale : \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`,
-                                    inline: true
-                                },
-                                {
-                                    name: `Construction :`,
-                                    value: `*pour une usine* \n` +
-                                        `<ressource1>:\n` +
-                                        `<ressource2>:\n` +
-                                        `<ressource3>:`
-                                }
-                            ],
-                            color: interaction.member.displayHexColor,
-                            footer: {
-                                text: `Suède, Travail, Investissement`
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
                             }
-                        };
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
 
-                        interaction.reply({ embeds: [embed] })
-                    }
-                }; //FIN DU CODE POUR LES MENUS
-            };
-        }
+                    interaction.reply({ embeds: [embed] })
+                } else if (interaction.values == 'usine_civile') {
+
+                    const embed = {
+                        author: {
+                            name: `<\\Nom du pays>`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                        },
+                        title: `Usine : Civile`,
+                        description: `Nombre d'usines total : \n` +
+                            `Territoire utilisé :`,
+                        fields: [{
+                                name: `Production :`,
+                                value: `Ressource : biens de consommation\n` +
+                                    `Par usine : \n` +
+                                    `Totale :`,
+                                inline: true
+                            },
+                            {
+                                name: `En réserve :`,
+                                value: `<>`,
+                                inline: true
+                            },
+                            {
+                                name: '\u200B',
+                                value: '\u200B'
+                            },
+                            {
+                                name: `Consommation :`,
+                                value: `- Par usine : \n` +
+                                    `<ressource1> :\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:\n`,
+                                inline: true
+                            },
+                            {
+                                name: `\u200B`,
+                                value: `- Totale : \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`,
+                                inline: true
+                            },
+                            {
+                                name: `Construction :`,
+                                value: `*pour une usine* \n` +
+                                    `<ressource1>:\n` +
+                                    `<ressource2>:\n` +
+                                    `<ressource3>:`
+                            }
+                        ],
+                        color: interaction.member.displayHexColor,
+                        footer: {
+                            text: `Suède, Travail, Investissement`
+                        }
+                    };
+
+                    interaction.reply({ embeds: [embed] })
+                }
+            }; //FIN DU CODE POUR LES MENUS
+        };
     }
 }
