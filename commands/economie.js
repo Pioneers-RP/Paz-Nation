@@ -34,11 +34,11 @@ module.exports = {
                 },
                 title: `\`Menu de l'économie\``,
                 fields: [{
-                        name: `Argent :`,
-                        value: `${results[0].cash} 💵\n\u200B`
+                        name: `> 💵 Argent :`,
+                        value: `${results[0].cash} $\n\u200B`
                     },
                     {
-                        name: `Nombre d'usine total :`,
+                        name: `> 🏭 Nombre d'usine total :`,
                         value: `${results[0].usine_total}\n\u200B`
                     },
                 ],

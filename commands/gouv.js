@@ -34,23 +34,23 @@ module.exports = {
                 },
                 title: `\`Menu du gouvernement\``,
                 fields: [{
-                        name: `Nom de l'Etat : `,
+                        name: `> 🪧 Nom de l'Etat : `,
                         value: `${results[0].nom}\n\u200B`,
                     },
                     {
-                        name: `Rang : `,
+                        name: `> ®️ Rang : `,
                         value: `${results[0].rang}\n\u200B`
                     },
                     {
-                        name: `Forme de gouvernement : `,
+                        name: `> 🔱 Forme de gouvernement : `,
                         value: `${results[0].gouv_forme}\n\u200B`
                     },
                     {
-                        name: `Idéologie : `,
+                        name: `> 🧠 Idéologie : `,
                         value: `${results[0].ideologie}\n\u200B`
                     },
                     {
-                        name: `Devise : `,
+                        name: `> 📯 Devise : `,
                         value: `${results[0].devise}\n\u200B`
                     }
                 ],

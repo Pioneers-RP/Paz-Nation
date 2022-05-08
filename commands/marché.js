@@ -8,54 +8,61 @@ module.exports = {
         .setDescription(`Marché international`),
 
     async execute(interaction) {
+        const connection = new mysql.createConnection({
+            host: 'eu01-sql.pebblehost.com',
+            user: 'customer_260507_paznation',
+            password: 'lidmGbk8edPkKXv1#ZO',
+            database: 'customer_260507_paznation',
+            multipleStatements: true
+        });
 
-        const embed = {
-            author: {
-                name: `<\\Nom du pays>`,
-                icon_url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png'
-            },
-            thumbnail: {
-                url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
-            },
-            title: `Marché International (IM)`,
-            fields: [{
-                    name: `Marché International (IM) — marché entre joueurs`,
-                    value: `Dans le Marché International entre les pays,` +
-                        ` vous pouvez proposer des offres pour vendre vos ressources,` +
-                        ` ou acheter des offres d'autres pays. ` +
-                        `Le joueur qui créé l'offre définit la quantité de ressources et le prix.` +
-                        ` Le prix est obligatoirement compris entre -25% et +25% du prix actuel de la ressource.\n` +
-                        `Si une offre vous intéresse, vous pouvez décider de l'acheter directement,` +
-                        ` ou de négocier dans le thread de l'offre, en cliquant sur le nom de l'offre??`
+        var sql = `
+            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        connection.query(sql, async(err, results) => {
+            if (err) {
+                throw err;
+            }
+
+            const embed = {
+                author: {
+                    name: `${results[0].rang} de ${results[0].nom}`,
+                    icon_url: interaction.member.displayAvatarURL()
                 },
-                {
-                    name: `Vente Rapide / Quick Sell (QS) — marché avec le bot`,
-                    value: `Si il n'y a pas d'offre dispnible ou qu'aucune ne vous intéresse,` +
-                        ` ou bien si vous souhaitez vendre directement vos ressources sans attendre et sans créer d'offre,` +
-                        ` vous pouvez échanger directement avec le bot.\n` +
-                        `Cependant le prix sera toujours moins avantageux qu'avec les joueurs :` +
-                        ` 30% en-dessous ou au-dessus du prix actuel de la ressource.\n\n` +
-                        `Cliquez sur les boutons ci-dessous pour accéder au marché.`
-                }
-            ],
-            color: interaction.member.displayHexColor,
-        };
+                thumbnail: {
+                    url: results[0].drapeau,
+                },
+                title: `Marché International (IM)`,
+                fields: [{
+                        name: `Marché International (IM) — marché entre joueurs`,
+                        value: `Dans le Marché International entre les pays,` +
+                            ` vous pouvez proposer des offres pour vendre vos ressources,` +
+                            ` ou acheter des offres d'autres pays. ` +
+                            `Le joueur qui créé l'offre définit la quantité de ressources et le prix.` +
+                            ` Toutes les offres sont disponibles dans <#${process.env.SALON_COMMERCE}>\n` +
+                            `Si une offre vous intéresse, vous pouvez décider de l'acheter directement,` +
+                            ` ou de négocier dans le thread de l'offre, en cliquant sur le nom de l'offre`
+                    },
+                    {
+                        name: `Marché Rapide / Quick Market (QM) — marché avec le bot`,
+                        value: `Si il n'y a pas d'offre disponible ou qu'aucune ne vous intéresse,` +
+                            ` ou bien si vous souhaitez vendre directement vos ressources sans attendre et sans créer d'offre,` +
+                            ` vous pouvez échanger directement avec le bot.\n` +
+                            `Cependant le prix sera toujours moins avantageux qu'avec les joueurs.` +
+                            `Cliquez sur les boutons ci-dessous pour accéder au marché.`
+                    }
+                ],
+                color: interaction.member.displayHexColor,
+            };
 
-        const row = new MessageActionRow()
-            .addComponents(
-                new MessageButton()
-                .setLabel(`Marché International (IM)`)
-                .setCustomId('menu_IM')
-                .setStyle('SUCCESS'),
-            )
-            .addComponents(
-                new MessageButton()
-                .setLabel(`Quick Sell (QS)`)
-                .setCustomId('menu_QS')
-                .setStyle('PRIMARY'),
-            );
+            const row = new MessageActionRow()
+                .addComponents(
+                    new MessageButton()
+                    .setLabel(`Quick Market (QM)`)
+                    .setCustomId('menu_QM')
+                    .setStyle('PRIMARY'),
+                );
 
-        await interaction.reply({ embeds: [embed], components: [row] });
-
+            await interaction.reply({ embeds: [embed], components: [row] });
+        })
     },
 };

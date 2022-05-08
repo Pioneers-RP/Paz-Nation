@@ -35,26 +35,26 @@ module.exports = {
                 },
                 title: `\`Vue globale du pays\``,
                 fields: [{
-                        name: `💵 **Argent**`,
+                        name: `> 💵 Argent :`,
                         value: `${results[0].cash} $\n\u200B`
                     },
                     {
-                        name: `👪 **Population**`,
+                        name: `> 👪 Population :`,
                         value: `${results[0].population}\n\u200B`
                     },
                     {
-                        name: `🌄 **Territoire**`,
+                        name: `> 🌄 Territoire :`,
                         value: `${results[0].T_total} km² total\n` +
-                            `${results[0].T_libre} km² libre\n\u200B`
+                            `${results[0].T_libre} km² libre\n` +
+                            `${results[0].hexagone} cases\n\u200B`
                     },
                     {
-                        name: `☎️ **Diplomatique**`,
-                        value: `${results[0].action_diplo} points d'action diplomatique\n\u200B`
+                        name: `> ☎️ Diplomatie :`,
+                        value: `${results[0].action_diplo} points d'action diplomatique\n\u200B` +
+                            `${results[0].influence} influences\n` +
+                            `${results[0].reputation}% réputation\n` +
+                            `${results[0].prestige} prestiges\n\u200B`
                     },
-                    {
-                        name: `🎖️ __Prestige :__`,
-                        value: `${results[0].prestige}\n\u200B`
-                    }
                 ],
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
