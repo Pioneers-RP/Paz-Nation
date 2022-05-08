@@ -3,6 +3,8 @@ const { Client, Collection, Intents, Guild } = require('discord.js');
 const dotenv = require('dotenv');
 dotenv.config();
 var mysql = require('mysql');
+const { globalBox } = require('global-box');
+const box = globalBox();
 
 const connection = new mysql.createConnection({
     host: 'eu01-sql.pebblehost.com',
@@ -58,6 +60,20 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: 'Il y a eu une erreur !', ephemeral: true });
     }
 });
+
+box.set('bc_prix_moyen', 2.1);
+
+box.set('bois_prix_moyen', 2.2);
+
+box.set('brique_prix_moyen', 2.3);
+
+box.set('eau_prix_moyen', 2.4);
+
+box.set('metaux_prix_moyen', 2.6);
+
+box.set('nourriture_prix_moyen', 2.7);
+
+box.set('petrole_prix_moyen', 2.8);
 
 process.on('exit', code => {
     console.log(`Le bot a crash à cause du code: ${code} !`)

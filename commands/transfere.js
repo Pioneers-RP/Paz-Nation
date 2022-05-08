@@ -37,20 +37,20 @@ module.exports = {
 
             if (results[0].cash >= montant) {
 
-                var sql2 = `
+                var sql = `
                 UPDATE pays SET cash=cash-${montant} WHERE id_joueur='${interaction.member.id}';
                 UPDATE pays SET cash=cash+${montant} WHERE id_joueur='${user.id}'`;
 
-                connection.query(sql2, async(err, results) => {
+                connection.query(sql, async(err, results) => {
                     if (err) {
                         throw err;
                     }
                 })
 
-                var sql3 = `
+                var sql = `
                 SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
-                connection.query(sql3, async(err, results) => {
+                connection.query(sql, async(err, results) => {
                     if (err) {
                         throw err;
                     }
@@ -94,10 +94,10 @@ module.exports = {
 
                 })
 
-                var sql4 = `
+                var sql = `
                 SELECT * FROM pays WHERE id_joueur='${user.id}'`;
 
-                connection.query(sql4, async(err, results) => {
+                connection.query(sql, async(err, results) => {
                     if (err) {
                         throw err;
                     }
@@ -136,8 +136,8 @@ module.exports = {
                     user.send({ embeds: [paiement] });
                 })
             } else {
-                var reponse = codeBlock('diff', `- Vous n'avez pas assez d'agent`);
-                await interaction.reply({ content: reponse });
+                var reponse = codeBlock('diff', `- Vous n'avez pas assez d'argent : ${results[0].cash}/${montant}`);
+                await interaction.reply({ content: reponse, ephemeral: true });
             }
         })
     },

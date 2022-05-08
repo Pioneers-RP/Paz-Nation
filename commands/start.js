@@ -130,7 +130,7 @@ module.exports = {
                 await interaction.reply({ embeds: [ville] });
             } else {
                 var reponse = codeBlock('diff', `- Vous avez déjà un pays. Demandez au staff pour recommencer une histoire`);
-                await interaction.reply({ content: reponse });
+                await interaction.reply({ content: reponse, ephemeral: true });
             }
         });
     }
