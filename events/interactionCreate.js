@@ -1959,8 +1959,11 @@ module.exports = {
 
                         interaction.reply({ embeds: [embed] })
                     } else if (interaction.values == 'pumpjack') {
-
                         prod_T_pumpjack = process.env.PROD_PUMPJACK * results[0].pumpjack;
+
+                        prod_T_mine = process.env.PROD_MINE * results[0].mine;
+                        conso_T_mine_bois = process.env.CONSO_MINE_BOIS * results[0].mine;
+                        conso_T_mine_petrole = process.env.CONSO_MINE_PETROLE * results[0].mine;
 
                         const embed = {
                             author: {
