@@ -1,6 +1,5 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder } = require('@discordjs/builders');
-var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,13 +7,7 @@ module.exports = {
         .setDescription(`Marché international`),
 
     async execute(interaction) {
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
+        const { connection } = require('../index.js');
 
         var sql = `
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
@@ -63,6 +56,6 @@ module.exports = {
                 );
 
             await interaction.reply({ embeds: [embed], components: [row] });
-        })
+        });
     },
 };

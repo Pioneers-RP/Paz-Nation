@@ -1,55 +1,65 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-var mysql = require('mysql');
+const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('economie')
-        .setDescription(`Consultez votre économie`),
+        .setDescription(`Consultez votre économie`)
+        .addUserOption(user =>
+            user.setName('joueur')
+            .setDescription(`Le joueur dont vous voulez voir l'économie`)),
 
     async execute(interaction) {
+        const { connection } = require('../index.js');
+        var joueur = interaction.options.getUser('joueur');
 
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
+        if (!joueur) {
+            var joueur = interaction.member;
+        };
 
-        var sql = `
-            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        function economie(joueur) {
+            var sql = `
+                SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
 
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+            connection.query(sql, async(err, results) => {
+                if (err) {
+                    throw err;
+                }
 
-            const embed = {
-                author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
-                    icon_url: interaction.member.displayAvatarURL()
-                },
-                thumbnail: {
-                    url: results[0].drapeau
-                },
-                title: `\`Menu de l'économie\``,
-                fields: [{
-                        name: `> 💵 Argent :`,
-                        value: `${results[0].cash} $\n\u200B`
-                    },
-                    {
-                        name: `> 🏭 Nombre d'usine total :`,
-                        value: `${results[0].usine_total}\n\u200B`
-                    },
-                ],
-                color: interaction.member.displayHexColor,
-                timestamp: new Date(),
-                footer: {
-                    text: `${results[0].devise}`
-                },
-            };
+                if (!results[0]) {
+                    var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
+                    await interaction.reply({ content: reponse, ephemeral: true });
+                } else {
 
-            await interaction.reply({ embeds: [embed] });
-        })
+                    const embed = {
+                        author: {
+                            name: `${results[0].rang} de ${results[0].nom}`,
+                            icon_url: joueur.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: results[0].drapeau
+                        },
+                        title: `\`Menu de l'économie\``,
+                        fields: [{
+                                name: `> 💵 Argent :`,
+                                value: codeBlock(`• ${results[0].cash.toLocaleString('en-US')} $`) + `\u200B`
+                            },
+                            {
+                                name: `> 🏭 Nombre d'usine total :`,
+                                value: codeBlock(`• ${results[0].usine_total.toLocaleString('en-US')}`) + `\u200B`
+                            },
+                        ],
+                        color: joueur.displayHexColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${results[0].devise}`
+                        },
+                    };
+
+                    await interaction.reply({ embeds: [embed] });
+                }
+            });
+        };
+
+        economie(joueur)
     },
 };

@@ -1,8 +1,6 @@
 const { SlashCommandBuilder } = require('@discordjs/builders');
 const { codeBlock } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
-var mysql = require('mysql');
-const ms = require('ms');
 const { globalBox } = require('global-box');
 const box = globalBox();
 
@@ -27,14 +25,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
+        const { connection } = require('../index.js');
 
         var sql = `
         SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
@@ -67,21 +58,23 @@ module.exports = {
                         title: `\`Acheter au marché international :\``,
                         fields: [{
                                 name: `Ressource :`,
-                                value: `${ressource}\n` +
-                                    `Prix moyen : ${prix_moyen}`
+                                value: codeBlock(
+                                    `• ${ressource}\n` +
+                                    `• Prix moyen : ${prix_moyen}`) + `\u200B`
                             },
                             {
                                 name: `Quantité :`,
-                                value: `${quantité}`
+                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
                             },
                             {
                                 name: `Prix :`,
-                                value: `A l'unité (-30% du prix moyen) : ${prix_achat.toFixed(2)}\n` +
-                                    `Au total : ${prix.toFixed(0)}`
+                                value: codeBlock(
+                                    `• A l'unité (+30% du prix moyen) : ${prix_achat.toFixed(2)}\n` +
+                                    `• Au total : ${prix.toFixed(0).toLocaleString('en-US')}`) + `\u200B`
                             },
                             {
                                 name: `Votre argent :`,
-                                value: `${results[0].cash}`
+                                value: codeBlock(`• ${results[0].cash.toLocaleString('en-US')}`) + `\u200B`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -134,6 +127,6 @@ module.exports = {
                         break;
                 }
             }
-        })
+        });
     },
 };

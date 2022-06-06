@@ -1,0 +1,106 @@
+{
+    "inconnue": {
+        "nom": "Inconnue",
+        "bois": "0",
+        "eau": "0",
+        "metaux": "0",
+        "nourriture": "0",
+        "petrole": "0"
+    },
+    "afrique_australe": {
+        "nom": "Afrique Australe",
+        "bois": "0",
+        "eau": "30",
+        "metaux": "0",
+        "nourriture": "-30",
+        "petrole": "15"
+    },
+    "afrique_equatoriale": {
+        "nom": "Afrique Equatoriale",
+        "bois": "30",
+        "eau": "15",
+        "metaux": "15",
+        "nourriture": "-15",
+        "petrole": "-30"
+    },
+    "afrique_du_nord": {
+        "nom": "Afrique du Nord",
+        "bois": "-30",
+        "eau": "-30",
+        "metaux": "15",
+        "nourriture": "-15",
+        "petrole": "15"
+    },
+    "amerique_du-nord": {
+        "nom": "Amerique du Nord",
+        "bois": "30",
+        "eau": "0",
+        "metaux": "15",
+        "nourriture": "15",
+        "petrole": "15"
+    },
+    "asie_du_nord": {
+        "nom": "Asie du Nord",
+        "bois": "-30",
+        "eau": "-15",
+        "metaux": "30",
+        "nourriture": "0",
+        "petrole": "15"
+    },
+    "asie_du_sud": {
+        "nom": "Asie du Sud",
+        "bois": "30",
+        "eau": "0",
+        "metaux": "-30",
+        "nourriture": "30",
+        "petrole": "0"
+    },
+    "europe": {
+        "nom": "Europe",
+        "bois": "15",
+        "eau": "-15",
+        "metaux": "15",
+        "nourriture": "30",
+        "petrole": "-30"
+    },
+    "moyen_orient": {
+        "nom": "Moyen Orient",
+        "bois": "-30",
+        "eau": "-30",
+        "metaux": "-30",
+        "nourriture": "-30",
+        "petrole": "-30"
+    },
+    "nord_amerique_latine": {
+        "nom": "Nord Amérique Latine",
+        "bois": "30",
+        "eau": "30",
+        "metaux": "0",
+        "nourriture": "0",
+        "petrole": "0"
+    },
+    "oceanie": {
+        "nom": "Océanie",
+        "bois": "-15",
+        "eau": "30",
+        "metaux": "30",
+        "nourriture": "0",
+        "petrole": "-30"
+    },
+    "pays_du_nord": {
+        "nom": "Pays du Nord",
+        "bois": "15",
+        "eau": "30",
+        "metaux": "15",
+        "nourriture": "-30",
+        "petrole": "15"
+    },
+    "sud_amerique_latine": {
+        "nom": "Sud Amérique Latine",
+        "bois": "-30",
+        "eau": "0",
+        "metaux": "15",
+        "nourriture": "0",
+        "petrole": "0"
+    }
+}

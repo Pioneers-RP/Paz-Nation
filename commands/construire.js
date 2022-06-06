@@ -1,6 +1,5 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,6 +10,7 @@ module.exports = {
             .setDescription(`Le type de bâtiment que vous voulez construire`)
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
+            .addChoice(`Centrale électrique`, 'Centrale_elec')
             .addChoice(`Mine`, 'Mine')
             .addChoice(`Pompe à eau`, 'Pompe_a_eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
@@ -23,14 +23,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        })
+        const { connection } = require('../index.js');
 
         var sql = `
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
@@ -46,6 +39,8 @@ module.exports = {
                 batiment = 'Pompe à eau'
             } else if (batiment == 'Usine_civile') {
                 batiment = 'Usine civile'
+            } else if (batiment == 'Centrale_elec') {
+                batiment = 'Centrale électrique'
             }
 
             var const_batiment = true
@@ -108,6 +103,34 @@ module.exports = {
                 }
 
                 var const_metaux = process.env.CONST_CHAMP_METAUX * nombre;
+                if (const_metaux > results[0].metaux) {
+                    var const_batiment = false
+                    var manque_metaux = true
+                }
+            } else if (batiment == 'Centrale électrique') {
+                var need_bois = true;
+                var need_brique = true;
+                var need_metaux = true;
+
+                var const_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
+                if (const_T_libre > results[0].T_libre) {
+                    var const_batiment = false
+                    var manque_T_libre = true
+                }
+
+                var const_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre;
+                if (const_bois > results[0].bois) {
+                    var const_batiment = false
+                    var manque_bois = true
+                }
+
+                var const_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre;
+                if (const_brique > results[0].brique) {
+                    var const_batiment = false
+                    var manque_brique = true
+                }
+
+                var const_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre;
                 if (const_metaux > results[0].metaux) {
                     var const_batiment = false
                     var manque_metaux = true
@@ -258,12 +281,12 @@ module.exports = {
             if (manque_T_libre == true) {
                 fields.push({
                     name: `> ⛔ Manque de terrain libre ⛔ :`,
-                    value: `Terrain : ${results[0].T_libre}/${const_T_libre}\n`
+                    value: codeBlock(`• Terrain : ${results[0].T_libre.toLocaleString('en-US')}/${const_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
                 })
             } else {
                 fields.push({
                     name: `> ✅ Terrain libre suffisant ✅ :`,
-                    value: `Terrain : ${const_T_libre}/${const_T_libre}\n`
+                    value: codeBlock(`• Terrain : ${const_T_libre.toLocaleString('en-US')}/${const_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
                 })
             }
 
@@ -272,24 +295,24 @@ module.exports = {
                     if (manque_bois == true) {
                         fields.push({
                             name: `> ⛔ Manque de bois ⛔ :`,
-                            value: `Bois : ${results[0].bois}/${const_bois}\n`
+                            value: codeBlock(`• Bois : ${results[0].bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     } else {
                         fields.push({
                             name: `> ✅ Bois suffisant ✅ :`,
-                            value: `Bois : ${const_bois}/${const_bois}\n`
+                            value: codeBlock(`• Bois : ${const_bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     }
                 case need_brique:
                     if (manque_brique == true) {
                         fields.push({
                             name: `> ⛔ Manque de brique ⛔ :`,
-                            value: `Brique : ${results[0].brique}/${const_brique}\n`
+                            value: codeBlock(`• Brique : ${results[0].brique.toLocaleString('en-US')}/${const_brique.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     } else {
                         fields.push({
                             name: `> ✅ Brique suffisante ✅ :`,
-                            value: `Brique : ${const_brique}/${const_brique}\n`
+                            value: codeBlock(`• Brique : ${const_brique.toLocaleString('en-US')}/${const_brique.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     }
                 case need_metaux:
@@ -297,12 +320,12 @@ module.exports = {
                     if (manque_metaux == true) {
                         fields.push({
                             name: `> ⛔ Manque de métaux ⛔ :`,
-                            value: `Métaux : ${results[0].metaux}/${const_metaux}\n`
+                            value: codeBlock(`• Métaux : ${results[0].metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     } else {
                         fields.push({
                             name: `> ✅ Métaux suffisant ✅ :`,
-                            value: `Métaux : ${const_metaux}/${const_metaux}\n`
+                            value: codeBlock(`• Métaux : ${const_metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     }
             }
@@ -333,6 +356,13 @@ module.exports = {
                         .setCustomId(`construction-${interaction.user.id}`)
                         .setStyle('SUCCESS'),
                     )
+                    .addComponents(
+                        new MessageButton()
+                        .setLabel(`Refuser`)
+                        .setEmoji(`✋`)
+                        .setCustomId(`refuser-${interaction.user.id}`)
+                        .setStyle('DANGER'),
+                    )
 
                 await interaction.reply({ embeds: [embed], components: [row] });
             } else {
@@ -344,6 +374,13 @@ module.exports = {
                         .setCustomId(`construction`)
                         .setStyle('DANGER')
                         .setDisabled(true)
+                    )
+                    .addComponents(
+                        new MessageButton()
+                        .setLabel(`Refuser`)
+                        .setEmoji(`✋`)
+                        .setCustomId(`refuser-${interaction.user.id}`)
+                        .setStyle('DANGER'),
                     )
 
                 await interaction.reply({ embeds: [embed], components: [row] });

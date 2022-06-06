@@ -1,6 +1,5 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const isImageURL = require('image-url-validator').default;
-var mysql = require('mysql');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
 const drapeauCommandCooldown = new CommandCooldown('drapeau', ms('7d'));
@@ -12,27 +11,31 @@ module.exports = {
         .addStringOption(option =>
             option.setName('url')
             .setDescription(`L'URL de l'image`)
+            .setRequired(true))
+        .addStringOption(option =>
+            option.setName('discours')
+            .setDescription(`Vous devez faire un discours pour justifier votre acte (Minimum 115 caractères)`)
             .setRequired(true)),
 
     async execute(interaction) {
+        const { connection } = require('../index.js');
 
         const drapeau = interaction.options.getString('url');
+        const discours = interaction.options.getString('discours');
 
         const userCooldowned = await drapeauCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             var reponse = codeBlock('diff', `- Vous avez déjà changé votre drapeau récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir le changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
+        } else if (discours.length <= 115) {
+            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 115 caractères`);
+            await interaction.reply({ content: reponse, ephemeral: true });
+        } else if (discours.length >= 2000) {
+            var reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
+            await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (await isImageURL(drapeau) == true) {
-
-                const connection = new mysql.createConnection({
-                    host: 'eu01-sql.pebblehost.com',
-                    user: 'customer_260507_paznation',
-                    password: 'lidmGbk8edPkKXv1#ZO',
-                    database: 'customer_260507_paznation',
-                    multipleStatements: true
-                });
 
                 var sql = `
                 UPDATE pays SET drapeau="${drapeau}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
@@ -61,6 +64,7 @@ module.exports = {
                         },
                         title: `\`Une nouveau drapeau a été adopté :\``,
                         timestamp: new Date(),
+                        description: discours,
                         color: interaction.member.displayHexColor,
                         footer: {
                             text: `${results[0].devise}`
@@ -71,9 +75,10 @@ module.exports = {
 
                     salon_annonce.send({ embeds: [annonce] });
                     var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
-
                     await interaction.reply({ content: reponse });
-                })
+
+                    await drapeauCommandCooldown.addUser(interaction.member.id);
+                });
             } else {
                 var reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
                 await interaction.reply({ content: reponse, ephemeral: true });

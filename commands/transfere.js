@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -15,130 +14,133 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction, client) {
+        const { connection } = require('../index.js');
 
         const user = interaction.options.getUser('joueur');
         const montant = interaction.options.getInteger('montant');
 
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
-
-        var sql = `
-            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
-
-            if (results[0].cash >= montant) {
-
-                var sql = `
-                UPDATE pays SET cash=cash-${montant} WHERE id_joueur='${interaction.member.id}';
-                UPDATE pays SET cash=cash+${montant} WHERE id_joueur='${user.id}'`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-                })
-
-                var sql = `
+        if (montant <= 0) {
+            var reponse = codeBlock('diff', `- Veillez indiquer un montant positive`);
+            await interaction.reply({ content: reponse, ephemeral: true });
+        } else {
+            var sql = `
                 SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+            connection.query(sql, async(err, results) => {
+                if (err) {
+                    throw err;
+                }
 
-                    const embed = {
-                        author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: results[0].drapeau
-                        },
-                        title: `\`Paiement validé !\``,
-                        description: `Vous avez payé un joueur. ` +
-                            `Aucun remboursement ne sera effectué en cas d'erreur de votre part ou d'arnaque. ` +
-                            `Si vous voulez récupérer votre argent en cas d'erreur, veuillez vous adresser au joueur payé. ` +
-                            `Vous avez alors deux moyens de récupérer votre argent, la guerre ou la négociation.`,
-                        fields: [{
-                                name: `\u200B`,
-                                value: `🏧 Argent en réserve : ${results[0].cash}`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `💸 Valeur du paiement : ${montant}`,
-                                inline: true
+                if (results[0].cash >= montant) {
+
+                    var sql = `
+                    UPDATE pays SET cash=cash-${montant} WHERE id_joueur='${interaction.member.id}';
+                    UPDATE pays SET cash=cash+${montant} WHERE id_joueur='${user.id}'`;
+
+                    connection.query(sql, async(err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+                    });
+
+                    connection.query(`SELECT * FROM pays WHERE id_joueur='${user.id}'`, async(err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+
+                        var cité_user = `${results[0].rang} de ${results[0].nom}`;
+                        var drapeau_user = results[0].drapeau;
+
+                        connection.query(`SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`, async(err, results) => {
+                            if (err) {
+                                throw err;
                             }
-                        ],
-                        image: {
-                            url: 'https://media.discordapp.net/attachments/848913340737650698/944327803455832094/paiement.png'
-                        },
-                        color: interaction.member.displayHexColor,
-                        timestamp: new Date(),
-                        footer: {
-                            text: `${results[0].devise}`
-                        },
-                    };
 
-                    await interaction.reply({ embeds: [embed] });
+                            var cité_joueur = `${results[0].rang} de ${results[0].nom}`;
+                            var drapeau_joueur = results[0].drapeau;
 
+                            const paiement = {
+                                author: {
+                                    name: cité_user,
+                                    icon_url: user.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: drapeau_user
+                                },
+                                title: `\`Paiement validé !\``,
+                                description: `Vous avez payé un joueur. ` +
+                                    `Aucun remboursement ne sera effectué en cas d'erreur de votre part ou d'arnaque. ` +
+                                    `Si vous voulez récupérer votre argent en cas d'erreur, veuillez vous adresser au joueur payé. ` +
+                                    `Vous avez alors deux moyens de récupérer votre argent, la guerre ou la négociation.`,
+                                fields: [{
+                                        name: `\u200B`,
+                                        value: codeBlock(`• 💸 Valeur du paiement : ${montant.toLocaleString('en-US')}`) + `\u200B`,
+                                        inline: true
+                                    },
+                                    {
+                                        name: `\u200B`,
+                                        value: codeBlock(`• 🏧 Argent en réserve : ${results[0].cash.toLocaleString('en-US')}`) + `\u200B`,
+                                        inline: true
+                                    }
+                                ],
+                                image: {
+                                    url: 'https://media.discordapp.net/attachments/848913340737650698/944327803455832094/paiement.png'
+                                },
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            };
 
-                })
+                            await interaction.reply({ embeds: [paiement] });
+                            connection.query(`SELECT * FROM pays WHERE id_joueur='${user.id}'`, async(err, results) => {
+                                if (err) {
+                                    throw err;
+                                }
 
-                var sql = `
-                SELECT * FROM pays WHERE id_joueur='${user.id}'`;
+                                const recu = {
+                                    author: {
+                                        name: `${cité_joueur}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: drapeau_joueur
+                                    },
+                                    title: `\`Paiement reçu !\``,
+                                    description: `Vous avez reçu un paiement de <@${interaction.member.id}>`,
+                                    fields: [{
+                                            name: `\u200B`,
+                                            value: codeBlock(`• 💸 Valeur du paiement : ${montant.toLocaleString('en-US')}`) + `\u200B`,
+                                            inline: true
+                                        },
+                                        {
+                                            name: `\u200B`,
+                                            value: codeBlock(`• 🏧 Argent en réserve : ${results[0].cash.toLocaleString('en-US')}`) + `\u200B`,
+                                            inline: true
+                                        }
+                                    ],
+                                    image: {
+                                        url: 'https://media.discordapp.net/attachments/848913340737650698/944327803455832094/paiement.png'
+                                    },
+                                    color: interaction.member.displayHexColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${results[0].devise}`
+                                    },
+                                };
 
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                                user.send({ embeds: [recu] });
+                            })
+                        });
+                    });
 
-                    const paiement = {
-                        author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: results[0].drapeau,
-                        },
-                        title: `\`Paiement validé !\``,
-                        description: `Vous avez reçu un paiement de <@${interaction.member.id}>`,
-                        fields: [{
-                                name: `\u200B`,
-                                value: `💸 Valeur du paiement : ${montant}`,
-                                inline: true
-                            },
-                            {
-                                name: `\u200B`,
-                                value: `🏧 Argent en réserve : ${results[0].cash}`,
-                                inline: true
-                            }
-                        ],
-                        image: {
-                            url: 'https://media.discordapp.net/attachments/848913340737650698/944327803455832094/paiement.png'
-                        },
-                        color: interaction.member.displayHexColor,
-                        timestamp: new Date(),
-                        footer: {
-                            text: `${results[0].devise}`
-                        },
-                    };
+                } else {
+                    var reponse = codeBlock('diff', `- Vous n'avez pas assez d'argent : ${results[0].cash.toLocaleString('en-US')}/${montant.toLocaleString('en-US')}`);
+                    await interaction.reply({ content: reponse, ephemeral: true });
+                }
+            });
 
-                    user.send({ embeds: [paiement] });
-                })
-            } else {
-                var reponse = codeBlock('diff', `- Vous n'avez pas assez d'argent : ${results[0].cash}/${montant}`);
-                await interaction.reply({ content: reponse, ephemeral: true });
-            }
-        })
+        }
     },
 };

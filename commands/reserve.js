@@ -1,5 +1,4 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-var mysql = require('mysql');
+const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -7,14 +6,7 @@ module.exports = {
         .setDescription(`Voir vos reserves en ressource`),
 
     async execute(interaction) {
-
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
+        const { connection } = require('../index.js');
 
         var sql = `
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
@@ -32,13 +24,28 @@ module.exports = {
                     url: `${results[0].drapeau}`
                 },
                 title: `\`Réserve :\``,
-                description: `Biens de consommation : ${results[0].bc}\n` +
-                    `Bois : ${results[0].bois}\n` +
-                    `Brique : ${results[0].brique}\n` +
-                    `Eau : ${results[0].eau}\n` +
-                    `Métaux : ${results[0].metaux}\n` +
-                    `Nourriture : ${results[0].nourriture}\n` +
-                    `Pétrole : ${results[0].petrole}\n`,
+                fields: [{
+                    name: `> \uD83D\uDCBB Biens de consommation : `,
+                    value: codeBlock(`• ${results[0].bc.toLocaleString('en-US')}`) + `\u200B`
+                }, {
+                    name: `> 🪵 Bois : `,
+                    value: codeBlock(`• ${results[0].bois.toLocaleString('en-US')}`) + `\u200B`
+                }, {
+                    name: `> 🧱 Brique : `,
+                    value: codeBlock(`• ${results[0].brique.toLocaleString('en-US')}`) + `\u200B`
+                }, {
+                    name: `> 💧 Eau : `,
+                    value: codeBlock(`• ${results[0].eau.toLocaleString('en-US')}`) + `\u200B`
+                }, {
+                    name: `> 🪨 Métaux : `,
+                    value: codeBlock(`• ${results[0].metaux.toLocaleString('en-US')}`) + `\u200B`
+                }, {
+                    name: `> 🌽 Nourriture : `,
+                    value: codeBlock(`• ${results[0].nourriture.toLocaleString('en-US')}`) + `\u200B`
+                }, {
+                    name: `> 🛢️ Pétrole : `,
+                    value: codeBlock(`• ${results[0].petrole.toLocaleString('en-US')}`) + `\u200B`
+                }, ],
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
@@ -47,6 +54,6 @@ module.exports = {
             };
 
             await interaction.reply({ embeds: [embed] })
-        })
+        });
     }
 }

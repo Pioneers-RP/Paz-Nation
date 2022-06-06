@@ -1,10 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { codeBlock } = require('@discordjs/builders');
+const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
-var mysql = require('mysql');
 const ms = require('ms');
-const { globalBox } = require('global-box');
-const box = globalBox();
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -27,14 +23,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
+        const { connection } = require('../index.js');
 
         var sql = `
         SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
@@ -67,17 +56,19 @@ module.exports = {
                         title: `\`Vendre au marché international :\``,
                         fields: [{
                                 name: `Ressource :`,
-                                value: `${ressource}\n` +
-                                    `Prix moyen : ${prix_moyen}`
+                                value: codeBlock(
+                                    `• ${ressource}\n` +
+                                    `• Prix moyen : ${prix_moyen}`) + `\u200B`
                             },
                             {
                                 name: `Quantité :`,
-                                value: `${quantité}`
+                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
                             },
                             {
                                 name: `Prix :`,
-                                value: `A l'unité (-30% du prix moyen) : ${prix_vente.toFixed(2)}\n` +
-                                    `Au total : ${prix.toFixed(0)}`
+                                value: codeBlock(
+                                    `• A l'unité (-30% du prix moyen) : ${prix_vente.toFixed(2)}\n` +
+                                    `• Au total : ${(prix.toFixed(0)).toLocaleString('en-US')}`) + `\u200B`
                             }
                         ],
                         color: interaction.member.displayHexColor,
@@ -109,69 +100,69 @@ module.exports = {
                 switch (ressource) {
                     case 'Biens de consommation':
                         if (quantité > results[0].bc) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de biens de consommation : ${results[0].bc}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de biens de consommation : ${results[0].bc.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('bc_prix_moyen'))
+                            offre(jsonPrix.bc)
                             break;
                         }
                     case 'Bois':
                         if (quantité > results[0].bois) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de bois : ${results[0].bois}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de bois : ${results[0].bois.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('bois_prix_moyen'))
+                            offre(jsonPrix.bois)
                             break;
                         }
                     case 'Brique':
                         if (quantité > results[0].brique) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de brique : ${results[0].brique}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de brique : ${results[0].brique.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('brique_prix_moyen'))
+                            offre(jsonPrix.brique)
                             break;
                         }
                     case 'Eau':
                         if (quantité > results[0].eau) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez d'eau : ${results[0].eau}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez d'eau : ${results[0].eau.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('eau_prix_moyen'))
+                            offre(jsonPrix.eau)
                             break;
                         }
                     case 'Metaux':
                         if (quantité > results[0].metaux) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de métaux : ${results[0].metaux}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de métaux : ${results[0].metaux.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('metaux_prix_moyen'))
+                            offre(jsonPrix.metaux)
                             break;
                         }
                     case 'Nourriture':
                         if (quantité > results[0].nourriture) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de nourriture : ${results[0].nourriture}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de nourriture : ${results[0].nourriture.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('nourriture_prix_moyen'))
+                            offre(jsonPrix.nourriture)
                             break;
                         }
                     case 'Petrole':
                         if (quantité > results[0].petrole) {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de pétrole : ${results[0].petrole}/${quantité}`);
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez de pétrole : ${results[0].petrole.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                            offre(box.get('petrole_prix_moyen'))
+                            offre(jsonPrix.petrole)
                             break;
                         }
                 }
             }
-        })
+        });
     },
 };

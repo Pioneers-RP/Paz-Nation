@@ -1,5 +1,4 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-var mysql = require('mysql');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
 const deviseCommandCooldown = new CommandCooldown('devise', ms('7d'));
@@ -10,17 +9,29 @@ module.exports = {
         .setDescription(`Choisissez une devise qui sera affiché sous tous vos menus`)
         .addStringOption(option =>
             option.setName('définir')
-            .setDescription(`Votre devise`)
+            .setDescription(`Votre devise (Maximum 60 caractères)`)
+            .setRequired(true))
+        .addStringOption(option =>
+            option.setName('discours')
+            .setDescription(`Vous devez faire un discours pour justifier votre acte (Minimum 115 caractères)`)
             .setRequired(true)),
 
     async execute(interaction) {
+        const { connection } = require('../index.js');
 
         const devise = interaction.options.getString('définir');
+        const discours = interaction.options.getString('discours');
 
         const userCooldowned = await deviseCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             var reponse = codeBlock('diff', `- Vous avez déjà changé votre devise récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
+            await interaction.reply({ content: reponse, ephemeral: true });
+        } else if (discours.length <= 115) {
+            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 115 caractères`);
+            await interaction.reply({ content: reponse, ephemeral: true });
+        } else if (discours.length >= 2000) {
+            var reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (devise.length <= 60) {
@@ -30,14 +41,6 @@ module.exports = {
                 for (var i = 0; i < devise.length; i++)
                     if (!(devise[i] == '\n' || devise[i] == '\r'))
                         newdevise += devise[i];
-
-                const connection = new mysql.createConnection({
-                    host: 'eu01-sql.pebblehost.com',
-                    user: 'customer_260507_paznation',
-                    password: 'lidmGbk8edPkKXv1#ZO',
-                    database: 'customer_260507_paznation',
-                    multipleStatements: true
-                });
 
                 var sql = `
                 UPDATE pays SET devise="${newdevise}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
@@ -65,7 +68,11 @@ module.exports = {
                             url: results[0].drapeau,
                         },
                         title: `\`Une nouvelle devise a été adopté :\``,
-                        description: `> *${newdevise}*`,
+                        description: discours,
+                        fields: [{
+                            name: `> Nouvelle devise`,
+                            value: `*${newdevise}*`
+                        }],
                         timestamp: new Date(),
                         color: interaction.member.displayHexColor
                     };
@@ -74,12 +81,12 @@ module.exports = {
 
                     salon_annonce.send({ embeds: [annonce] });
                     var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
+                    await interaction.reply({ content: reponse });
 
                     await deviseCommandCooldown.addUser(interaction.member.id);
-                    await interaction.reply({ content: reponse });
                 });
             } else {
-                var reponse = codeBlock('diff', `- Vous avez dépassé la limite de caratères: 60 max`);
+                var reponse = codeBlock('diff', `- Vous avez dépassé la limite de caratères : 60 max`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             }
         }

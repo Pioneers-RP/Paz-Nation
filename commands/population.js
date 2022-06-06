@@ -1,58 +1,67 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-var mysql = require('mysql');
+const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('population')
-        .setDescription(`Menu de votre population`),
+        .setDescription(`Menu de votre population`)
+        .addUserOption(user =>
+            user.setName('joueur')
+            .setDescription(`Le joueur dont vous voulez voir l'économie`)),
 
     async execute(interaction) {
+        const { connection } = require('../index.js');
+        var joueur = interaction.options.getUser('joueur');
 
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        });
+        if (!joueur) {
+            var joueur = interaction.member;
+        };
 
-        var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        function population(joueur) {
+            var sql = `
+            SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
 
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+            connection.query(sql, async(err, results) => {
+                if (err) {
+                    throw err;
+                }
 
-            densité = results[0].population / results[0].T_total;
-            densité = densité.toFixed(0);
+                if (!results[0]) {
+                    var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
+                    await interaction.reply({ content: reponse, ephemeral: true });
+                } else {
+                    densité = results[0].population / results[0].T_total;
+                    densité = densité.toFixed(0);
 
-            const embed = {
-                author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
-                    icon_url: interaction.member.displayAvatarURL()
-                },
-                thumbnail: {
-                    url: `${results[0].drapeau}`
-                },
-                title: `\`Vue globale de la population\``,
-                fields: [{
-                        name: `👪 **Population **`,
-                        value: `${results[0].population} habitants\n\u200B`
-                    },
-                    {
-                        name: ` **Densité**`,
-                        value: `${densité} habitants/km²\n\u200B`
-                    }
-                ],
-                color: interaction.member.displayHexColor,
-                timestamp: new Date(),
-                footer: {
-                    text: `${results[0].devise}`
-                },
-            };
+                    const embed = {
+                        author: {
+                            name: `${results[0].rang} de ${results[0].nom}`,
+                            icon_url: joueur.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: `${results[0].drapeau}`
+                        },
+                        title: `\`Vue globale de la population\``,
+                        fields: [{
+                                name: `> 👪 Population`,
+                                value: codeBlock(`• ${results[0].population.toLocaleString('en-US')} habitants`) + `\u200B`
+                            },
+                            {
+                                name: `> Densité`,
+                                value: codeBlock(`• ${densité.toLocaleString('en-US')} habitants/km²`) + `\u200B`
+                            }
+                        ],
+                        color: joueur.displayHexColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${results[0].devise}`
+                        },
+                    };
 
-            await interaction.reply({ embeds: [embed] });
-        })
+                    await interaction.reply({ embeds: [embed] });
+                };
+            });
+        };
+
+        population(joueur);
     },
 };

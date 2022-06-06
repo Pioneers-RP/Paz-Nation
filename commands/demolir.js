@@ -1,6 +1,5 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-var mysql = require('mysql');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -11,6 +10,7 @@ module.exports = {
             .setDescription(`Le type de bâtiment que vous voulez construire`)
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
+            .addChoice(`Centrale électrique`, 'Centrale_elec')
             .addChoice(`Mine`, 'Mine')
             .addChoice(`Pompe à eau`, 'Pompe_a_eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
@@ -23,14 +23,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-
-        const connection = new mysql.createConnection({
-            host: 'eu01-sql.pebblehost.com',
-            user: 'customer_260507_paznation',
-            password: 'lidmGbk8edPkKXv1#ZO',
-            database: 'customer_260507_paznation',
-            multipleStatements: true
-        })
+        const { connection } = require('../index.js');
 
         var sql = `
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
@@ -46,6 +39,8 @@ module.exports = {
                 batiment = 'Pompe à eau'
             } else if (batiment == 'Usine_civile') {
                 batiment = 'Usine civile'
+            } else if (batiment == 'Centrale_elec') {
+                batiment = 'Centrale électrique'
             }
 
             var demo_batiment = true
@@ -80,7 +75,7 @@ module.exports = {
 
                 if (nombre > results[0].champ) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].champ}/${nombre} champs`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].champ.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} champs`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
                 var demo_T_libre = process.env.SURFACE_CHAMP * nombre;
@@ -90,6 +85,23 @@ module.exports = {
                 var avant = results[0].champ;
                 var après = results[0].champ - nombre;
 
+            } else if (batiment == 'Centrale électrique') {
+                var need_bois = true;
+                var need_brique = true;
+                var need_metaux = true;
+
+                if (nombre > results[0].centrale_elec) {
+                    var demo_batiment = false
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].centrale_elec.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} centrales électrique`);
+                    await interaction.reply({ content: reponse, ephemeral: true });
+                }
+                var demo_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
+                var demo_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre * process.env.RETOUR_POURCENTAGE;
+                var demo_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE;
+                var demo_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
+                var avant = results[0].centrale_elec;
+                var après = results[0].centrale_elec - nombre;
+
             } else if (batiment == 'Mine') {
                 var need_bois = true;
                 var need_brique = true;
@@ -97,7 +109,7 @@ module.exports = {
 
                 if (nombre > results[0].mine) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].mine}/${nombre} mines`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].mine.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} mines`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
                 var demo_T_libre = process.env.SURFACE_MINE * nombre;
@@ -114,7 +126,7 @@ module.exports = {
 
                 if (nombre > results[0].pompe_a_eau) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].pompe_a_eau}/${nombre} pompes à eau`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].pompe_a_eau.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} pompes à eau`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
                 var demo_T_libre = process.env.SURFACE_POMPE_A_EAU * nombre;
@@ -131,7 +143,7 @@ module.exports = {
 
                 if (nombre > results[0].pumpjack) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].pumpjack}/${nombre} pumpjacks`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].pumpjack.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} pumpjacks`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
                 var demo_T_libre = process.env.SURFACE_PUMPJACK * nombre;
@@ -148,7 +160,7 @@ module.exports = {
 
                 if (nombre > results[0].scierie) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].scierie}/${nombre} scieries`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].scierie.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} scieries`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
                 var demo_T_libre = process.env.SURFACE_SCIERIE * nombre;
@@ -165,7 +177,7 @@ module.exports = {
 
                 if (nombre > results[0].usine_civile) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].usine_civile}/${nombre} usines civile`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].usine_civile.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} usines civile`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
                 var demo_T_libre = process.env.SURFACE_USINE_CIVILE * nombre;
@@ -182,29 +194,28 @@ module.exports = {
 
                 fields.push({
                     name: `> ${batiment} :`,
-                    value: `Avant : ${avant}\n` +
-                        `Après : ${après}`
+                    value: codeBlock(`• Avant : ${avant.toLocaleString('en-US')}\n• Après : ${après.toLocaleString('en-US')}`) + `\u200B`
                 })
                 fields.push({
                     name: `> Terrain libre :`,
-                    value: `Terrain : +${demo_T_libre}\n`
+                    value: codeBlock(`• Terrain : +${demo_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
                 })
 
                 switch (true) {
                     case need_bois:
                         fields.push({
                             name: `> Bois récupéré :`,
-                            value: `Bois : +${demo_bois}\n`
+                            value: codeBlock(`• Bois : +${demo_bois.toLocaleString('en-US')}`) + `\u200B`
                         })
                     case need_brique:
                         fields.push({
                             name: `> Brique récupéré :`,
-                            value: `Brique : +${demo_brique}\n`
+                            value: codeBlock(`• Brique : +${demo_brique.toLocaleString('en-US')}`) + `\u200B`
                         })
                     case need_metaux:
                         fields.push({
                             name: `> Métaux récupéré :`,
-                            value: `Métaux : +${demo_metaux}\n`
+                            value: codeBlock(`• Métaux : +${demo_metaux.toLocaleString('en-US')}`) + `\u200B`
                         })
                 }
 
@@ -232,6 +243,13 @@ module.exports = {
                         .setEmoji(`🧨`)
                         .setCustomId(`demolition-${interaction.user.id}`)
                         .setStyle('SUCCESS'),
+                    )
+                    .addComponents(
+                        new MessageButton()
+                        .setLabel(`Refuser`)
+                        .setEmoji(`✋`)
+                        .setCustomId(`refuser-${interaction.user.id}`)
+                        .setStyle('DANGER'),
                     )
 
                 await interaction.reply({ embeds: [embed], components: [row] });

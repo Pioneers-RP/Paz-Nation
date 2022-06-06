@@ -1,41 +1,47 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-var mysql = require('mysql');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
-const gouvernementCommandCooldown = new CommandCooldown('gouvernement', ms('7d'));
+const régimeCommandCooldown = new CommandCooldown('régime', ms('7d'));
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('gouvernement')
-        .setDescription(`Choisissez votre forme de gouvernement`)
+        .setName('regime')
+        .setDescription(`Choisissez votre régime politique`)
         .addStringOption(gouvernement =>
             gouvernement.setName('forme')
             .setDescription(`Votre forme de gouvernement`)
+            .addChoice(`Duché`, 'Duché')
             .addChoice(`Emirat`, 'Emirat')
             .addChoice(`Principauté`, 'Principauté')
             .addChoice(`République`, 'République')
             .addChoice(`Royaume`, 'Royaume')
+            .setRequired(true))
+        .addStringOption(option =>
+            option.setName('discours')
+            .setDescription(`Vous devez faire un discours pour justifier votre acte (Minimum 115 caractères)`)
             .setRequired(true)),
+
     async execute(interaction) {
+        const { connection } = require('../index.js');
 
-        const gouvernement = interaction.options.getString('forme');
+        const régime = interaction.options.getString('forme');
+        const discours = interaction.options.getString('discours');
 
-        const userCooldowned = await gouvernementCommandCooldown.getUser(interaction.member.id);
+        const userCooldowned = await régimeCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             var reponse = codeBlock('diff', `- Vous avez déjà changé votre gouvernement récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir le changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
+        } else if (discours.length <= 115) {
+            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 115 caractères`);
+            await interaction.reply({ content: reponse, ephemeral: true });
+        } else if (discours.length >= 2000) {
+            var reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
+            await interaction.reply({ content: reponse, ephemeral: true });
         } else {
-            const connection = new mysql.createConnection({
-                host: 'eu01-sql.pebblehost.com',
-                user: 'customer_260507_paznation',
-                password: 'lidmGbk8edPkKXv1#ZO',
-                database: 'customer_260507_paznation',
-                multipleStatements: true
-            });
 
             var sql = `
-            UPDATE pays SET gouv_forme="${gouvernement}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
+            UPDATE pays SET regime="${régime}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
 
             connection.query(sql, async(err, results) => {
                 if (err) {
@@ -60,7 +66,11 @@ module.exports = {
                         url: `${results[0].drapeau}`,
                     },
                     title: `Une nouveau gouvernement a été mis en place :`,
-                    description: `${gouvernement}`,
+                    description: discours,
+                    fields: [{
+                        name: `> Nouvelle devise`,
+                        value: `*${régime}*`
+                    }],
                     color: interaction.member.displayHexColor,
                     timestamp: new Date(),
                     footer: {
@@ -72,9 +82,10 @@ module.exports = {
                 salon_annonce.send({ embeds: [annonce] });
                 var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
 
+                await régimeCommandCooldown.addUser(interaction.member.id);
+
                 await interaction.reply({ content: reponse });
             });
-
         }
     },
 };

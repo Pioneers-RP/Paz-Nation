@@ -10,9 +10,11 @@ const connection = new mysql.createConnection({
     host: 'eu01-sql.pebblehost.com',
     user: 'customer_260507_paznation',
     password: 'lidmGbk8edPkKXv1#ZO',
-    database: 'customer_260507_paznation'
+    database: 'customer_260507_paznation',
+    multipleStatements: true
 })
 
+module.exports = { connection };
 connection.connect(function(err) {
     if (err) {
         console.error('Il y a eu une erreur en se connectant à la base de données ' + err.stack);
@@ -20,10 +22,6 @@ connection.connect(function(err) {
     }
 
     console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
-});
-
-connection.end(function(err) {
-    // The connection is terminated now
 });
 
 const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
@@ -60,20 +58,6 @@ client.on('interactionCreate', async interaction => {
         await interaction.reply({ content: 'Il y a eu une erreur !', ephemeral: true });
     }
 });
-
-box.set('bc_prix_moyen', 2.1);
-
-box.set('bois_prix_moyen', 2.2);
-
-box.set('brique_prix_moyen', 2.3);
-
-box.set('eau_prix_moyen', 2.4);
-
-box.set('metaux_prix_moyen', 2.6);
-
-box.set('nourriture_prix_moyen', 2.7);
-
-box.set('petrole_prix_moyen', 2.8);
 
 process.on('exit', code => {
     console.log(`Le bot a crash à cause du code: ${code} !`)
