@@ -7,15 +7,47 @@ const dotenv = require('dotenv');
 const { readFileSync } = require('fs');
 var Chance = require('chance');
 var chance = new Chance();
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
     name: 'interactionCreate',
     execute(interaction) {
 
         if (interaction.isCommand()) {
-            console.log(`${interaction.user.tag} a utilisé une intéraction dans #${interaction.channel.name}.`);
+
+            var log = {
+                author: {
+                    name: interaction.member.displayName,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                title: `\`Commande\``,
+                description: `/${interaction.commandName} ${JSON.stringify(interaction.options.data)}`,
+                timestamp: new Date(),
+                footer: {
+                    text: '#' + interaction.channel.name
+                },
+            };
+
+            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+            salon_logs.send({ embeds: [log] });
+
         } else if (interaction.isButton()) {
-            console.log(`${interaction.user.tag} a utilisé un bouton dans #${interaction.channel.name}.`);
+
+            var log = {
+                author: {
+                    name: interaction.member.displayName,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                title: `\`Bouton\``,
+                description: `${interaction.customId}`,
+                timestamp: new Date(),
+                footer: {
+                    text: '#' + interaction.channel.name
+                },
+            };
+
+            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+            salon_logs.send({ embeds: [log] });
 
             //#region [Réglement]
             if (interaction.customId.includes('réglement') == true) {
@@ -726,7 +758,7 @@ module.exports = {
 
                             interaction.message.edit({ embeds: [embed], components: [] })
 
-                        } else if (batiment == 'Champ') {
+                        } else if (batiment == 'Centrale électrique') {
 
                             var demo_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
                             var demo_bois = Math.round(process.env.CONST_CENTRALE_ELEC_BOIS * nombre * process.env.RETOUR_POURCENTAGE);
@@ -1406,11 +1438,11 @@ module.exports = {
 
                     var espace2 = fields[2].value.indexOf("Au");
                     var prix_u = fields[2].value.slice(39, espace2 - 3);
-                    var prix = (prix_u * quantité);
+                    var prix = Math.round(prix_u * quantité);
                     //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
 
                     var sql5 = `
-                    SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
+                    SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
 
                     connection.query(sql5, async(err, results) => {
                         if (err) {
@@ -1419,244 +1451,57 @@ module.exports = {
 
                         switch (ressource) {
                             case 'Biens de consommation':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET bc=bc-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                });
-
+                                var res = `bc`;
                                 break;
-
                             case 'Bois':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET bois=bois-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                var res = `bois`;
                                 break;
-
                             case 'Brique':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET brique=brique-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                var res = `brique`;
                                 break;
-
                             case 'Eau':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET eau=eau-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                var res = `eau`;
                                 break;
-
                             case 'Metaux':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET metaux=metaux-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                var res = `metaux`;
                                 break;
-
                             case 'Nourriture':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET nourriture=nourriture-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                var res = `nourriture`;
                                 break;
-
                             case 'Petrole':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez vendus au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash+${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET petrole=petrole-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                var res = `petrole`;
                                 break;
                         }
+                        var embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: results[0].drapeau
+                            },
+                            title: `\`Vous avez vendus au marché rapide :\``,
+                            fields: interaction.message.embeds[0].fields,
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${results[0].devise}`
+                            },
+                        };
+
+                        await interaction.deferUpdate()
+                        interaction.message.edit({ embeds: [embed], components: [] });
+
+                        var sql = `
+                        INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
+                        UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
+                        UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}"`;
+
+                        connection.query(sql, async(err, results) => {
+                            if (err) {
+                                throw err;
+                            }
+                        });
                     });
 
                 } else {
@@ -1682,261 +1527,75 @@ module.exports = {
 
                     var espace2 = fields[2].value.indexOf("Au");
                     var prix_u = fields[2].value.slice(39, espace2 - 3);
-                    var prix = (prix_u * parseInt(fields[1].value.slice(6, fields[1].value.length - 4)));
+                    var prix = Math.round(prix_u * quantité);
                     //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
 
-                    var sql5 = `
+                    var sql = `
                     SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
 
-                    connection.query(sql5, async(err, results) => {
+                    connection.query(sql, async(err, results) => {
                         if (err) {
                             throw err;
                         }
 
-                        switch (ressource) {
-                            case 'Biens de consommation':
+                        if (prix > results[0].cash) {
+                            var reponse = codeBlock('diff', `- Vous n'avez pas assez d\'argent : ${results[0].cash.toLocaleString('en-US')}/${prix.toLocaleString('en-US')}`);
+                            await interaction.reply({ content: reponse, ephemeral: true });
+                        } else {
+                            switch (ressource) {
+                                case 'Biens de consommation':
+                                    var res = `bc`;
+                                    break;
+                                case 'Bois':
+                                    var res = `bois`;
+                                    break;
+                                case 'Brique':
+                                    var res = `brique`;
+                                    break;
+                                case 'Eau':
+                                    var res = `eau`;
+                                    break;
+                                case 'Metaux':
+                                    var res = `metaux`;
+                                    break;
+                                case 'Nourriture':
+                                    var res = `nourriture`;
+                                    break;
+                                case 'Petrole':
+                                    var res = `petrole`;
+                                    break;
+                            }
 
-                                if (prix.toFixed(0) > results[0].cash) {
-                                    var reponse = codeBlock('diff', `- Vous n'avez pas assez d\'argent : ${results[0].cash.toLocaleString('en-US')}/${prix.toFixed(0).toLocaleString('en-US')}`);
-                                    await interaction.reply({ content: reponse, ephemeral: true });
-                                } else {
+                            var embed = {
+                                author: {
+                                    name: `${results[0].rang} de ${results[0].nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: results[0].drapeau
+                                },
+                                title: `\`Vous avez acheté au marché rapide :\``,
+                                fields: interaction.message.embeds[0].fields,
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            };
 
-                                    var sql5 = `
-                                    INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                    UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                    UPDATE pays SET bc=bc+${quantité} WHERE id_joueur="${id_joueur}"`;
+                            await interaction.deferUpdate()
+                            interaction.message.edit({ embeds: [embed], components: [] });
 
-                                    connection.query(sql5, async(err, results) => {
-                                        if (err) {
-                                            throw err;
-                                        }
-                                    })
+                            var sql = `
+                            INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
+                            UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${id_joueur}";
+                            UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${id_joueur}"`;
 
-                                    var embed = {
-                                        author: {
-                                            name: `${results[0].rang} de ${results[0].nom}`,
-                                            icon_url: interaction.member.displayAvatarURL()
-                                        },
-                                        thumbnail: {
-                                            url: results[0].drapeau
-                                        },
-                                        title: `\`Vous avez acheté au marché international :\``,
-                                        fields: interaction.message.embeds[0].fields,
-                                        color: interaction.member.displayHexColor,
-                                        timestamp: new Date(),
-                                        footer: {
-                                            text: `${results[0].devise}`
-                                        },
-                                    };
-
-                                    await interaction.deferUpdate()
-                                    interaction.message.edit({ embeds: [embed], components: [] });
+                            connection.query(sql, async(err, results) => {
+                                if (err) {
+                                    throw err;
                                 }
-                                break;
-
-                            case 'Bois':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez acheté au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET bois=bois+${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
-                                break;
-
-                            case 'Brique':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez acheté au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET brique=brique+${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
-                                break;
-
-                            case 'Eau':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez acheté au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET eau=eau+${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
-                                break;
-
-                            case 'Metaux':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez acheté au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET metaux=metaux+${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
-                                break;
-
-                            case 'Nourriture':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez acheté au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET nourriture=nourriture+${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
-                                break;
-
-                            case 'Petrole':
-
-                                var embed = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau
-                                    },
-                                    title: `\`Vous avez acheté au marché international :\``,
-                                    fields: interaction.message.embeds[0].fields,
-                                    color: interaction.member.displayHexColor,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                };
-
-                                await interaction.deferUpdate()
-                                interaction.message.edit({ embeds: [embed], components: [] });
-
-                                var sql5 = `
-                                INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix.toFixed(0)}', prix_u='${prix_u}';
-                                UPDATE pays SET cash=cash-${prix.toFixed(0)} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET petrole=petrole+${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                                connection.query(sql5, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
-                                break;
+                            })
                         }
                     });
 
@@ -1958,8 +1617,6 @@ module.exports = {
 
         } else if (interaction.isSelectMenu()) {
 
-            console.log(`${interaction.user.tag} a utilisé un menu dans #${interaction.channel.name}.`);
-
             if (interaction.customId == 'usine') {
 
                 var sql = `
@@ -1969,6 +1626,22 @@ module.exports = {
                     if (err) {
                         throw err;
                     }
+
+                    var log = {
+                        author: {
+                            name: interaction.member.displayName,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        title: `\`Select Menu\``,
+                        description: `${interaction.customId} ${JSON.stringify(interaction.values)}`,
+                        timestamp: new Date(),
+                        footer: {
+                            text: '#' + interaction.channel.name
+                        },
+                    };
+
+                    const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+                    salon_logs.send({ embeds: [log] });
 
 
                     const jsonObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
@@ -2410,7 +2083,54 @@ module.exports = {
                             //endregion
                     }
                 });
-            };
+
+                //#region [Roles]
+            } else if (interaction.customId == 'roles') {
+
+                if (interaction.values.indexOf('annonce') != '-1') {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "📢 » Annonce");
+                    interaction.member.roles.add(role)
+                } else {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "📢 » Annonce");
+                    interaction.member.roles.remove(role)
+                }
+
+                if (interaction.values.indexOf('concours') != '-1') {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🏆 » Compétition");
+                    interaction.member.roles.add(role)
+                } else {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🏆 » Compétition");
+                    interaction.member.roles.remove(role)
+                }
+
+                if (interaction.values.indexOf('giveaway') != '-1') {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🎁 » Giveaway");
+                    interaction.member.roles.add(role)
+                } else {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🎁 » Giveaway");
+                    interaction.member.roles.remove(role)
+                }
+
+                if (interaction.values.indexOf('animation') != '-1') {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🧩 » Animation");
+                    interaction.member.roles.add(role)
+                } else {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🧩 » Animation");
+                    interaction.member.roles.remove(role)
+                }
+
+                if (interaction.values.indexOf('mise_a_jour') != '-1') {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🎮 » Mise à jour");
+                    interaction.member.roles.add(role)
+                } else {
+                    let role = interaction.guild.roles.cache.find(r => r.name === "🎮 » Mise à jour");
+                    interaction.member.roles.remove(role)
+                }
+
+                interaction.reply('👍');
+                wait(15000)
+                interaction.deleteReply();
+            } //endregion
         };
     }
 };

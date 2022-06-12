@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-const { MessageActionRow, MessageButton } = require('discord.js');
+const { MessageActionRow, MessageButton, MessageSelectMenu } = require('discord.js');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -37,6 +37,14 @@ module.exports = {
         .addSubcommand(subcommand =>
             subcommand
             .setName('bouton')
+            .setDescription('NE PAS UTILISER SVP'))
+        .addSubcommand(subcommand =>
+            subcommand
+            .setName('role')
+            .setDescription('NE PAS UTILISER SVP'))
+        .addSubcommand(subcommand =>
+            subcommand
+            .setName('lock')
             .setDescription('NE PAS UTILISER SVP')),
 
     async execute(interaction) {
@@ -124,7 +132,32 @@ module.exports = {
                 break;
             case 'bouton':
 
-                const embed = {
+                var reglement1 = {
+                    author: {
+                        name: `Règlement de 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
+                    },
+                    title: `\`I/ Règles générales \``,
+                    description: codeBlock(`- Respectez les TOS (Termes et conditions) de Discord.\n\n- Votre pseudo, votre description (“À propos”) et votre avatar ne doivent pas contenir de message à caractère diffamatoire, haineux, pornographique, et illégaux.`),
+                };
+                var reglement2 = {
+                    title: `\`II/ Discussions et Langage\``,
+                    description: codeBlock(`- Évitez le langage malpoli et vulgaire. Vous avez le droit de dire merde, vous pouvez être familier, mais un langage en majorité correct et poli est préférable.\n\n` +
+                        `Remarque : Comme partout, ce serveur est composé de personnes majeures et d'autres mineures.`),
+                };
+                var reglement3 = {
+                    title: `\`III/ Utilisation du serveur, des salons et des bots\``,
+                    description: codeBlock(`- Chaque salon textuel a une fonction particulière. Elles sont précisées dans le nom ou la description (affichée en haut de la fenêtre quand vous êtes dans le salon, cliquez dessus pour l’afficher en entier). Merci de les respecter.\n\n` +
+                        `- Publicité : La publicité pour un site, un réseau social ou un serveur est interdite. Si vous souhaitez partager votre contenu ou votre serveur Discord, adressez vous à un membre du Staff.\n\n` +
+                        `- NSFW : Il n’y a pas de salons NSFW, le contenu “NSFW” (Not Safe For Work) est tout simplement interdit.\n\n` +
+                        `- L’abus des fonctionnalités des bots, l’utilisation de failles et de bugs sont interdits. Si vous en trouvez, signalez-les.`),
+                };
+                var reglement4 = {
+                    title: `\`IV/ Paz Nation le jeu\``,
+                    description: codeBlock(` - Paz Nation est un Semi-Rp géopolitique, des salons sont dédiés pour le rp et d'autre non, merci donc de bien vouloir respecter.\n\n` +
+                        `- L'utilisation de second compte est strictement interdit.`),
+                };
+
+                var embed = {
                     title: `\`Accepter le réglement\``,
                     description: `En cliquant sur le bouton ci-dessous, vous acceptez le réglement`,
                     color: '#3BA55C',
@@ -134,7 +167,7 @@ module.exports = {
                     },
                 };
 
-                const row = new MessageActionRow()
+                var row = new MessageActionRow()
                     .addComponents(
                         new MessageButton()
                         .setLabel(`Rejoindre le serveur`)
@@ -143,9 +176,87 @@ module.exports = {
                         .setStyle('SUCCESS'),
                     )
 
-                const salon_reglement = interaction.client.channels.cache.get('942796849222398039');
+                var salon_reglement = interaction.client.channels.cache.get('829292098921693194');
+                salon_reglement.send({ embeds: [reglement1] })
+                salon_reglement.send({ embeds: [reglement2] })
+                salon_reglement.send({ embeds: [reglement3] })
+                salon_reglement.send({ embeds: [reglement4] })
                 salon_reglement.send({ embeds: [embed], components: [row] })
                 await interaction.reply({ content: `Bouton envoyé` });
+                break;
+
+            case 'role':
+
+                var embed = {
+                    title: `\`👥 » Rôles Notifications\``,
+                    description: `<@&845691866116915250> Pour être averti(e) des annonces\n` +
+                        `<@&845692674111045673> Pour être averti(e) des concours\n` +
+                        `<@&845691209027813417> Pour être averti(e) des giveaways\n` +
+                        `<@&845691285678587935> Pour être averti(e) des animations\n` +
+                        `<@&845691874111127552> Pour être averti(e) des mises à jour`,
+                    color: '#3BA55C',
+                    timestamp: new Date(),
+                    footer: {
+                        text: `Bienvenue sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑 V3`
+                    },
+                };
+
+                var row = new MessageActionRow()
+                    .addComponents(
+                        new MessageSelectMenu()
+                        .setCustomId('roles')
+                        .setMaxValues(5)
+                        .setPlaceholder(`Vos rôles notifications`)
+                        .addOptions([{
+                                label: `Annonce`,
+                                emoji: `📢`,
+                                description: `Pour être averti(e) d'une annonce`,
+                                value: 'annonce',
+                            },
+                            {
+                                label: `Concours`,
+                                emoji: `🏆`,
+                                description: `Pour être averti(e) d'un concours`,
+                                value: 'concours',
+                            },
+                            {
+                                label: `Giveaway`,
+                                emoji: `🎁`,
+                                description: `Pour être averti(e) d'un giveaway`,
+                                value: 'giveaway',
+                            },
+                            {
+                                label: `Animation`,
+                                emoji: `🧩`,
+                                description: `Pour être averti(e) des animations`,
+                                value: 'animation',
+                            },
+                            {
+                                label: `Mise à jour`,
+                                emoji: `🎮`,
+                                description: `Pour être averti(e) d'une mise à jour`,
+                                value: 'mise_a_jour',
+                            }
+                        ]),
+                    );
+
+                var salon_roles = interaction.client.channels.cache.get('845657854266441768');
+                salon_roles.send({ embeds: [embed], components: [row] })
+                await interaction.reply({ content: `Roles envoyés` });
+                break;
+            case 'lock':
+                var channel = interaction.channel;
+                if (channel.name.includes("🔒") == true) {
+                    var channelName = channel.name.slice(2);
+                    channel.setName(channelName);
+                    channel.permissionOverwrites.edit('875056356820918292', { SEND_MESSAGES: true })
+                    await interaction.reply({ content: `Channel lock` });
+                } else {
+                    var channelName = channel.name;
+                    channel.setName("🔒-" + channelName);
+                    channel.permissionOverwrites.edit('875056356820918292', { SEND_MESSAGES: false })
+                    await interaction.reply({ content: `Channel unlock` });
+                }
         }
     },
 };

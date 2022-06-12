@@ -7,6 +7,8 @@
         "@discordjs/rest": "0.3.0",
         "@sapphire/framework": "2.4.0",
         "@stdlib/assert-is-uri": "0.0.8",
+        "chalk": "^4.1.2",
+        "chalk-pipe": "^4.0.0",
         "chance": "1.1.8",
         "discord-api-types": "0.26.1",
         "discord-command-cooldown": "1.0.8",

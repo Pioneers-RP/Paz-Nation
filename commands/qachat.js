@@ -1,8 +1,6 @@
-const { SlashCommandBuilder } = require('@discordjs/builders');
-const { codeBlock } = require('@discordjs/builders');
+const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
-const { globalBox } = require('global-box');
-const box = globalBox();
+const { readFileSync } = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -37,6 +35,7 @@ module.exports = {
 
             const ressource = interaction.options.getString('ressource');
             var quantité = interaction.options.getInteger('quantité');
+            const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
             if (quantité < 0) {
                 var reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
@@ -44,8 +43,8 @@ module.exports = {
             } else {
                 function offre(prix_moyen) {
 
-                    var prix_achat = prix_moyen * 1.3;
-                    var prix = quantité * prix_achat;
+                    var prix_achat = parseFloat((prix_moyen * 1.3).toFixed(2));
+                    var prix = Math.round(quantité * prix_achat);
 
                     const embed = {
                         author: {
@@ -55,7 +54,7 @@ module.exports = {
                         thumbnail: {
                             url: results[0].drapeau
                         },
-                        title: `\`Acheter au marché international :\``,
+                        title: `\`Acheter au marché rapide :\``,
                         fields: [{
                                 name: `Ressource :`,
                                 value: codeBlock(
@@ -69,8 +68,8 @@ module.exports = {
                             {
                                 name: `Prix :`,
                                 value: codeBlock(
-                                    `• A l'unité (+30% du prix moyen) : ${prix_achat.toFixed(2)}\n` +
-                                    `• Au total : ${prix.toFixed(0).toLocaleString('en-US')}`) + `\u200B`
+                                    `• A l'unité (+30% du prix moyen) : ${prix_achat}\n` +
+                                    `• Au total : ${prix.toLocaleString('en-US')}`) + `\u200B`
                             },
                             {
                                 name: `Votre argent :`,
@@ -105,25 +104,25 @@ module.exports = {
 
                 switch (ressource) {
                     case 'Biens de consommation':
-                        offre(box.get('bc_prix_moyen'))
+                        offre(jsonPrix.bc)
                         break;
                     case 'Bois':
-                        offre(box.get('bois_prix_moyen'))
+                        offre(jsonPrix.bois)
                         break;
                     case 'Brique':
-                        offre(box.get('brique_prix_moyen'))
+                        offre(jsonPrix.brique)
                         break;
                     case 'Eau':
-                        offre(box.get('eau_prix_moyen'))
+                        offre(jsonPrix.eau)
                         break;
                     case 'Metaux':
-                        offre(box.get('metaux_prix_moyen'))
+                        offre(jsonPrix.metaux)
                         break;
                     case 'Nourriture':
-                        offre(box.get('nourriture_prix_moyen'))
+                        offre(jsonPrix.nourriture)
                         break;
                     case 'Petrole':
-                        offre(box.get('petrole_prix_moyen'))
+                        offre(jsonPrix.petrole)
                         break;
                 }
             }

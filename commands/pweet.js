@@ -1,7 +1,5 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const isImageURL = require('image-url-validator').default;
-const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
-const ms = require('ms');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,7 +7,7 @@ module.exports = {
         .setDescription(`Faites un pweet`)
         .addStringOption(option =>
             option.setName('pweet')
-            .setDescription(`Le contenu de votre pweet (Maximum 140 caractères)`)
+            .setDescription(`Le contenu de votre pweet (Maximum 280 caractères)`)
             .setRequired(true))
         .addStringOption(option =>
             option.setName('url')
@@ -21,8 +19,8 @@ module.exports = {
         const pweet = interaction.options.getString('pweet');
         const image = interaction.options.getString('url');
 
-        if (pweet.length >= 140) {
-            var reponse = codeBlock('diff', `- Votre pweet doit faire au maximum : 140 caractères`);
+        if (pweet.length >= 280) {
+            var reponse = codeBlock('diff', `- Votre pweet doit faire au maximum : 280 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (image) {

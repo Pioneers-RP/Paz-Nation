@@ -94,7 +94,7 @@ module.exports = {
 
                         if (prod_elec > conso_elec) {
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur='${results[0].id_joueur}'`;
+                            var sql = `SELECT * FROM pays WHERE id_joueur="${results[0].id_joueur}"`;
                             connection.query(sql, async(err, results) => {
                                 if (err) {
                                     throw err;
@@ -245,9 +245,9 @@ module.exports = {
 
                                     var prod_T_mine = process.env.PROD_MINE * results[0].mine * ((parseInt((eval(`jsonObject.${results[0].region}.metaux`))) + 100) / 100);
                                     var sql1 = `
-                                UPDATE pays SET bois=bois-${conso_T_mine_bois} WHERE id_joueur='${results[0].id_joueur}';
-                                UPDATE pays SET petrole=petrole-${conso_T_mine_petrole} WHERE id_joueur='${results[0].id_joueur}';
-                                UPDATE pays SET metaux=metaux+${prod_T_mine} WHERE id_joueur='${results[0].id_joueur}'`;
+                                        UPDATE pays SET bois=bois-${conso_T_mine_bois} WHERE id_joueur='${results[0].id_joueur}';
+                                        UPDATE pays SET petrole=petrole-${conso_T_mine_petrole} WHERE id_joueur='${results[0].id_joueur}';
+                                        UPDATE pays SET metaux=metaux+${prod_T_mine} WHERE id_joueur='${results[0].id_joueur}'`;
                                     connection.query(sql1, async(err, results) => {
                                         if (err) {
                                             throw err;

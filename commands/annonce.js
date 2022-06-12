@@ -100,9 +100,7 @@ module.exports = {
 
                     await interaction.reply({ content: reponse });
                 });
-
             };
-
         };
     }
 };

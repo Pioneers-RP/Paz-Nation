@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const { MessageActionRow, MessageButton } = require('discord.js');
-const ms = require('ms');
+const { readFileSync } = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -35,15 +35,15 @@ module.exports = {
 
             const ressource = interaction.options.getString('ressource');
             var quantité = interaction.options.getInteger('quantité');
+            const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
             if (quantité < 0) {
                 var reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             } else {
                 function offre(prix_moyen) {
-
-                    var prix_vente = prix_moyen * 0.7;
-                    var prix = quantité * prix_vente;
+                    var prix_vente = parseFloat((prix_moyen * 0.7).toFixed(2));
+                    var prix = Math.round(quantité * prix_vente);
 
                     const embed = {
                         author: {
@@ -53,7 +53,7 @@ module.exports = {
                         thumbnail: {
                             url: results[0].drapeau
                         },
-                        title: `\`Vendre au marché international :\``,
+                        title: `\`Vendre au marché rapide :\``,
                         fields: [{
                                 name: `Ressource :`,
                                 value: codeBlock(
@@ -67,8 +67,8 @@ module.exports = {
                             {
                                 name: `Prix :`,
                                 value: codeBlock(
-                                    `• A l'unité (-30% du prix moyen) : ${prix_vente.toFixed(2)}\n` +
-                                    `• Au total : ${(prix.toFixed(0)).toLocaleString('en-US')}`) + `\u200B`
+                                    `• A l'unité (-30% du prix moyen) : ${prix_vente}\n` +
+                                    `• Au total : ${prix.toLocaleString('en-US')}`) + `\u200B`
                             }
                         ],
                         color: interaction.member.displayHexColor,
