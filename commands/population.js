@@ -46,6 +46,10 @@ module.exports = {
                                 value: codeBlock(`• ${results[0].population.toLocaleString('en-US')} habitants`) + `\u200B`
                             },
                             {
+                                name: `> Approvisionnement`,
+                                value: codeBlock(`• ${results[0].approvisionnement.toLocaleString('en-US')}`) + `\u200B`
+                            },
+                            {
                                 name: `> Densité`,
                                 value: codeBlock(`• ${densité.toLocaleString('en-US')} habitants/km²`) + `\u200B`
                             }

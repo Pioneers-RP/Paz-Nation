@@ -19,8 +19,8 @@ module.exports = {
         const annonce = interaction.options.getString('annonce');
         const image = interaction.options.getString('url');
 
-        if (annonce.length <= 115) {
-            var reponse = codeBlock('diff', `- Votre annonce doit faire au minimum : 115 caractères`);
+        if (annonce.length <= 50) {
+            var reponse = codeBlock('diff', `- Votre annonce doit faire au minimum : 50 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (annonce.length >= 2000) {
             var reponse = codeBlock('diff', `- Votre annonce doit faire au maximum : 2000 caractères`);

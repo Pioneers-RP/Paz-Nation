@@ -8,6 +8,7 @@ const { readFileSync } = require('fs');
 var Chance = require('chance');
 var chance = new Chance();
 const wait = require('node:timers/promises').setTimeout;
+const ms = require('ms');
 
 module.exports = {
     name: 'interactionCreate',
@@ -146,6 +147,10 @@ module.exports = {
                                 fields: [{
                                         name: `> 👪 Population`,
                                         value: codeBlock(`• ${results[0].population.toLocaleString('en-US')} habitants`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> Approvisionnement`,
+                                        value: codeBlock(`• ${results[0].approvisionnement.toLocaleString('en-US')}`) + `\u200B`
                                     },
                                     {
                                         name: `> Densité`,
@@ -427,6 +432,44 @@ module.exports = {
                                 }
                                 break;
 
+                            case 'Eolienne':
+
+                                var const_T_libre = process.env.SURFACE_EOLIENNE * nombre;
+                                var const_metaux = process.env.CONST_EOLIENNE_METAUX * nombre;
+
+                                var sql = `
+                                        UPDATE pays SET eolienne=eolienne+${nombre} WHERE id_joueur="${interaction.member.id}";
+                                        UPDATE pays SET usine_total=usine_total+${nombre} WHERE id_joueur="${interaction.member.id}";
+                                        UPDATE pays SET T_libre=T_libre-${const_T_libre} WHERE id_joueur="${interaction.member.id}";
+                                        UPDATE pays SET T_occ=T_occ+${const_T_libre} WHERE id_joueur="${interaction.member.id}";
+                                        UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur="${interaction.member.id}"`;
+                                connection.query(sql, async(err, results) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                })
+
+                                var newbc = results[0].eolienne + parseInt(nombre);
+
+                                var embed = {
+                                    author: {
+                                        name: `${results[0].rang} de ${results[0].nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: `${results[0].drapeau}`
+                                    },
+                                    title: `\`Construction : ${nombre.toLocaleString('en-US')} éoliennes\``,
+                                    description: `> 🛠️ Vous avez désormais :\n` +
+                                        codeBlock(`• ${newbc.toLocaleString('en-US')} éoliennes`) + `\u200B`,
+                                    color: interaction.member.displayHexColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${results[0].devise}`
+                                    },
+                                }
+                                break;
+
                             case 'Mine':
 
                                 var const_T_libre = process.env.SURFACE_MINE * nombre;
@@ -649,7 +692,7 @@ module.exports = {
                 }
                 //endregion
 
-                //region [Demolistion]
+                //region [Demolition]
             } else if (interaction.customId.includes('demolition') == true) {
 
                 var id_joueur = interaction.customId.slice(11);
@@ -792,6 +835,47 @@ module.exports = {
                                 title: `\`Démolition : ${nombre.toLocaleString('en-US')} centrales électrique\``,
                                 description: `> 🛠️ Vous avez désormais :\n` +
                                     codeBlock(`• ${newbc.toLocaleString('en-US')} centrales électrique`) + `\u200B`,
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            }
+
+                            interaction.deferUpdate()
+
+                            interaction.message.edit({ embeds: [embed], components: [] })
+
+                        } else if (batiment == 'Eolienne') {
+
+                            var demo_T_libre = process.env.SURFACE_EOLIENNE * nombre;
+                            var demo_metaux = Math.round(process.env.CONST_EOLIENNE_METAUX * nombre * process.env.RETOUR_POURCENTAGE);
+
+                            var sql = `
+                                UPDATE pays SET eolienne=eolienne-'${nombre}' WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET usine_total=usine_total-'${nombre}' WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET T_libre=T_libre+'${demo_T_libre}' WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET T_occ=T_occ-'${demo_T_libre}' WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET metaux=metaux+'${demo_metaux}' WHERE id_joueur='${interaction.member.id}'`;
+                            connection.query(sql, async(err, results) => {
+                                if (err) {
+                                    throw err;
+                                }
+                            });
+
+                            var newbc = results[0].eolienne - parseInt(nombre);
+
+                            var embed = {
+                                author: {
+                                    name: `${results[0].rang} de ${results[0].nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: `${results[0].drapeau}`
+                                },
+                                title: `\`Démolition : ${nombre.toLocaleString('en-US')} eoliennes\``,
+                                description: `> 🛠️ Vous avez désormais :\n` +
+                                    codeBlock(`• ${newbc.toLocaleString('en-US')} eoliennes`) + `\u200B`,
                                 color: interaction.member.displayHexColor,
                                 timestamp: new Date(),
                                 footer: {
@@ -1058,7 +1142,7 @@ module.exports = {
 
                         if (random == true) {
 
-                            var territoire = chance.integer({ min: 750, max: 1250 });
+                            var territoire = chance.integer({ min: 1500, max: 2000 });
                             var pop = chance.integer({ min: process.env.EXP_MIN_POP, max: process.env.EXP_MAX_POP });
 
                             var sql = `
@@ -1067,9 +1151,9 @@ module.exports = {
                             UPDATE pays SET population=population+${pop} WHERE id_joueur=${interaction.user.id};
                             UPDATE pays SET action_diplo=action_diplo-10 WHERE id_joueur=${interaction.user.id}`;
 
-                            if (results[0].réputation < 99.8) {
+                            if (results[0].reputation < 100) {
                                 var sql = sql + `;
-                                UPDATE pays SET reputation=reputation+0.3 WHERE id_joueur=${interaction.user.id}`
+                                UPDATE pays SET reputation=reputation+0.1 WHERE id_joueur=${interaction.user.id}`
                             }
                             connection.query(sql, async(err, results) => {
                                 if (err) {
@@ -1108,7 +1192,7 @@ module.exports = {
 
                                 var reponse = `__**Vous vous êtes étendu sur une nouvelle case : ${salon_carte}**__`;
                                 const salon_joueur = interaction.client.channels.cache.get(results[0].id_salon);
-                                salon_joueur.send({ content: [reponse] });
+                                salon_joueur.send({ content: reponse });
                             }
 
                             const embed = {
@@ -1140,18 +1224,18 @@ module.exports = {
                             interaction.reply({ embeds: [embed] })
                             setTimeout(() => {
                                 interaction.deleteReply()
-                            }, 5000)
+                            }, 15000)
 
                         } else {
 
-                            var sql3 = `
+                            var sql = `
                             UPDATE pays SET action_diplo=action_diplo-10 WHERE id_joueur=${interaction.user.id}`;
 
-                            if (results[0].réputation < 100) {
+                            if (results[0].reputation < 99.8) {
                                 var sql = sql + `;
-                                UPDATE pays SET reputation=reputation+0.1 WHERE id_joueur=${interaction.user.id}`
+                                UPDATE pays SET reputation=reputation+0.3 WHERE id_joueur=${interaction.user.id}`
                             }
-                            connection.query(sql3, async(err, results) => {
+                            connection.query(sql, async(err, results) => {
                                 if (err) {
                                     throw err;
                                 }
@@ -1178,7 +1262,7 @@ module.exports = {
                             interaction.reply({ embeds: [embed] });
                             setTimeout(() => {
                                 interaction.deleteReply()
-                            }, 5000)
+                            }, 10000)
                         }
                     }
                 });
@@ -1293,16 +1377,16 @@ module.exports = {
                                             },
                                             {
                                                 name: `Ressource :`,
-                                                value: codeBlock(`• ${box.get('ressource')}`) + `\u200B`
+                                                value: codeBlock(`• ${box.get('ressource')}`)
                                             },
                                             {
                                                 name: `Quantité :`,
-                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
+                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
                                             },
                                             {
                                                 name: `Prix :`,
                                                 value: codeBlock(`• Au total : ${prix.toLocaleString('en-US')} $\n` +
-                                                    `• A l'unité : ${prix_u}`) + `\u200B`
+                                                    `• A l'unité : ${prix_u}`)
                                             }
                                         ],
                                         color: interaction.member.displayHexColor,
@@ -1327,16 +1411,16 @@ module.exports = {
                                             },
                                             {
                                                 name: `Ressource :`,
-                                                value: codeBlock(`• ${box.get('ressource')}`) + `\u200B`
+                                                value: codeBlock(`• ${box.get('ressource')}`)
                                             },
                                             {
                                                 name: `Quantité :`,
-                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
+                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
                                             },
                                             {
                                                 name: `Prix :`,
                                                 value: codeBlock(`• Au total : ${prix.toLocaleString('en-US')} $\n` +
-                                                    `• A l'unité : ${prix_u}`) + `\u200B`
+                                                    `• A l'unité : ${prix_u}`)
                                             }
                                         ],
                                         color: interaction.member.displayHexColor,
@@ -1367,16 +1451,16 @@ module.exports = {
                                             },
                                             {
                                                 name: `Ressource :`,
-                                                value: codeBlock(`• ${box.get('ressource')}`) + `\u200B`
+                                                value: codeBlock(`• ${box.get('ressource')}`)
                                             },
                                             {
                                                 name: `Quantité :`,
-                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
+                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
                                             },
                                             {
                                                 name: `Prix :`,
                                                 value: codeBlock(`• Au total : ${prix.toLocaleString('en-US')} $\n` +
-                                                    `• A l'unité : ${prix_u}`) + `\u200B`
+                                                    `• A l'unité : ${prix_u}`)
                                             }
                                         ],
                                         color: interaction.member.displayHexColor,
@@ -1412,7 +1496,7 @@ module.exports = {
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 }
                             } else {
-                                var reponse = codeBlock('diff', `- ${interaction.member.displayName} n'a pas les ressources suffisantes pour conclure l'affaire : ${box.get('joueur_res').toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                                var reponse = codeBlock('diff', `- Ce vendeur n'a pas les ressources suffisantes pour conclure l'affaire : ${box.get('joueur_res').toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse });
 
                             }
@@ -1441,10 +1525,10 @@ module.exports = {
                     var prix = Math.round(prix_u * quantité);
                     //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
 
-                    var sql5 = `
+                    var sql = `
                     SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
 
-                    connection.query(sql5, async(err, results) => {
+                    connection.query(sql, async(err, results) => {
                         if (err) {
                             throw err;
                         }
@@ -1492,8 +1576,22 @@ module.exports = {
                         await interaction.deferUpdate()
                         interaction.message.edit({ embeds: [embed], components: [] });
 
+                        var sql = `SELECT * FROM qvente WHERE ressource="${ressource}" ORDER BY id_vente`;
+                        connection.query(sql, async(err, results) => {
+                            if (err) {
+                                throw err;
+                            }
+                            var arrayQvente = Object.values(results);
+                            var sql = `DELETE FROM qvente WHERE id_vente='${arrayQvente[0].id_vente}'`;
+                            connection.query(sql, async(err, results) => {
+                                if (err) {
+                                    throw err;
+                                }
+                            });
+                        });
+
                         var sql = `
-                        INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
+                        INSERT INTO qvente SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
                         UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
                         UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}"`;
 
@@ -1586,16 +1684,30 @@ module.exports = {
                             await interaction.deferUpdate()
                             interaction.message.edit({ embeds: [embed], components: [] });
 
+                            var sql = `SELECT * FROM qachat WHERE ressource='${ressource}' ORDER BY id_vente`;
+                            connection.query(sql, async(err, results) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                var arrayQvente = Object.values(results);
+                                var sql = `DELETE FROM qachat WHERE id_vente='${arrayQvente[0].id_vente}'`;
+                                connection.query(sql, async(err, results) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                });
+                            });
+
                             var sql = `
-                            INSERT INTO qm SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
-                            UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${id_joueur}";
-                            UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${id_joueur}"`;
+                                INSERT INTO qachat SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
+                                UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${id_joueur}";
+                                UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${id_joueur}"`;
 
                             connection.query(sql, async(err, results) => {
                                 if (err) {
                                     throw err;
                                 }
-                            })
+                            });
                         }
                     });
 
@@ -1687,7 +1799,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 🧱 brique\n` +
                                         codeBlock(
-                                            `• Par usine  ${parseInt(process.env.PROD_BRIQUETERIE).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${parseInt(process.env.PROD_BRIQUETERIE).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_briqueterie.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -1739,7 +1851,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 🌽 Nourriture\n` +
                                         codeBlock(
-                                            `• Par usine  ${prod_champ.toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${prod_champ.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_champ * results[0].champ).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -1759,16 +1871,17 @@ module.exports = {
                     } else if (interaction.values == 'centrale_elec') {
 
                         prod_T_centrale_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec;
+                        prod_T_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec + process.env.PROD_EOLIENNE * results[0].eolienne;
                         conso_T_centrale_elec_petrole = process.env.CONSO_CENTRALE_ELEC_PETROLE * results[0].centrale_elec;
 
                         var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
                         var diff = (prod_T_centrale_elec - conso);
                         if (diff > 0) {
-                            var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_centrale_elec.toLocaleString('en-US')} | ${(prod_T_centrale_elec - conso).toLocaleString('en-US')}'`);
+                            var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}'`);
                         } else if (diff == 0) {
-                            var electricite = codeBlock('fix', `${conso.toLocaleString('en-US')}/${prod_T_centrale_elec.toLocaleString('en-US')} | ${(prod_T_centrale_elec - conso).toLocaleString('en-US')}`);
+                            var electricite = codeBlock('fix', `${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}`);
                         } else {
-                            var electricite = codeBlock('diff', `- ${conso.toLocaleString('en-US')}/${prod_T_centrale_elec.toLocaleString('en-US')} | ${(prod_T_centrale_elec - conso).toLocaleString('en-US')}`);
+                            var electricite = codeBlock('diff', `- ${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}`);
                         };
 
                         const embed = {
@@ -1796,8 +1909,53 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Flux : ⚡ Electricité\n` +
                                         codeBlock(
-                                            `• Par usine  ${parseInt(process.env.PROD_CENTRALE_ELEC).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${parseInt(process.env.PROD_CENTRALE_ELEC).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_centrale_elec.toLocaleString('en-US')}`) + `\u200B`
+                                },
+                                {
+                                    name: `> Flux :`,
+                                    value: electricite + `\u200B`
+                                },
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: { text: `${results[0].devise}` }
+                        };
+
+                        interaction.reply({ embeds: [embed] })
+                            //endregion
+
+                        //region [Usine - Eolienne]
+                    } else if (interaction.values == 'eolienne') {
+
+                        prod_T_eolienne = process.env.PROD_EOLIENNE * results[0].eolienne;
+                        prod_T_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec + process.env.PROD_EOLIENNE * results[0].eolienne;
+
+                        var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
+                        var diff = (prod_T_centrale_elec - conso);
+                        if (diff > 0) {
+                            var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}'`);
+                        } else if (diff == 0) {
+                            var electricite = codeBlock('fix', `${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}`);
+                        } else {
+                            var electricite = codeBlock('diff', `- ${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}`);
+                        };
+
+                        const embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: `${results[0].drapeau}`,
+                            },
+                            title: `\`Usine : Eolienne\``,
+                            fields: [{
+                                    name: `> Production :`,
+                                    value: `Flux : ⚡ Electricité\n` +
+                                        codeBlock(
+                                            `• Par usine : ${parseInt(process.env.PROD_EOLIENNE).toLocaleString('en-US')}\n` +
+                                            `• Totale : ${prod_T_eolienne.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
                                     name: `> Flux :`,
@@ -1853,7 +2011,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 🪨 Métaux\n` +
                                         codeBlock(
-                                            `• Par usine  ${prod_mine.toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${prod_mine.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_mine * results[0].mine).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -1905,7 +2063,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 💧 Eau\n` +
                                         codeBlock(
-                                            `• Par usine  ${prod_pompe_a_eau.toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${prod_pompe_a_eau.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_pompe_a_eau * results[0].pompe_a_eau).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -1954,7 +2112,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 🛢️ Pétrole\n` +
                                         codeBlock(
-                                            `• Par usine  ${prod_pumpjack.toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${prod_pumpjack.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_pumpjack * results[0].pumpjack).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -2006,7 +2164,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 🪵 Bois\n` +
                                         codeBlock(
-                                            `• Par usine  ${prod_scierie.toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${prod_scierie.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_scierie * results[0].scierie).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -2066,7 +2224,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 💻 Biens de consommation\n` +
                                         codeBlock(
-                                            `• Par usine  ${parseInt(process.env.PROD_USINE_CIVILE).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${parseInt(process.env.PROD_USINE_CIVILE).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_usine_civile.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {

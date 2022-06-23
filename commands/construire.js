@@ -11,6 +11,7 @@ module.exports = {
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
             .addChoice(`Centrale électrique`, 'Centrale_elec')
+            .addChoice(`Eolienne`, 'Eolienne')
             .addChoice(`Mine`, 'Mine')
             .addChoice(`Pompe à eau`, 'Pompe_a_eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
@@ -51,229 +52,257 @@ module.exports = {
             if (nombre < 1) {
                 var reponse = codeBlock('diff', `- Veuillez indiquer un nombre de bâtiment positif`);
                 await interaction.reply({ content: reponse, ephemeral: true });
-            } else if (batiment == 'Briqueterie') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+            } else {
+                switch (batiment) {
+                    case 'Briqueterie':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_T_libre = process.env.SURFACE_BRIQUETERIE * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_T_libre = process.env.SURFACE_BRIQUETERIE * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_bois = process.env.CONST_BRIQUETERIE_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_bois = process.env.CONST_BRIQUETERIE_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_brique = process.env.CONST_BRIQUETERIE_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_brique = process.env.CONST_BRIQUETERIE_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_metaux = process.env.CONST_BRIQUETERIE_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Champ') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_metaux = process.env.CONST_BRIQUETERIE_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Champ':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_T_libre = process.env.SURFACE_CHAMP * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_T_libre = process.env.SURFACE_CHAMP * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_bois = process.env.CONST_CHAMP_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_bois = process.env.CONST_CHAMP_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_brique = process.env.CONST_CHAMP_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_brique = process.env.CONST_CHAMP_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_metaux = process.env.CONST_CHAMP_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Centrale électrique') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_metaux = process.env.CONST_CHAMP_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Centrale électrique':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Mine') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Eolienne':
+                        var need_bois = false;
+                        var need_brique = false;
+                        var need_metaux = true;
 
-                var const_T_libre = process.env.SURFACE_MINE * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_T_libre = process.env.SURFACE_EOLIENNE * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_bois = process.env.CONST_MINE_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_metaux = process.env.CONST_EOLIENNE_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Mine':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_brique = process.env.CONST_MINE_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_T_libre = process.env.SURFACE_MINE * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_metaux = process.env.CONST_MINE_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Pompe à eau') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_bois = process.env.CONST_MINE_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_T_libre = process.env.SURFACE_POMPE_A_EAU * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_brique = process.env.CONST_MINE_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_bois = process.env.CONST_POMPE_A_EAU_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_metaux = process.env.CONST_MINE_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Pompe à eau':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_brique = process.env.CONST_POMPE_A_EAU_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_T_libre = process.env.SURFACE_POMPE_A_EAU * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_metaux = process.env.CONST_POMPE_A_EAU_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Pumpjack') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_bois = process.env.CONST_POMPE_A_EAU_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_T_libre = process.env.SURFACE_PUMPJACK * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_brique = process.env.CONST_POMPE_A_EAU_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_bois = process.env.CONST_PUMPJACK_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_metaux = process.env.CONST_POMPE_A_EAU_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Pumpjack':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_brique = process.env.CONST_PUMPJACK_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_T_libre = process.env.SURFACE_PUMPJACK * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_metaux = process.env.CONST_PUMPJACK_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Scierie') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_bois = process.env.CONST_PUMPJACK_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_T_libre = process.env.SURFACE_SCIERIE * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_brique = process.env.CONST_PUMPJACK_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_bois = process.env.CONST_SCIERIE_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_metaux = process.env.CONST_PUMPJACK_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Scierie':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_brique = process.env.CONST_SCIERIE_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_T_libre = process.env.SURFACE_SCIERIE * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_metaux = process.env.CONST_SCIERIE_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
-                }
-            } else if (batiment == 'Usine civile') {
-                var need_bois = true;
-                var need_brique = true;
-                var need_metaux = true;
+                        var const_bois = process.env.CONST_SCIERIE_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
 
-                var const_T_libre = process.env.SURFACE_USINE_CIVILE * nombre;
-                if (const_T_libre > results[0].T_libre) {
-                    var const_batiment = false
-                    var manque_T_libre = true
-                }
+                        var const_brique = process.env.CONST_SCIERIE_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
 
-                var const_bois = process.env.CONST_USINE_CIVILE_BOIS * nombre;
-                if (const_bois > results[0].bois) {
-                    var const_batiment = false
-                    var manque_bois = true
-                }
+                        var const_metaux = process.env.CONST_SCIERIE_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Usine civile':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
 
-                var const_brique = process.env.CONST_USINE_CIVILE_BRIQUE * nombre;
-                if (const_brique > results[0].brique) {
-                    var const_batiment = false
-                    var manque_brique = true
-                }
+                        var const_T_libre = process.env.SURFACE_USINE_CIVILE * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
 
-                var const_metaux = process.env.CONST_USINE_CIVILE_METAUX * nombre;
-                if (const_metaux > results[0].metaux) {
-                    var const_batiment = false
-                    var manque_metaux = true
+                        var const_bois = process.env.CONST_USINE_CIVILE_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
+
+                        var const_brique = process.env.CONST_USINE_CIVILE_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
+
+                        var const_metaux = process.env.CONST_USINE_CIVILE_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
                 }
             }
 

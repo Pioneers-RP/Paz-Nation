@@ -53,10 +53,10 @@ module.exports = {
                     parent: process.env.CATEGORY_PAYS,
                 });
 
-                var T_total = chance.integer({ min: 14000, max: 16000 });
+                var T_total = chance.integer({ min: 14000, max: 14999 });
                 var T_occ = 15 + 1 * process.env.SURFACE_CHAMP + 1 * process.env.SURFACE_MINE + 1 * process.env.SURFACE_POMPE_A_EAU + 1 * process.env.SURFACE_PUMPJACK + 1 * process.env.SURFACE_SCIERIE + 1 * process.env.SURFACE_CENTRALE_ELEC;
                 var T_libre = T_total - T_occ;
-                var cash = chance.integer({ min: 950000, max: 1050000 });
+                var cash = chance.integer({ min: 975000, max: 1025000 });
                 var pop = chance.integer({ min: 9500, max: 10500 });
 
                 var sql = `

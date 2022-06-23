@@ -9,98 +9,98 @@
     },
     "afrique_australe": {
         "nom": "Afrique Australe",
-        "bois": "0",
-        "eau": "30",
-        "metaux": "0",
-        "nourriture": "-30",
-        "petrole": "15"
+        "bois": "25",
+        "eau": "0",
+        "metaux": "75",
+        "nourriture": "25",
+        "petrole": "-95"
     },
     "afrique_equatoriale": {
         "nom": "Afrique Equatoriale",
-        "bois": "30",
-        "eau": "15",
-        "metaux": "15",
-        "nourriture": "-15",
-        "petrole": "-30"
+        "bois": "95",
+        "eau": "70",
+        "metaux": "-65",
+        "nourriture": "-50",
+        "petrole": "-95"
     },
     "afrique_du_nord": {
         "nom": "Afrique du Nord",
-        "bois": "-30",
-        "eau": "-30",
-        "metaux": "15",
-        "nourriture": "-15",
-        "petrole": "15"
+        "bois": "-95",
+        "eau": "-95",
+        "metaux": "-25",
+        "nourriture": "-95",
+        "petrole": "0"
     },
-    "amerique_du-nord": {
+    "amerique_du_nord": {
         "nom": "Amerique du Nord",
-        "bois": "30",
-        "eau": "0",
-        "metaux": "15",
-        "nourriture": "15",
-        "petrole": "15"
+        "bois": "0",
+        "eau": "-30",
+        "metaux": "25",
+        "nourriture": "50",
+        "petrole": "25"
     },
     "asie_du_nord": {
         "nom": "Asie du Nord",
-        "bois": "-30",
-        "eau": "-15",
-        "metaux": "30",
+        "bois": "-35",
+        "eau": "-25",
+        "metaux": "80",
         "nourriture": "0",
-        "petrole": "15"
+        "petrole": "20"
     },
     "asie_du_sud": {
         "nom": "Asie du Sud",
-        "bois": "30",
-        "eau": "0",
-        "metaux": "-30",
-        "nourriture": "30",
-        "petrole": "0"
+        "bois": "50",
+        "eau": "25",
+        "metaux": "-25",
+        "nourriture": "50",
+        "petrole": "-75"
     },
     "europe": {
         "nom": "Europe",
-        "bois": "15",
-        "eau": "-15",
-        "metaux": "15",
-        "nourriture": "30",
-        "petrole": "-30"
+        "bois": "25",
+        "eau": "20",
+        "metaux": "-50",
+        "nourriture": "95",
+        "petrole": "-80"
     },
     "moyen_orient": {
         "nom": "Moyen Orient",
-        "bois": "-30",
-        "eau": "-30",
-        "metaux": "-30",
-        "nourriture": "-30",
-        "petrole": "-30"
+        "bois": "-95",
+        "eau": "-75",
+        "metaux": "-95",
+        "nourriture": "-95",
+        "petrole": "120"
     },
     "nord_amerique_latine": {
         "nom": "Nord Amérique Latine",
-        "bois": "30",
-        "eau": "30",
-        "metaux": "0",
-        "nourriture": "0",
-        "petrole": "0"
+        "bois": "80",
+        "eau": "40",
+        "metaux": "-30",
+        "nourriture": "-95",
+        "petrole": "30"
     },
     "oceanie": {
         "nom": "Océanie",
-        "bois": "-15",
-        "eau": "30",
-        "metaux": "30",
-        "nourriture": "0",
-        "petrole": "-30"
+        "bois": "-50",
+        "eau": "50",
+        "metaux": "75",
+        "nourriture": "25",
+        "petrole": "-75"
     },
     "pays_du_nord": {
         "nom": "Pays du Nord",
-        "bois": "15",
-        "eau": "30",
-        "metaux": "15",
-        "nourriture": "-30",
-        "petrole": "15"
+        "bois": "25",
+        "eau": "80",
+        "metaux": "0",
+        "nourriture": "-95",
+        "petrole": "60"
     },
     "sud_amerique_latine": {
         "nom": "Sud Amérique Latine",
-        "bois": "-30",
-        "eau": "0",
-        "metaux": "15",
-        "nourriture": "0",
-        "petrole": "0"
+        "bois": "-50",
+        "eau": "25",
+        "metaux": "30",
+        "nourriture": "35",
+        "petrole": "-60"
     }
 }

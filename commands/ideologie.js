@@ -20,7 +20,7 @@ module.exports = {
             .setRequired(true))
         .addStringOption(option =>
             option.setName('discours')
-            .setDescription(`Vous devez faire un discours pour justifier votre acte (Minimum 115 caractères)`)
+            .setDescription(`Vous devez faire un discours pour justifier votre acte (Minimum 50 caractères)`)
             .setRequired(true)),
     async execute(interaction) {
         const { connection } = require('../index.js');
@@ -34,7 +34,7 @@ module.exports = {
             var reponse = codeBlock('diff', `- Vous avez déjà changé votre idéologie récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (discours.length <= 115) {
-            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 115 caractères`);
+            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 50 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (discours.length >= 2000) {
             var reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
@@ -69,7 +69,7 @@ module.exports = {
                     title: `Une nouvelle idéologie a été mis en place :`,
                     description: discours,
                     fields: [{
-                        name: `> Nouvelle devise`,
+                        name: `> Nouvelle idéologie`,
                         value: `*${ideologie}*`
                     }],
                     color: interaction.member.displayHexColor

@@ -32,7 +32,8 @@ module.exports = {
                     `\n🪖 **__Choix dissuasif :__** 0%\n` +
                     `\n> Dissuader l\'ennemi à l\'aide de votre artillerie sans pour autant l\'utiliser\n` +
                     `\n⚔ **__Choix force :__** 0%\n` +
-                    `\n> Utilisation de votre armée afin d\'écraser le peuple et de conquérir son territoire`,
+                    `\n> Utilisation de votre armée afin d\'écraser le peuple et de conquérir son territoire` +
+                    `\n\n **Vous disposez de ${results[0].action_diplo} Points d'action diplomatique.**`,
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {

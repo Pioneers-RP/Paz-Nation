@@ -11,6 +11,7 @@ module.exports = {
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
             .addChoice(`Centrale électrique`, 'Centrale_elec')
+            .addChoice(`Eolienne`, 'Eolienne')
             .addChoice(`Mine`, 'Mine')
             .addChoice(`Pompe à eau`, 'Pompe_a_eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
@@ -101,6 +102,21 @@ module.exports = {
                 var demo_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
                 var avant = results[0].centrale_elec;
                 var après = results[0].centrale_elec - nombre;
+
+            } else if (batiment == 'Eolienne') {
+                var need_bois = false;
+                var need_brique = false;
+                var need_metaux = true;
+
+                if (nombre > results[0].eolienne) {
+                    var demo_batiment = false
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].centrale_elec.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} éoliennes`);
+                    await interaction.reply({ content: reponse, ephemeral: true });
+                }
+                var demo_T_libre = process.env.SURFACE_EOLIENNE * nombre;
+                var demo_metaux = process.env.CONST_EOLIENNE_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
+                var avant = results[0].eolienne;
+                var après = results[0].eolienne - nombre;
 
             } else if (batiment == 'Mine') {
                 var need_bois = true;
@@ -205,17 +221,17 @@ module.exports = {
                     case need_bois:
                         fields.push({
                             name: `> Bois récupéré :`,
-                            value: codeBlock(`• Bois : +${demo_bois.toLocaleString('en-US')}`) + `\u200B`
+                            value: codeBlock(`• Bois : +${Math.round(demo_bois).toLocaleString('en-US')}`) + `\u200B`
                         })
                     case need_brique:
                         fields.push({
                             name: `> Brique récupéré :`,
-                            value: codeBlock(`• Brique : +${demo_brique.toLocaleString('en-US')}`) + `\u200B`
+                            value: codeBlock(`• Brique : +${Math.round(demo_brique).toLocaleString('en-US')}`) + `\u200B`
                         })
                     case need_metaux:
                         fields.push({
                             name: `> Métaux récupéré :`,
-                            value: codeBlock(`• Métaux : +${demo_metaux.toLocaleString('en-US')}`) + `\u200B`
+                            value: codeBlock(`• Métaux : +${Math.round(demo_metaux).toLocaleString('en-US')}`) + `\u200B`
                         })
                 }
 
