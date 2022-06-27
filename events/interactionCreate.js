@@ -1,5 +1,5 @@
 const { codeBlock } = require('@discordjs/builders');
-const { Client, Collection, Intents, Guild } = require('discord.js');
+const { Client, Collection, Intents, Guild, MessageActionRow, MessageButton } = require('discord.js');
 const { connection } = require('../index.js');
 const { globalBox } = require('global-box');
 const box = globalBox();
@@ -9,6 +9,8 @@ var Chance = require('chance');
 var chance = new Chance();
 const wait = require('node:timers/promises').setTimeout;
 const ms = require('ms');
+const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
+const vendreCommandCooldown = new CommandCooldown('vendre', ms('10m'));
 
 module.exports = {
     name: 'interactionCreate',
@@ -1271,244 +1273,354 @@ module.exports = {
                 //region [Acheter]
             } else if (interaction.customId.includes('acheter') == true) {
 
-                var id_salon = interaction.customId.slice(8);
+                var id_joueur = interaction.customId.slice(8);
+
+                var fields = interaction.message.embeds[0].fields
+                var espace = fields[0].value.indexOf("Prix");
+                var ressource = fields[0].value.slice(6, espace - 3)
+
+                var quantite = interaction.message.embeds[0].fields[1].value.slice(6, fields[1].value.length - 4)
+                const search = ',';
+                const replaceWith = '';
+                const quantité = parseInt(quantite.split(search).join(replaceWith));
+
+                const texte = interaction.message.embeds[0].fields[2].value
+                var prix_u = Number(texte.slice((texte.indexOf(":") + 2), (texte.indexOf("Au") - 2)));
+                var prix = Math.round(prix_u * quantité);
+                console.log(espace + ` | ` + ressource + ` | ` + prix_u + ` | ` + prix + ` | ` + texte + ` | ` + (texte.indexOf(":") + 2) + ` | ` + (texte.indexOf("Au") - 3))
                 var sql = `
-                SELECT * FROM trade WHERE id_salon="${id_salon}" LIMIT 1`;
+                        SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
 
                 connection.query(sql, async(err, results) => {
                     if (err) {
                         throw err;
                     }
 
-                    box.set('ressource', results[0].ressource);
-                    var quantité = results[0].quantite;
-                    var prix = results[0].prix;
-                    var prix_u = results[0].prix_u;
-                    var id_joueur = results[0].id_joueur;
+                    switch (ressource) {
+                        case 'Biens de consommation':
+                            var res = `bc`;
+                            break;
+                        case 'Bois':
+                            var res = `bois`;
+                            break;
+                        case 'Brique':
+                            var res = `brique`;
+                            break;
+                        case 'Eau':
+                            var res = `eau`;
+                            break;
+                        case 'Metaux':
+                            var res = `metaux`;
+                            break;
+                        case 'Nourriture':
+                            var res = `nourriture`;
+                            break;
+                        case 'Petrole':
+                            var res = `petrole`;
+                            break;
+                    }
 
-                    var sql5 = `
-                        SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
+                    var sql = `
+                            SELECT * FROM pays WHERE id_joueur="${interaction.user.id}" LIMIT 1`;
+                    connection.query(sql, async(err, results) => {
+                        if (err) {
+                            throw err;
+                        }
+                        if (results[0].cash >= prix) {
 
-                    connection.query(sql5, async(err, results) => {
+                            const acheteur = {
+                                author: {
+                                    name: `${results[0].rang} de ${results[0].nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: results[0].drapeau,
+                                },
+                                title: `\`Achat validé :\``,
+                                fields: [{
+                                        name: `Vendeur :`,
+                                        value: `<@${id_joueur}>`
+                                    },
+                                    {
+                                        name: `Ressource :`,
+                                        value: codeBlock(`• ${ressource}`)
+                                    },
+                                    {
+                                        name: `Quantité :`,
+                                        value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                    },
+                                    {
+                                        name: `Prix :`,
+                                        value: codeBlock(
+                                            `• A l'unité : ${prix_u}\n` +
+                                            `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                    }
+                                ],
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            };
+
+                            const vendeur = {
+                                author: {
+                                    name: `${results[0].rang} de ${results[0].nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: results[0].drapeau,
+                                },
+                                title: `\`Marché conclu :\``,
+                                fields: [{
+                                        name: `Acheteur :`,
+                                        value: `<@${interaction.user.id}>`
+                                    },
+                                    {
+                                        name: `Ressource :`,
+                                        value: codeBlock(`• ${ressource}`)
+                                    },
+                                    {
+                                        name: `Quantité :`,
+                                        value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                    },
+                                    {
+                                        name: `Prix :`,
+                                        value: codeBlock(`• A l'unité : ${prix_u}\n` +
+                                            `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                    }
+                                ],
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            };
+
+                            const commerce = {
+                                author: {
+                                    name: `${results[0].rang} de ${results[0].nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: results[0].drapeau,
+                                },
+                                title: `\`Marché conclu :\``,
+                                fields: [{
+                                        name: `Vendeur :`,
+                                        value: `<@${id_joueur}>`,
+                                        inline: true
+                                    },
+                                    {
+                                        name: `Acheteur :`,
+                                        value: `<@${interaction.user.id}>`,
+                                        inline: true
+                                    },
+                                    {
+                                        name: `Ressource :`,
+                                        value: codeBlock(`• ${ressource}`)
+                                    },
+                                    {
+                                        name: `Quantité :`,
+                                        value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                    },
+                                    {
+                                        name: `Prix :`,
+                                        value: codeBlock(`• A l'unité : ${prix_u}\n` +
+                                            `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                    }
+                                ],
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            };
+
+                            const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
+                            salon_commerce.send({ embeds: [commerce] })
+
+                            interaction.user.send({ embeds: [acheteur] });
+                            const id_vendeur = await interaction.guild.members.fetch(id_joueur);
+                            id_vendeur.send({ embeds: [vendeur] });
+
+                            const thread = await interaction.channel.fetch();
+                            await thread.delete();
+
+
+                            var sql = `SELECT * FROM trade WHERE ressource="${ressource}" ORDER BY id_trade`;
+                            connection.query(sql, async(err, results) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                var arrayQvente = Object.values(results);
+                                var sql = `DELETE FROM trade WHERE id_trade='${arrayQvente[0].id_trade}'`;
+                                connection.query(sql, async(err, results) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                });
+                            });
+
+                            var sql = `
+                                    INSERT INTO trade SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
+                                    UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
+                                    UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${interaction.user.id}";
+                                    UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${interaction.user.id}";
+                                    INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="offre", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
+                            connection.query(sql, async(err, results) => {
+                                if (err) {
+                                    throw err;
+                                }
+                            })
+
+                        } else {
+                            var reponse = codeBlock('diff', `- Vous n'avez pas l'argent nécessaire pour conclure l'affaire : ${results[0].cash.toLocaleString('en-US')}/${prix.toLocaleString('en-US')}`);
+                            await interaction.reply({ content: reponse, ephemeral: true });
+                        }
+                    })
+                });
+                //endregion
+
+                //region [Vendre]
+            } else if (interaction.customId.includes('vendre') == true) {
+
+                var id_joueur = interaction.customId.slice(7);
+                if (id_joueur == interaction.member.id) {
+
+                    var fields = interaction.message.embeds[0].fields
+                    var espace = fields[0].value.indexOf("Prix");
+                    var ressource = fields[0].value.slice(6, espace - 3)
+
+                    var quantite = interaction.message.embeds[0].fields[1].value.slice(6, fields[1].value.length - 4)
+                    const search = ',';
+                    const replaceWith = '';
+                    const quantité = parseInt(quantite.split(search).join(replaceWith));
+
+                    var espace2 = fields[2].value.indexOf("Au");
+                    var prix_u = fields[2].value.slice(18, espace2 - 3);
+                    var prix = Math.round(prix_u * quantité);
+                    //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
+
+                    var sql = `
+                    SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
+
+                    connection.query(sql, async(err, results) => {
                         if (err) {
                             throw err;
                         }
 
-                        if (box.get('ressource') == 'Biens de consommation') {
-                            var res = 'bc';
-                            box.set('joueur_res', results[0].bc);
-                            if (results[0].bc >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
-                        } else if (box.get('ressource') == 'Bois') {
-                            var res = 'bois';
-                            box.set('joueur_res', results[0].bois);
-                            if (results[0].bois >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
-                        } else if (box.get('ressource') == 'Brique') {
-                            var res = 'brique';
-                            box.set('joueur_res', results[0].brique);
-                            if (results[0].brique >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
-                        } else if (box.get('ressource') == 'Eau') {
-                            var res = 'eau';
-                            box.set('joueur_res', results[0].eau);
-                            if (results[0].eau >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
-                        } else if (box.get('ressource') == 'Metaux') {
-                            var res = 'metaux';
-                            box.set('joueur_res', results[0].metaux);
-                            if (results[0].metaux >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
-                        } else if (box.get('ressource') == 'Nourriture') {
-                            var res = 'nourriture';
-                            box.set('joueur_res', results[0].nourriture);
-                            if (results[0].nourriture >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
-                        } else if (box.get('ressource') == 'Petrole') {
-                            var res = 'petrole';
-                            box.set('joueur_res', results[0].petrole);
-                            if (results[0].petrole >= quantité) {
-                                var enought_res = true
-                            } else {
-                                var enought_res = false
-                            }
+                        switch (ressource) {
+                            case 'Biens de consommation':
+                                var res = `bc`;
+                                break;
+                            case 'Bois':
+                                var res = `bois`;
+                                break;
+                            case 'Brique':
+                                var res = `brique`;
+                                break;
+                            case 'Eau':
+                                var res = `eau`;
+                                break;
+                            case 'Metaux':
+                                var res = `metaux`;
+                                break;
+                            case 'Nourriture':
+                                var res = `nourriture`;
+                                break;
+                            case 'Petrole':
+                                var res = `petrole`;
+                                break;
                         }
+                        var embed = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: results[0].drapeau
+                            },
+                            title: `\`Vous avez fait une offre au marché internationnal :\``,
+                            fields: interaction.message.embeds[0].fields,
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${results[0].devise}`
+                            },
+                        };
 
-                        var sql6 = `
-                                SELECT * FROM pays WHERE id_joueur="${interaction.user.id}" LIMIT 1`;
-                        connection.query(sql6, async(err, results) => {
+                        interaction.message.edit({ embeds: [embed], components: [] });
+
+                        const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
+                        const thread = await salon_commerce.threads
+                            .create({
+                                name: `${quantité.toLocaleString('en-US')} [${ressource}] à ${prix_u.toLocaleString('en-US')} | ${prix.toLocaleString('en-US')} $ | ${interaction.member.displayName}`
+                            });
+
+                        const offre = {
+                            author: {
+                                name: `${results[0].rang} de ${results[0].nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: results[0].drapeau
+                            },
+                            title: `\`Nouvelle offre :\``,
+                            fields: [{
+                                    name: `Ressource :`,
+                                    value: codeBlock(`• ${ressource}`) + `\u200B`
+                                },
+                                {
+                                    name: `Quantité :`,
+                                    value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
+                                },
+                                {
+                                    name: `Prix :`,
+                                    value: codeBlock(`• A l'unité : ${prix_u.toLocaleString('en-US')}\n` +
+                                        `• Au total : ${prix.toLocaleString('en-US')}`) + `\u200B`
+                                }
+                            ],
+                            color: interaction.member.displayHexColor,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${results[0].devise}`
+                            },
+                        };
+
+                        const row = new MessageActionRow()
+                            .addComponents(
+                                new MessageButton()
+                                .setLabel(`Acheter`)
+                                .setEmoji(`💵`)
+                                .setCustomId('acheter-' + id_joueur)
+                                .setStyle('SUCCESS'),
+                            )
+
+                        thread.send({ embeds: [offre], components: [row] });
+
+                        interaction.channel.send({ content: `Votre offre a été publié pour 1 jour : ${thread}` });
+                        await vendreCommandCooldown.addUser(interaction.member.id);
+
+                        var sql = `UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}"`;
+
+                        connection.query(sql, async(err, results) => {
                             if (err) {
                                 throw err;
                             }
-
-                            if (enought_res == true) {
-                                if (results[0].cash >= prix) {
-
-                                    const acheteur = {
-                                        author: {
-                                            name: `${results[0].rang} de ${results[0].nom}`,
-                                            icon_url: interaction.member.displayAvatarURL()
-                                        },
-                                        thumbnail: {
-                                            url: results[0].drapeau,
-                                        },
-                                        title: `\`Achat validé :\``,
-                                        fields: [{
-                                                name: `Vendeur :`,
-                                                value: `<@${id_joueur}>`
-                                            },
-                                            {
-                                                name: `Ressource :`,
-                                                value: codeBlock(`• ${box.get('ressource')}`)
-                                            },
-                                            {
-                                                name: `Quantité :`,
-                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
-                                            },
-                                            {
-                                                name: `Prix :`,
-                                                value: codeBlock(`• Au total : ${prix.toLocaleString('en-US')} $\n` +
-                                                    `• A l'unité : ${prix_u}`)
-                                            }
-                                        ],
-                                        color: interaction.member.displayHexColor,
-                                        timestamp: new Date(),
-                                        footer: {
-                                            text: `${results[0].devise}`
-                                        },
-                                    };
-
-                                    const vendeur = {
-                                        author: {
-                                            name: `${results[0].rang} de ${results[0].nom}`,
-                                            icon_url: interaction.member.displayAvatarURL()
-                                        },
-                                        thumbnail: {
-                                            url: results[0].drapeau,
-                                        },
-                                        title: `\`Marché conclu :\``,
-                                        fields: [{
-                                                name: `Acheteur :`,
-                                                value: `<@${interaction.user.id}>`
-                                            },
-                                            {
-                                                name: `Ressource :`,
-                                                value: codeBlock(`• ${box.get('ressource')}`)
-                                            },
-                                            {
-                                                name: `Quantité :`,
-                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
-                                            },
-                                            {
-                                                name: `Prix :`,
-                                                value: codeBlock(`• Au total : ${prix.toLocaleString('en-US')} $\n` +
-                                                    `• A l'unité : ${prix_u}`)
-                                            }
-                                        ],
-                                        color: interaction.member.displayHexColor,
-                                        timestamp: new Date(),
-                                        footer: {
-                                            text: `${results[0].devise}`
-                                        },
-                                    };
-
-                                    const commerce = {
-                                        author: {
-                                            name: `${results[0].rang} de ${results[0].nom}`,
-                                            icon_url: interaction.member.displayAvatarURL()
-                                        },
-                                        thumbnail: {
-                                            url: results[0].drapeau,
-                                        },
-                                        title: `\`Marché conclu :\``,
-                                        fields: [{
-                                                name: `Vendeur :`,
-                                                value: `<@${id_joueur}>`,
-                                                inline: true
-                                            },
-                                            {
-                                                name: `Acheteur :`,
-                                                value: `<@${interaction.user.id}>`,
-                                                inline: true
-                                            },
-                                            {
-                                                name: `Ressource :`,
-                                                value: codeBlock(`• ${box.get('ressource')}`)
-                                            },
-                                            {
-                                                name: `Quantité :`,
-                                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
-                                            },
-                                            {
-                                                name: `Prix :`,
-                                                value: codeBlock(`• Au total : ${prix.toLocaleString('en-US')} $\n` +
-                                                    `• A l'unité : ${prix_u}`)
-                                            }
-                                        ],
-                                        color: interaction.member.displayHexColor,
-                                        timestamp: new Date(),
-                                        footer: {
-                                            text: `${results[0].devise}`
-                                        },
-                                    };
-
-                                    const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
-                                    salon_commerce.send({ embeds: [commerce] })
-
-                                    interaction.user.send({ embeds: [acheteur] });
-                                    const id_vendeur = await interaction.guild.members.fetch(id_joueur);
-                                    id_vendeur.send({ embeds: [vendeur] });
-
-                                    const thread = await interaction.channel.fetch();
-                                    await thread.delete();
-
-                                    var sql7 = `
-                                        UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
-                                        UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${interaction.user.id}";
-                                        UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}";
-                                        UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${interaction.user.id}"`;
-                                    connection.query(sql7, async(err, results) => {
-                                        if (err) {
-                                            throw err;
-                                        }
-                                    })
-
-                                } else {
-                                    var reponse = codeBlock('diff', `- Vous n'avez pas l'argent nécessaire pour conclure l'affaire : ${results[0].cash.toLocaleString('en-US')}/${prix.toLocaleString('en-US')}`);
-                                    await interaction.reply({ content: reponse, ephemeral: true });
-                                }
-                            } else {
-                                var reponse = codeBlock('diff', `- Ce vendeur n'a pas les ressources suffisantes pour conclure l'affaire : ${box.get('joueur_res').toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
-                                await interaction.reply({ content: reponse });
-
-                            }
-                        })
+                        });
                     });
-                });
+
+                } else {
+                    var reponse = codeBlock('diff', `- Vous n'êtes pas l'auteur de cette commande`);
+                    interaction.reply({ content: reponse, ephemeral: true });
+                }
                 //endregion
 
                 //region [Vente rapide]
-            } else if (interaction.customId.includes('qvendre') == true) {
+            } else if (interaction.customId.includes('qvente') == true) {
 
-                var id_joueur = interaction.customId.slice(8);
+                var id_joueur = interaction.customId.slice(7);
                 if (id_joueur == interaction.member.id) {
 
                     var fields = interaction.message.embeds[0].fields
@@ -1593,7 +1705,8 @@ module.exports = {
                         var sql = `
                         INSERT INTO qvente SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
                         UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
-                        UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}"`;
+                        UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}";
+                        INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="qvente", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
 
                         connection.query(sql, async(err, results) => {
                             if (err) {
@@ -1690,7 +1803,7 @@ module.exports = {
                                     throw err;
                                 }
                                 var arrayQvente = Object.values(results);
-                                var sql = `DELETE FROM qachat WHERE id_vente='${arrayQvente[0].id_vente}'`;
+                                var sql = `DELETE FROM qachat WHERE ida_achat='${arrayQvente[0].id_vente}'`;
                                 connection.query(sql, async(err, results) => {
                                     if (err) {
                                         throw err;
@@ -1701,7 +1814,8 @@ module.exports = {
                             var sql = `
                                 INSERT INTO qachat SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
                                 UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${id_joueur}";
-                                UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${id_joueur}"`;
+                                UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${id_joueur}";
+                                INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="qachat", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
 
                             connection.query(sql, async(err, results) => {
                                 if (err) {
@@ -1875,7 +1989,7 @@ module.exports = {
                         conso_T_centrale_elec_petrole = process.env.CONSO_CENTRALE_ELEC_PETROLE * results[0].centrale_elec;
 
                         var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
-                        var diff = (prod_T_centrale_elec - conso);
+                        var diff = (prod_T_elec - conso);
                         if (diff > 0) {
                             var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}'`);
                         } else if (diff == 0) {
@@ -1932,7 +2046,7 @@ module.exports = {
                         prod_T_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec + process.env.PROD_EOLIENNE * results[0].eolienne;
 
                         var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
-                        var diff = (prod_T_centrale_elec - conso);
+                        var diff = (prod_T_elec - conso);
                         if (diff > 0) {
                             var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}'`);
                         } else if (diff == 0) {

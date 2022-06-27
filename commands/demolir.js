@@ -10,13 +10,13 @@ module.exports = {
             .setDescription(`Le type de bâtiment que vous voulez construire`)
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
-            .addChoice(`Centrale électrique`, 'Centrale_elec')
+            .addChoice(`Centrale électrique`, 'Centrale électrique')
             .addChoice(`Eolienne`, 'Eolienne')
             .addChoice(`Mine`, 'Mine')
-            .addChoice(`Pompe à eau`, 'Pompe_a_eau')
+            .addChoice(`Pompe à eau`, 'Pompe à eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
             .addChoice(`Scierie`, 'Scierie')
-            .addChoice(`Usine civile`, 'Usine_civile')
+            .addChoice(`Usine civile`, 'Usine civile')
             .setRequired(true))
         .addIntegerOption(nombre =>
             nombre.setName('nombre')
@@ -36,13 +36,13 @@ module.exports = {
 
             var batiment = interaction.options.getString('bâtiment');
             const nombre = interaction.options.getInteger('nombre');
-            if (batiment == 'Pompe_a_eau') {
-                batiment = 'Pompe à eau'
-            } else if (batiment == 'Usine_civile') {
-                batiment = 'Usine civile'
-            } else if (batiment == 'Centrale_elec') {
-                batiment = 'Centrale électrique'
-            }
+            // if (batiment == 'Pompe_a_eau') {
+            //     batiment = 'Pompe à eau'
+            // } else if (batiment == 'Usine_civile') {
+            //     batiment = 'Usine civile'
+            // } else if (batiment == 'Centrale_elec') {
+            //     batiment = 'Centrale électrique'
+            // }
 
             var demo_batiment = true
             var need_bois = false;

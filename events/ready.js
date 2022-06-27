@@ -446,7 +446,7 @@ module.exports = {
 
                                 if (conso_usine_civile == true) {
 
-                                    var prod_T_usine_civile = process.env.PROD_BRIQUETERIE * stats[0].usine_civile;
+                                    var prod_T_usine_civile = process.env.PROD_USINE_CIVILE * stats[0].usine_civile;
                                     var sql = `
                                         UPDATE pays SET bois=bois-${conso_T_usine_civile_bois} WHERE id_joueur="${id[1]}";
                                         UPDATE pays SET metaux=metaux-${conso_T_usine_civile_metaux} WHERE id_joueur="${id[1]}";
@@ -686,129 +686,164 @@ module.exports = {
 
         async function marketUpdate() {
 
-            bc_prix_total = 0;
-            bc_res_total = 0;
+            bc_prix_total = 5;
+            bc_res_total = 5;
 
-            bois_prix_total = 0;
-            bois_res_total = 0;
+            bois_prix_total = 2.5;
+            bois_res_total = 2.5;
 
-            brique_prix_total = 0;
-            brique_res_total = 0;
+            brique_prix_total = 2.5;
+            brique_res_total = 2.5;
 
-            eau_prix_total = 0;
-            eau_res_total = 0;
+            eau_prix_total = 2;
+            eau_res_total = 2;
 
-            metaux_prix_total = 0;
-            metaux_res_total = 0;
+            metaux_prix_total = 3;
+            metaux_res_total = 3;
 
-            nourriture_prix_total = 0;
-            nourriture_res_total = 0;
+            nourriture_prix_total = 2.5;
+            nourriture_res_total = 2.5;
 
-            petrole_prix_total = 0;
-            petrole_res_total = 0;
+            petrole_prix_total = 3;
+            petrole_res_total = 3;
 
             var sql = `
-                    SELECT * FROM trade`;
+                    SELECT * FROM trade ORDER BY ressource`;
             connection.query(sql, async(err, results) => {
                 if (err) {
                     throw err;
                 }
                 var arrayOffre = Object.values(results);
-                arrayOffre.forEach(chaqueOffre);
+                arrayOffre.forEach(chaqueMarket);
 
-                function chaqueOffre(value, index, array) {
+                function chaqueMarket(value, index, array) {
 
-                    switch (results[index].ressource) {
+                    switch (value.ressource) {
                         case 'Biens de consommation':
-                            bc_prix_total += results[index].prix;
-                            bc_res_total += results[index].quantite;
+                            bc_prix_total += value.prix;
+                            bc_res_total += value.quantite;
                         case 'Bois':
-                            bois_prix_total += results[index].prix;
-                            bois_res_total += results[index].quantite;
+                            bois_prix_total += value.prix;
+                            bois_res_total += value.quantite;
                         case 'Brique':
-                            brique_prix_total += results[index].prix;
-                            brique_res_total += results[index].quantite;
+                            brique_prix_total += value.prix;
+                            brique_res_total += value.quantite;
                         case 'Eau':
-                            eau_prix_total += results[index].prix;
-                            eau_res_total += results[index].quantite;
+                            eau_prix_total += value.prix;
+                            eau_res_total += value.quantite;
                         case 'Metaux':
-                            metaux_prix_total += results[index].prix;
-                            metaux_res_total += results[index].quantite;
+                            metaux_prix_total += value.prix;
+                            metaux_res_total += value.quantite;
                         case 'Nourriture':
-                            nourriture_prix_total += results[index].prix;
-                            nourriture_res_total += results[index].quantite;
+                            nourriture_prix_total += value.prix;
+                            nourriture_res_total += value.quantite;
                         case 'Petrole':
-                            petrole_prix_total += results[index].prix;
-                            petrole_res_total += results[index].quantite;
+                            petrole_prix_total += value.prix;
+                            petrole_res_total += value.quantite;
                     }
                 }
             })
 
             var sql = `
-                    SELECT * FROM qvente;
-                    SELECT * FROM qachat`;
+                    SELECT * FROM qvente ORDER BY ressource`;
             connection.query(sql, async(err, results) => {
                 if (err) {
                     throw err;
                 }
-                var arrayQm = Object.values(results);
-                arrayQm.forEach(chaqueQm);
+                var arrayOffre = Object.values(results);
+                arrayOffre.forEach(chaqueMarket);
 
-                function chaqueQm(value, index, array) {
+                function chaqueMarket(value, index, array) {
 
-                    switch (results[index].ressource) {
+                    switch (value.ressource) {
                         case 'Biens de consommation':
-                            bc_prix_total += results[index].prix;
-                            bc_res_total += results[index].quantite;
+                            bc_prix_total += value.prix;
+                            bc_res_total += value.quantite;
                         case 'Bois':
-                            bois_prix_total += results[index].prix;
-                            bois_res_total += results[index].quantite;
+                            bois_prix_total += value.prix;
+                            bois_res_total += value.quantite;
                         case 'Brique':
-                            brique_prix_total += results[index].prix;
-                            brique_res_total += results[index].quantite;
+                            brique_prix_total += value.prix;
+                            brique_res_total += value.quantite;
                         case 'Eau':
-                            eau_prix_total += results[index].prix;
-                            eau_res_total += results[index].quantite;
+                            eau_prix_total += value.prix;
+                            eau_res_total += value.quantite;
                         case 'Metaux':
-                            metaux_prix_total += results[index].prix;
-                            metaux_res_total += results[index].quantite;
+                            metaux_prix_total += value.prix;
+                            metaux_res_total += value.quantite;
                         case 'Nourriture':
-                            nourriture_prix_total += results[index].prix;
-                            nourriture_res_total += results[index].quantite;
+                            nourriture_prix_total += value.prix;
+                            nourriture_res_total += value.quantite;
                         case 'Petrole':
-                            petrole_prix_total += results[index].prix;
-                            petrole_res_total += results[index].quantite;
+                            petrole_prix_total += value.prix;
+                            petrole_res_total += value.quantite;
                     }
                 }
-
-                bc_prix_moyen = bc_prix_total / bc_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                bois_prix_moyen = bois_prix_total / bois_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                brique_prix_moyen = brique_prix_total / brique_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                eau_prix_moyen = eau_prix_total / eau_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                metaux_prix_moyen = metaux_prix_total / metaux_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                nourriture_prix_moyen = nourriture_prix_total / nourriture_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                petrole_prix_moyen = petrole_prix_total / petrole_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
-
-                const prix = {
-                    "bc": bc_prix_moyen.toFixed(2),
-                    "bois": bois_prix_moyen.toFixed(2),
-                    "brique": brique_prix_moyen.toFixed(2),
-                    "eau": eau_prix_moyen.toFixed(2),
-                    "metaux": metaux_prix_moyen.toFixed(2),
-                    "nourriture": nourriture_prix_moyen.toFixed(2),
-                    "petrole": petrole_prix_moyen.toFixed(2)
-                };
-                const jsonPrix = JSON.stringify(prix);
-                writeFileSync('data/prix.json', jsonPrix)
             })
 
+            var sql = `
+                    SELECT * FROM qachat ORDER BY ressource`;
+            connection.query(sql, async(err, results) => {
+                if (err) {
+                    throw err;
+                }
+                var arrayOffre = Object.values(results);
+                arrayOffre.forEach(chaqueMarket);
+
+                function chaqueMarket(value, index, array) {
+
+                    switch (value.ressource) {
+                        case 'Biens de consommation':
+                            bc_prix_total += value.prix;
+                            bc_res_total += value.quantite;
+                        case 'Bois':
+                            bois_prix_total += value.prix;
+                            bois_res_total += value.quantite;
+                        case 'Brique':
+                            brique_prix_total += value.prix;
+                            brique_res_total += value.quantite;
+                        case 'Eau':
+                            eau_prix_total += value.prix;
+                            eau_res_total += value.quantite;
+                        case 'Metaux':
+                            metaux_prix_total += value.prix;
+                            metaux_res_total += value.quantite;
+                        case 'Nourriture':
+                            nourriture_prix_total += value.prix;
+                            nourriture_res_total += value.quantite;
+                        case 'Petrole':
+                            petrole_prix_total += value.prix;
+                            petrole_res_total += value.quantite;
+                    }
+                }
+            })
+
+            bc_prix_moyen = bc_prix_total / bc_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            bois_prix_moyen = bois_prix_total / bois_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            brique_prix_moyen = brique_prix_total / brique_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            eau_prix_moyen = eau_prix_total / eau_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            metaux_prix_moyen = metaux_prix_total / metaux_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            nourriture_prix_moyen = nourriture_prix_total / nourriture_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            petrole_prix_moyen = petrole_prix_total / petrole_res_total + chance.floating({ min: 0, max: 0.1, fixed: 2 });
+
+            const prix = {
+                "bc": bc_prix_moyen.toFixed(2),
+                "bois": bois_prix_moyen.toFixed(2),
+                "brique": brique_prix_moyen.toFixed(2),
+                "eau": eau_prix_moyen.toFixed(2),
+                "metaux": metaux_prix_moyen.toFixed(2),
+                "nourriture": nourriture_prix_moyen.toFixed(2),
+                "petrole": petrole_prix_moyen.toFixed(2)
+            };
+            const jsonPrix = JSON.stringify(prix);
+            writeFileSync('data/prix.json', jsonPrix)
         }
-        setInterval(marketUpdate, ms('1h'));
+        setInterval(marketUpdate, ms('10m'));
     }
 }

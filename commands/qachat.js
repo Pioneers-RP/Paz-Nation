@@ -67,8 +67,7 @@ module.exports = {
                             },
                             {
                                 name: `Prix :`,
-                                value: codeBlock(
-                                    `• A l'unité (+30% du prix moyen) : ${prix_achat}\n` +
+                                value: codeBlock(`• A l'unité (+30% du prix moyen) : ${prix_achat}\n` +
                                     `• Au total : ${prix.toLocaleString('en-US')}`) + `\u200B`
                             },
                             {

@@ -83,7 +83,7 @@ module.exports = {
                             new MessageButton()
                             .setLabel(`Vendre`)
                             .setEmoji(`💵`)
-                            .setCustomId(`qvendre-${interaction.user.id}`)
+                            .setCustomId(`qvente-${interaction.user.id}`)
                             .setStyle('SUCCESS'),
                         )
                         .addComponents(

@@ -40,7 +40,7 @@ module.exports = {
                     url: `${results[0].drapeau}`,
                 },
                 title: `\`Votre population a désomais accès à :\``,
-                description: `${quantite} nourritures`,
+                description: `${quantite.toLocaleString('en-US')} nourritures`,
                 color: interaction.member.displayHexColor
             };
 
