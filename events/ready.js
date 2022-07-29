@@ -74,7 +74,7 @@ module.exports = {
             function autoUpdate() {
                 const jsonObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
 
-                var sql = `SELECT * FROM pays WHERE id_joueur="764403931534065675"`;
+                var sql = `SELECT * FROM pays`;
                 connection.query(sql, async(err, results) => {
 
                     var arrayPays = Object.values(results);
