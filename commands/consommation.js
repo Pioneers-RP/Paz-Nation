@@ -10,11 +10,7 @@ module.exports = {
         const { connection } = require('../index.js');
         const jsonObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
         var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             var prod = Math.round(process.env.PROD_USINE_CIVILE * results[0].usine_civile);
             var conso = 0;
@@ -50,7 +46,7 @@ module.exports = {
             };
 
             var prod = Math.round(process.env.PROD_POMPE_A_EAU * results[0].pompe_a_eau * ((parseInt((eval(`jsonObject.${results[0].region}.eau`))) + 100) / 100));
-            var conso = Math.round(process.env.CONSO_BRIQUETERIE_EAU * results[0].briqueterie + process.env.CONSO_CHAMP_EAU * results[0].champ);
+            var conso = Math.round(process.env.CONSO_BRIQUETERIE_EAU * results[0].briqueterie + process.env.CONSO_CHAMP_EAU * results[0].champ + results[0].eau_appro / 48);
             var diff = (prod - conso);
             if (diff > 0) {
                 var eau = codeBlock('ml', `"-${conso.toLocaleString('en-US')} | +${prod.toLocaleString('en-US')} | :${(prod - conso).toLocaleString('en-US')}" | 📦 ${results[0].eau.toLocaleString('en-US')}`);
@@ -60,8 +56,8 @@ module.exports = {
                 var eau = codeBlock('diff', `-${conso.toLocaleString('en-US')} | +${prod.toLocaleString('en-US')} | :${(prod - conso).toLocaleString('en-US')} | 📦 ${results[0].eau.toLocaleString('en-US')}`);
             };
 
-            var prod = Math.round(process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec + process.env.PROD_EOLIENNE * results[0].eolienne);
-            var conso = Math.round(process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile);
+            var prod = Math.round(process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne);
+            var conso = Math.round(process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * results[0].quartier + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile);
             var diff = (prod - conso);
             if (diff > 0) {
                 var electricite = codeBlock('ml', `"-${conso.toLocaleString('en-US')} | +${prod.toLocaleString('en-US')} | :${(prod - conso).toLocaleString('en-US')}"`);
@@ -83,7 +79,7 @@ module.exports = {
             };
 
             var prod = Math.round(process.env.PROD_CHAMP * results[0].champ * ((parseInt((eval(`jsonObject.${results[0].region}.nourriture`))) + 100) / 100));
-            var conso = Math.round((results[0].approvisionnement) / 48)
+            var conso = Math.round((results[0].nourriture_appro) / 48)
             var diff = (prod - conso);
             if (diff > 0) {
                 var nourriture = codeBlock('ml', `"-${conso.toLocaleString('en-US')} | +${prod.toLocaleString('en-US')} | :${(prod - conso).toLocaleString('en-US')}" | 📦 ${results[0].nourriture.toLocaleString('en-US')}`);
@@ -94,7 +90,7 @@ module.exports = {
             };
 
             var prod = Math.round(process.env.PROD_PUMPJACK * results[0].pumpjack * ((parseInt((eval(`jsonObject.${results[0].region}.petrole`))) + 100) / 100));
-            var conso = Math.round(process.env.CONSO_CENTRALE_ELEC_PETROLE * results[0].centrale_elec + process.env.CONSO_MINE_PETROLE * results[0].mine + process.env.CONSO_POMPE_A_EAU_PETROLE * results[0].pompe_a_eau + process.env.CONSO_SCIERIE_PETROLE * results[0].scierie + process.env.CONSO_USINE_CIVILE_PETROLE * results[0].usine_civile);
+            var conso = Math.round(process.env.CONSO_CENTRALE_FIOUL_PETROLE * results[0].centrale_fioul + process.env.CONSO_MINE_PETROLE * results[0].mine + process.env.CONSO_POMPE_A_EAU_PETROLE * results[0].pompe_a_eau + process.env.CONSO_SCIERIE_PETROLE * results[0].scierie + process.env.CONSO_USINE_CIVILE_PETROLE * results[0].usine_civile);
             var diff = (prod - conso);
             if (diff > 0) {
                 var petrole = codeBlock('ml', `"-${conso.toLocaleString('en-US')} | +${prod.toLocaleString('en-US')} | :${(prod - conso).toLocaleString('en-US')}" | 📦 ${results[0].petrole.toLocaleString('en-US')}`);

@@ -10,11 +10,12 @@ module.exports = {
             .setDescription(`Le type de bâtiment que vous voulez construire`)
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
-            .addChoice(`Centrale électrique`, 'Centrale électrique')
+            .addChoice(`Centrale au fioul`, 'Centrale au fioul')
             .addChoice(`Eolienne`, 'Eolienne')
             .addChoice(`Mine`, 'Mine')
             .addChoice(`Pompe à eau`, 'Pompe à eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
+            .addChoice(`Quartier`, 'Quartier')
             .addChoice(`Scierie`, 'Scierie')
             .addChoice(`Usine civile`, 'Usine civile')
             .setRequired(true))
@@ -26,13 +27,9 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `
-        SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             var batiment = interaction.options.getString('bâtiment');
             const nombre = interaction.options.getInteger('nombre');
@@ -86,22 +83,22 @@ module.exports = {
                 var avant = results[0].champ;
                 var après = results[0].champ - nombre;
 
-            } else if (batiment == 'Centrale électrique') {
+            } else if (batiment == 'Centrale au fioul') {
                 var need_bois = true;
                 var need_brique = true;
                 var need_metaux = true;
 
-                if (nombre > results[0].centrale_elec) {
+                if (nombre > results[0].centrale_fioul) {
                     var demo_batiment = false
-                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].centrale_elec.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} centrales électrique`);
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].centrale_fioul.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} centrales au fioul`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
-                var demo_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
-                var demo_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre * process.env.RETOUR_POURCENTAGE;
-                var demo_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE;
-                var demo_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
-                var avant = results[0].centrale_elec;
-                var après = results[0].centrale_elec - nombre;
+                var demo_T_libre = process.env.SURFACE_CENTRALE_FIOUL * nombre;
+                var demo_bois = process.env.CONST_CENTRALE_FIOUL_BOIS * nombre * process.env.RETOUR_POURCENTAGE;
+                var demo_brique = process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE;
+                var demo_metaux = process.env.CONST_CENTRALE_FIOUL_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
+                var avant = results[0].centrale_fioul;
+                var après = results[0].centrale_fioul - nombre;
 
             } else if (batiment == 'Eolienne') {
                 var need_bois = false;
@@ -168,6 +165,23 @@ module.exports = {
                 var demo_metaux = process.env.CONST_PUMPJACK_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
                 var avant = results[0].pumpjack;
                 var après = results[0].pumpjack - nombre;
+
+            } else if (batiment == 'Quartier') {
+                var need_bois = true;
+                var need_brique = true;
+                var need_metaux = true;
+
+                if (nombre > results[0].quartier) {
+                    var demo_batiment = false
+                    var reponse = codeBlock('diff', `- Vous n'avez que ${results[0].quartier.toLocaleString('en-US')}/${nombre.toLocaleString('en-US')} quartiers`);
+                    await interaction.reply({ content: reponse, ephemeral: true });
+                }
+                var demo_T_libre = process.env.SURFACE_QUARTIER * nombre;
+                var demo_bois = process.env.CONST_QUARTIER_BOIS * nombre * process.env.RETOUR_POURCENTAGE;
+                var demo_brique = process.env.CONST_QUARTIER_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE;
+                var demo_metaux = process.env.CONST_QUARTIER_METAUX * nombre * process.env.RETOUR_POURCENTAGE;
+                var avant = results[0].quartier;
+                var après = results[0].quartier - nombre;
 
             } else if (batiment == 'Scierie') {
                 var need_bois = true;

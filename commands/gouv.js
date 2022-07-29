@@ -17,14 +17,8 @@ module.exports = {
         };
 
         function gouv(joueur) {
-
-            var sql = `
-            SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
-
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
+            var sql = `SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
+            connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                 if (!results[0]) {
                     var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);

@@ -35,16 +35,12 @@ module.exports = {
         const userCooldowned = await vendreCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-            var reponse = codeBlock('diff', `- Vous avez déjà fait une offre récemment. Il reste ${timeLeft.minutes}min ${timeLeft.seconds}sec avant de pouvoir la changer à nouveau.`);
+            const reponse = codeBlock('diff', `- Vous avez déjà fait une offre récemment. Il reste ${timeLeft.minutes}min ${timeLeft.seconds}sec avant de pouvoir la changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
-            var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
+            
+            var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+            connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                 const ressource = interaction.options.getString('ressource');
                 var quantité = interaction.options.getInteger('quantité');
@@ -55,9 +51,10 @@ module.exports = {
                     var reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 } else {
-                    function offre(prix_moyen) {
 
-                        var prix = Math.round(quantité * prix_u);
+                    function offre(prix_moyen) {
+                        const pourcentage = (prix_u / prix_moyen * 100).toFixed(1)
+                        const prix = Math.round(quantité * prix_u);
 
                         const embed = {
                             author: {
@@ -81,7 +78,7 @@ module.exports = {
                                 {
                                     name: `Prix :`,
                                     value: codeBlock(
-                                        `• A l'unité : ${(prix_u).toFixed(2)}\n` +
+                                        `• A l'unité : ${(prix_u).toFixed(2)} (${pourcentage}%)\n` +
                                         `• Au total : ${prix.toLocaleString('en-US')}`) + `\u200B`
                                 }
                             ],
@@ -138,8 +135,8 @@ module.exports = {
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                var prix_bas = (jsonPrix.bois * 0.7).toFixed(2);
+                                var prix_haut = (jsonPrix.bois * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
                                     var reponse = codeBlock('diff', `- Le prix de vente du bois est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
@@ -158,8 +155,8 @@ module.exports = {
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                var prix_bas = (jsonPrix.brique * 0.7).toFixed(2);
+                                var prix_haut = (jsonPrix.brique * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
                                     var reponse = codeBlock('diff', `- Le prix de vente des briques est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
@@ -178,8 +175,8 @@ module.exports = {
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                var prix_bas = (jsonPrix.eau * 0.7).toFixed(2);
+                                var prix_haut = (jsonPrix.eau * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
                                     var reponse = codeBlock('diff', `- Le prix de vente de l'eau est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
@@ -198,8 +195,8 @@ module.exports = {
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                var prix_bas = (jsonPrix.metaux * 0.7).toFixed(2);
+                                var prix_haut = (jsonPrix.metaux * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
                                     var reponse = codeBlock('diff', `- Le prix de vente des métaux est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
@@ -218,8 +215,8 @@ module.exports = {
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                var prix_bas = (jsonPrix.nourriture * 0.7).toFixed(2);
+                                var prix_haut = (jsonPrix.nourriture * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
                                     var reponse = codeBlock('diff', `- Le prix de vente de la nourriture est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
@@ -238,8 +235,8 @@ module.exports = {
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                var prix_bas = (jsonPrix.petrole * 0.7).toFixed(2);
+                                var prix_haut = (jsonPrix.petrole * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
                                     var reponse = codeBlock('diff', `- Le prix de vente du pétrole est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);

@@ -29,13 +29,8 @@ module.exports = {
             if (image) {
                 if (await isImageURL(image) == true) {
 
-                    var sql = `
-                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                    connection.query(sql, async(err, results) => {if (err) { throw err; }
 
                         var embed = {
                             author: {
@@ -69,13 +64,8 @@ module.exports = {
                 };
 
             } else {
-                var sql = `
-                SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                connection.query(sql, async(err, results) => {if (err) { throw err; }
 
                     var embed = {
                         author: {

@@ -9,24 +9,19 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             surface_T_briqueterie = process.env.SURFACE_BRIQUETERIE * results[0].briqueterie;
             surface_T_champ = process.env.SURFACE_CHAMP * results[0].champ;
-            surface_T_centrale_elec = process.env.SURFACE_CENTRALE_ELEC * results[0].centrale_elec;
+            surface_T_centrale_fioul = process.env.SURFACE_CENTRALE_FIOUL * results[0].centrale_fioul;
             surface_T_eolienne = process.env.SURFACE_EOLIENNE * results[0].eolienne;
             surface_T_mine = process.env.SURFACE_MINE * results[0].mine;
             surface_T_pompe_a_eau = process.env.SURFACE_POMPE_A_EAU * results[0].pompe_a_eau;
             surface_T_pumpjack = process.env.SURFACE_PUMPJACK * results[0].pumpjack;
             surface_T_scierie = process.env.SURFACE_SCIERIE * results[0].scierie;
             surface_T_usine_civile = process.env.SURFACE_USINE_CIVILE * results[0].usine_civile;
-            surface_T = surface_T_briqueterie + surface_T_champ + surface_T_centrale_elec + surface_T_eolienne + surface_T_pompe_a_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
+            surface_T = surface_T_briqueterie + surface_T_champ + surface_T_centrale_fioul + surface_T_eolienne + surface_T_pompe_a_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
 
             const embed = {
                 author: {
@@ -53,10 +48,10 @@ module.exports = {
                             `• Surface totale : ${surface_T_champ.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
-                        name: `> ⚡ Centrale électrique :`,
+                        name: `> ⚡ Centrale au fioul :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].centrale_elec.toLocaleString('en-US')}\n` +
-                            `• Surface totale : ${surface_T_centrale_elec.toLocaleString('en-US')} km²`) + `\u200B`
+                            `• Nombre d'usine : ${results[0].centrale_fioul.toLocaleString('en-US')}\n` +
+                            `• Surface totale : ${surface_T_centrale_fioul.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> ⚡ Eolienne :`,
@@ -120,10 +115,10 @@ module.exports = {
                             value: 'champ',
                         },
                         {
-                            label: `Centrale électrique`,
+                            label: `Centrale au fioul`,
                             emoji: `⚡`,
                             description: `Produit de l'électricité`,
-                            value: 'centrale_elec',
+                            value: 'centrale_fioul',
                         },
                         {
                             label: `Eolienne`,

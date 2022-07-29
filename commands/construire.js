@@ -10,11 +10,12 @@ module.exports = {
             .setDescription(`Le type de bâtiment que vous voulez construire`)
             .addChoice(`Briqueterie`, 'Briqueterie')
             .addChoice(`Champ`, 'Champ')
-            .addChoice(`Centrale électrique`, 'Centrale électrique')
+            .addChoice(`Centrale au fioul`, 'Centrale au fioul')
             .addChoice(`Eolienne`, 'Eolienne')
             .addChoice(`Mine`, 'Mine')
             .addChoice(`Pompe à eau`, 'Pompe à eau')
             .addChoice(`Pumpjack`, 'Pumpjack')
+            .addChoice(`Quartier`, 'Quartier')
             .addChoice(`Scierie`, 'Scierie')
             .addChoice(`Usine civile`, 'Usine civile')
             .setRequired(true))
@@ -26,13 +27,9 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `
-        SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             var batiment = interaction.options.getString('bâtiment');
             const nombre = interaction.options.getInteger('nombre');
@@ -112,30 +109,30 @@ module.exports = {
                             var manque_metaux = true
                         }
                         break;
-                    case 'Centrale électrique':
+                    case 'Centrale au fioul':
                         var need_bois = true;
                         var need_brique = true;
                         var need_metaux = true;
 
-                        var const_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
+                        var const_T_libre = process.env.SURFACE_CENTRALE_FIOUL * nombre;
                         if (const_T_libre > results[0].T_libre) {
                             var const_batiment = false
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre;
+                        var const_bois = process.env.CONST_CENTRALE_FIOUL_BOIS * nombre;
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre;
+                        var const_brique = process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre;
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre;
+                        var const_metaux = process.env.CONST_CENTRALE_FIOUL_METAUX * nombre;
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -240,6 +237,35 @@ module.exports = {
                         }
 
                         var const_metaux = process.env.CONST_PUMPJACK_METAUX * nombre;
+                        if (const_metaux > results[0].metaux) {
+                            var const_batiment = false
+                            var manque_metaux = true
+                        }
+                        break;
+                    case 'Quartier':
+                        var need_bois = true;
+                        var need_brique = true;
+                        var need_metaux = true;
+
+                        var const_T_libre = process.env.SURFACE_QUARTIER * nombre;
+                        if (const_T_libre > results[0].T_libre) {
+                            var const_batiment = false
+                            var manque_T_libre = true
+                        }
+
+                        var const_bois = process.env.CONST_QUARTIER_BOIS * nombre;
+                        if (const_bois > results[0].bois) {
+                            var const_batiment = false
+                            var manque_bois = true
+                        }
+
+                        var const_brique = process.env.CONST_QUARTIER_BRIQUE * nombre;
+                        if (const_brique > results[0].brique) {
+                            var const_batiment = false
+                            var manque_brique = true
+                        }
+
+                        var const_metaux = process.env.CONST_QUARTIER_METAUX * nombre;
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true

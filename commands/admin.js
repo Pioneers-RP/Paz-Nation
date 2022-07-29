@@ -36,6 +36,10 @@ module.exports = {
                 .setRequired(true)))
         .addSubcommand(subcommand =>
             subcommand
+            .setName('start')
+            .setDescription('NE PAS UTILISER SVP'))
+        .addSubcommand(subcommand =>
+            subcommand
             .setName('bouton')
             .setDescription('NE PAS UTILISER SVP'))
         .addSubcommand(subcommand =>
@@ -56,29 +60,21 @@ module.exports = {
                 const item = interaction.options.getString('item');
                 var quantité = interaction.options.getInteger('quantité');
 
-                var sql = `
-                    SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                var sql = `SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
+                connection.query(sql, async(err, results) => {if (err) { throw err; }
 
                     if (!results[0]) {
                         var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
                         await interaction.reply({ content: reponse, ephemeral: true });
                     } else {
 
-                        var sql = `
-                            UPDATE pays SET ${item}=${item}+${quantité} WHERE id_joueur="${joueur.id}"`;
+                        var sql = `UPDATE pays SET ${item}=${item}+${quantité} WHERE id_joueur="${joueur.id}"`;
 
                         if (item === 'T_libre' | 't_occ') {
-                            var sql = sql + `;
-                            UPDATE pays SET T_total=T_total+${quantité} WHERE id_joueur=${interaction.user.id}`
+                            var sql = sql + `;UPDATE pays SET T_total=T_total+${quantité} WHERE id_joueur=${interaction.user.id}`
 
                             if ((results[0].T_total + quantité) > (results[0].hexagone * 15000)) {
-                                var sql = sql + `;
-                                    UPDATE pays SET hexagone=hexagone+1 WHERE id_joueur=${interaction.user.id}`
+                                var sql = sql + `;UPDATE pays SET hexagone=hexagone+1 WHERE id_joueur=${interaction.user.id}`
 
                                 var annonce = {
                                     author: {
@@ -104,11 +100,7 @@ module.exports = {
                                 salon_joueur.send({ content: `__**Vous vous êtes étendu sur une nouvelle case : ${salon_carte}**__` });
                             }
                         }
-                        connection.query(sql, async(err, results) => {
-                            if (err) {
-                                throw err;
-                            }
-                        });
+                        connection.query(sql, async(err, results) => { if (err) { throw err; } });
 
                         const embed = {
                             author: {
@@ -130,8 +122,30 @@ module.exports = {
                     };
                 });
                 break;
-            case 'bouton':
 
+                case 'start':
+                    var embed = {
+                        author: {
+                            name: `Bienvenue sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
+                        },
+                        title: `\`Commencer à jouer \``,
+                        color: '#3BA55C',
+                        description: codeBlock(` Cliquez sur le bouton ci dessous pour commencer votre aventure.`),
+                    };
+    
+                    var row = new MessageActionRow()
+                        .addComponents(
+                            new MessageButton()
+                            .setLabel(`Créer votre Cité`)
+                            .setEmoji(`📯`)
+                            .setCustomId('start')
+                            .setStyle('SUCCESS'),
+                        )
+    
+                    await interaction.reply({ embeds: [embed], components: [row] });
+                    break;
+
+            case 'bouton':
                 var reglement1 = {
                     author: {
                         name: `Règlement de 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,

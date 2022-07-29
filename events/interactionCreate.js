@@ -1,5 +1,5 @@
 const { codeBlock } = require('@discordjs/builders');
-const { Client, Collection, Intents, Guild, MessageActionRow, MessageButton } = require('discord.js');
+const { Client, Collection, Intents, Guild, MessageActionRow, MessageButton, Modal, TextInputComponent } = require('discord.js');
 const { connection } = require('../index.js');
 const { globalBox } = require('global-box');
 const box = globalBox();
@@ -15,7 +15,7 @@ const vendreCommandCooldown = new CommandCooldown('vendre', ms('10m'));
 module.exports = {
     name: 'interactionCreate',
     execute(interaction) {
-
+        
         if (interaction.isCommand()) {
 
             var log = {
@@ -61,7 +61,35 @@ module.exports = {
 
                 //endregion
 
-                //#region [Menu - Economie]    
+                //#region [Modals - Start]    
+            } else if (interaction.customId.includes('start') == true) {
+
+                var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    if (!results[0]) {
+                        var modal = new Modal()
+                            .setCustomId('start')
+                            .setTitle('Créer votre Cité')
+                            
+                        const nom_cite = new TextInputComponent()
+                            .setCustomId('nom_cite')
+                            .setLabel("Quelle ville voulez-vous choisir ?")
+                            .setStyle('SHORT')
+                            .setPlaceholder('Ne pas prendre une ville déjà prise par un autre joueur')
+                            .setMaxLength(40)
+                            .setRequired(true)
+
+                        const firstActionRow = new MessageActionRow().addComponents(nom_cite);
+                        modal.addComponents(firstActionRow);
+                        interaction.showModal(modal);
+                    } else {
+                        var reponse = codeBlock('diff', `- Vous avez déjà un pays. Demandez au staff pour recommencer une histoire`);
+                        await interaction.reply({ content: reponse, ephemeral: true });
+                    }
+                })
+                //#endregion
+
+                //#region [Menu - Economie]
             } else if (interaction.customId.includes('menu_économie') == true) {
 
                 var joueur_id = interaction.customId.slice(14);
@@ -69,13 +97,9 @@ module.exports = {
 
                 function economie(joueur) {
 
-                    var sql = `
-                        SELECT * FROM pays WHERE id_joueur='${joueur_id}'`;
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${joueur_id}'`;
 
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         if (!results[0]) {
                             var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
@@ -122,13 +146,8 @@ module.exports = {
                 const joueur = interaction.client.users.cache.find(user => user.id === joueur_id);
 
                 function population(joueur) {
-                    var sql = `
-                        SELECT * FROM pays WHERE id_joueur='${joueur_id}'`;
-
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${joueur_id}'`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         if (!results[0]) {
                             var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
@@ -148,15 +167,22 @@ module.exports = {
                                 title: `\`Vue globale de la population\``,
                                 fields: [{
                                         name: `> 👪 Population`,
-                                        value: codeBlock(`• ${results[0].population.toLocaleString('en-US')} habitants`) + `\u200B`
+                                        value: codeBlock(
+                                            `• ${results[0].population.toLocaleString('en-US')} habitants\n` +
+                                            `• ${results[0].bonheur}% bonheur\n` +
+                                            `• ${densité.toLocaleString('en-US')} habitants/km²`) + `\u200B`
                                     },
                                     {
-                                        name: `> Approvisionnement`,
-                                        value: codeBlock(`• ${results[0].approvisionnement.toLocaleString('en-US')}`) + `\u200B`
+                                        name: `> 🛒 Consommation/Approvisionnement`,
+                                        value: codeBlock(
+                                            `• ${Math.round((results[0].population * parseFloat(process.env.EAU_CONSO))).toLocaleString('en-US')}/${results[0].eau_appro.toLocaleString('en-US')} eau\n` +
+                                            `• ${Math.round((results[0].population * parseFloat(process.env.NOURRITURE_CONSO))).toLocaleString('en-US')}/${results[0].nourriture_appro.toLocaleString('en-US')} nourriture\n` +
+                                            `• ${(1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04).toFixed(1)}/${(process.env.PROD_USINE_CIVILE * results[0].usine_civile * 48 / results[0].population).toFixed(1)} biens de consommation`) + `\u200B`
                                     },
                                     {
-                                        name: `> Densité`,
-                                        value: codeBlock(`• ${densité.toLocaleString('en-US')} habitants/km²`) + `\u200B`
+                                        name: `> 🏘️ Batiments`,
+                                        value: codeBlock(
+                                            `• ${results[0].quartier.toLocaleString('en-US')} quartiers`) + `\u200B`
                                     }
                                 ],
                                 color: joueur.displayHexColor,
@@ -181,13 +207,8 @@ module.exports = {
                 const joueur = interaction.client.users.cache.find(user => user.id === joueur_id);
 
                 function gouvernement(joueur) {
-                    var sql = `
-                        SELECT * FROM pays WHERE id_joueur='${joueur_id}'`;
-
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${joueur_id}'`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         if (!results[0]) {
                             var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
@@ -242,12 +263,9 @@ module.exports = {
                 //#region [Menu - Marché rapide]
             } else if (interaction.customId === 'menu_QM') {
 
-                var sql = `
-                    SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+
                     const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
                     const embed = {
@@ -294,12 +312,8 @@ module.exports = {
                 var id_joueur = interaction.customId.slice(13);
                 if (id_joueur == interaction.member.id) {
 
-                    var sql = `
-                        SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         var title = interaction.message.embeds[0].title
                         var title = title.substring(16, title.length - 1)
@@ -308,8 +322,8 @@ module.exports = {
                         var batiment = title.slice(espace + 1)
 
                         switch (batiment) {
-                            case 'Briqueterie':
 
+                            case 'Briqueterie':
                                 var const_T_libre = process.env.SURFACE_BRIQUETERIE * nombre;
                                 var const_bois = process.env.CONST_BRIQUETERIE_BOIS * nombre;
                                 var const_brique = process.env.CONST_BRIQUETERIE_BRIQUE * nombre;
@@ -323,11 +337,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].briqueterie + parseInt(nombre);
 
@@ -351,7 +361,6 @@ module.exports = {
                                 break;
 
                             case 'Champ':
-
                                 var const_T_libre = process.env.SURFACE_CHAMP * nombre;
                                 var const_bois = process.env.CONST_CHAMP_BOIS * nombre;
                                 var const_brique = process.env.CONST_CHAMP_BRIQUE * nombre;
@@ -365,11 +374,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].champ + parseInt(nombre);
 
@@ -392,28 +397,23 @@ module.exports = {
                                 }
                                 break;
 
-                            case 'Centrale électrique':
-
-                                var const_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
-                                var const_bois = process.env.CONST_CENTRALE_ELEC_BOIS * nombre;
-                                var const_brique = process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_CENTRALE_ELEC_METAUX * nombre;
+                            case 'Centrale au fioul':
+                                var const_T_libre = process.env.SURFACE_CENTRALE_FIOUL * nombre;
+                                var const_bois = process.env.CONST_CENTRALE_FIOUL_BOIS * nombre;
+                                var const_brique = process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre;
+                                var const_metaux = process.env.CONST_CENTRALE_FIOUL_METAUX * nombre;
 
                                 var sql = `
-                                    UPDATE pays SET centrale_elec=centrale_elec+${nombre} WHERE id_joueur='${interaction.member.id}';
+                                    UPDATE pays SET centrale_fioul=centrale_fioul+${nombre} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET usine_total=usine_total+${nombre} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET T_libre=T_libre-${const_T_libre} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET T_occ=T_occ+${const_T_libre} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
-                                var newbc = results[0].centrale_elec + parseInt(nombre);
+                                var newbc = results[0].centrale_fioul + parseInt(nombre);
 
                                 var embed = {
                                     author: {
@@ -435,7 +435,6 @@ module.exports = {
                                 break;
 
                             case 'Eolienne':
-
                                 var const_T_libre = process.env.SURFACE_EOLIENNE * nombre;
                                 var const_metaux = process.env.CONST_EOLIENNE_METAUX * nombre;
 
@@ -445,11 +444,7 @@ module.exports = {
                                         UPDATE pays SET T_libre=T_libre-${const_T_libre} WHERE id_joueur="${interaction.member.id}";
                                         UPDATE pays SET T_occ=T_occ+${const_T_libre} WHERE id_joueur="${interaction.member.id}";
                                         UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur="${interaction.member.id}"`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].eolienne + parseInt(nombre);
 
@@ -473,7 +468,6 @@ module.exports = {
                                 break;
 
                             case 'Mine':
-
                                 var const_T_libre = process.env.SURFACE_MINE * nombre;
                                 var const_bois = process.env.CONST_MINE_BOIS * nombre;
                                 var const_brique = process.env.CONST_MINE_BRIQUE * nombre;
@@ -487,11 +481,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].mine + parseInt(nombre);
 
@@ -515,7 +505,6 @@ module.exports = {
                                 break;
 
                             case 'Pompe à eau':
-
                                 var const_T_libre = process.env.SURFACE_POMPE_A_EAU * nombre;
                                 var const_bois = process.env.CONST_POMPE_A_EAU_BOIS * nombre;
                                 var const_brique = process.env.CONST_POMPE_A_EAU_BRIQUE * nombre;
@@ -529,11 +518,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].pompe_a_eau + parseInt(nombre);
 
@@ -557,7 +542,6 @@ module.exports = {
                                 break;
 
                             case 'Pumpjack':
-
                                 var const_T_libre = process.env.SURFACE_PUMPJACK * nombre;
                                 var const_bois = process.env.CONST_PUMPJACK_BOIS * nombre;
                                 var const_brique = process.env.CONST_PUMPJACK_BRIQUE * nombre;
@@ -571,11 +555,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].pumpjack + parseInt(nombre);
 
@@ -598,8 +578,43 @@ module.exports = {
                                 }
                                 break;
 
-                            case 'Scierie':
+                            case 'Quartier':
+                                var const_T_libre = process.env.SURFACE_QUARTIER * nombre;
+                                var const_bois = process.env.CONST_QUARTIER_BOIS * nombre;
+                                var const_brique = process.env.CONST_QUARTIER_BRIQUE * nombre;
+                                var const_metaux = process.env.CONST_QUARTIER_METAUX * nombre;
 
+                                var sql = `
+                                        UPDATE pays SET quartier=quartier+${nombre} WHERE id_joueur='${interaction.member.id}';
+                                        UPDATE pays SET T_libre=T_libre-${const_T_libre} WHERE id_joueur='${interaction.member.id}';
+                                        UPDATE pays SET T_occ=T_occ+${const_T_libre} WHERE id_joueur='${interaction.member.id}';
+                                        UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
+                                        UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
+                                        UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
+
+                                var newbc = results[0].quartier + parseInt(nombre);
+
+                                var embed = {
+                                    author: {
+                                        name: `${results[0].rang} de ${results[0].nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: `${results[0].drapeau}`
+                                    },
+                                    title: `\`Construction : ${nombre.toLocaleString('en-US')} quartiers\``,
+                                    description: `> 🛠️ Vous avez désormais :\n` +
+                                        codeBlock(`• ${newbc.toLocaleString('en-US')} quartiers`) + `\u200B`,
+                                    color: interaction.member.displayHexColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${results[0].devise}`
+                                    },
+                                }
+                                break;
+
+                            case 'Scierie':
                                 var const_T_libre = process.env.SURFACE_SCIERIE * nombre;
                                 var const_bois = process.env.CONST_SCIERIE_BOIS * nombre;
                                 var const_brique = process.env.CONST_SCIERIE_BRIQUE * nombre;
@@ -613,11 +628,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].scierie + parseInt(nombre);
 
@@ -641,7 +652,6 @@ module.exports = {
                                 break;
 
                             case 'Usine civile':
-
                                 var const_T_libre = process.env.SURFACE_USINE_CIVILE * nombre;
                                 var const_bois = process.env.CONST_USINE_CIVILE_BOIS * nombre;
                                 var const_brique = process.env.CONST_USINE_CIVILE_BRIQUE * nombre;
@@ -655,11 +665,7 @@ module.exports = {
                                     UPDATE pays SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET brique=brique-${const_brique} WHERE id_joueur='${interaction.member.id}';
                                     UPDATE pays SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var newbc = results[0].usine_civile + parseInt(nombre);
 
@@ -700,12 +706,8 @@ module.exports = {
                 var id_joueur = interaction.customId.slice(11);
                 if (id_joueur == interaction.member.id) {
 
-                    var sql = `
-                        SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         var title = interaction.message.embeds[0].title
                         var title = title.substring(14, title.length - 1)
@@ -728,11 +730,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             var newbc = results[0].briqueterie - parseInt(nombre);
 
@@ -773,11 +771,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+'${demo_bois}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+'${demo_brique}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+'${demo_metaux}' WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            });
+                            connection.query(sql, async(err, results) => {if (err) {throw err;}});
 
                             var newbc = results[0].champ - parseInt(nombre);
 
@@ -803,28 +797,24 @@ module.exports = {
 
                             interaction.message.edit({ embeds: [embed], components: [] })
 
-                        } else if (batiment == 'Centrale électrique') {
+                        } else if (batiment == 'Centrale au fioul') {
 
-                            var demo_T_libre = process.env.SURFACE_CENTRALE_ELEC * nombre;
-                            var demo_bois = Math.round(process.env.CONST_CENTRALE_ELEC_BOIS * nombre * process.env.RETOUR_POURCENTAGE);
-                            var demo_brique = Math.round(process.env.CONST_CENTRALE_ELEC_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE);
-                            var demo_metaux = Math.round(process.env.CONST_CENTRALE_ELEC_METAUX * nombre * process.env.RETOUR_POURCENTAGE);
+                            var demo_T_libre = process.env.SURFACE_CENTRALE_FIOUL * nombre;
+                            var demo_bois = Math.round(process.env.CONST_CENTRALE_FIOUL_BOIS * nombre * process.env.RETOUR_POURCENTAGE);
+                            var demo_brique = Math.round(process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE);
+                            var demo_metaux = Math.round(process.env.CONST_CENTRALE_FIOUL_METAUX * nombre * process.env.RETOUR_POURCENTAGE);
 
                             var sql = `
-                                UPDATE pays SET centrale_elec=centrale_elec-'${nombre}' WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET centrale_fioul=centrale_fioul-'${nombre}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET usine_total=usine_total-'${nombre}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET T_libre=T_libre+'${demo_T_libre}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET T_occ=T_occ-'${demo_T_libre}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET bois=bois+'${demo_bois}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+'${demo_brique}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+'${demo_metaux}' WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            });
+                            connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                            var newbc = results[0].centrale_elec - parseInt(nombre);
+                            var newbc = results[0].centrale_fioul - parseInt(nombre);
 
                             var embed = {
                                 author: {
@@ -859,11 +849,7 @@ module.exports = {
                                 UPDATE pays SET T_libre=T_libre+'${demo_T_libre}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET T_occ=T_occ-'${demo_T_libre}' WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+'${demo_metaux}' WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            });
+                            connection.query(sql, async(err) => {if (err) {throw err;}});
 
                             var newbc = results[0].eolienne - parseInt(nombre);
 
@@ -904,11 +890,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             var newbc = results[0].mine - parseInt(nombre);
 
@@ -949,11 +931,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             var newbc = results[0].pompe_a_eau - parseInt(nombre);
 
@@ -994,11 +972,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             var newbc = results[0].pumpjack - parseInt(nombre);
 
@@ -1013,6 +987,46 @@ module.exports = {
                                 title: `\`Démolition : ${nombre.toLocaleString('en-US')} pumpjacks\``,
                                 description: `> 🛠️ Vous avez désormais :\n` +
                                     codeBlock(`• ${newbc.toLocaleString('en-US')} pumpjacks`) + `\u200B`,
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${results[0].devise}`
+                                },
+                            }
+
+                            interaction.deferUpdate()
+
+                            interaction.message.edit({ embeds: [embed], components: [] })
+
+                        } else if (batiment == 'Quartier') {
+
+                            var demo_T_libre = process.env.SURFACE_QUARTIER * nombre;
+                            var demo_bois = Math.round(process.env.CONST_QUARTIER_BOIS * nombre * process.env.RETOUR_POURCENTAGE);
+                            var demo_brique = Math.round(process.env.CONST_QUARTIER_BRIQUE * nombre * process.env.RETOUR_POURCENTAGE);
+                            var demo_metaux = Math.round(process.env.CONST_QUARTIER_METAUX * nombre * process.env.RETOUR_POURCENTAGE);
+
+                            var sql = `
+                                UPDATE pays SET quartier=quartier-${nombre} WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET T_libre=T_libre+${demo_T_libre} WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET T_occ=T_occ-${demo_T_libre} WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
+                                UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
+
+                            var newbc = results[0].quartier - parseInt(nombre);
+
+                            var embed = {
+                                author: {
+                                    name: `${results[0].rang} de ${results[0].nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: `${results[0].drapeau}`
+                                },
+                                title: `\`Démolition : ${nombre.toLocaleString('en-US')} quartiers\``,
+                                description: `> 🛠️ Vous avez désormais :\n` +
+                                    codeBlock(`• ${newbc.toLocaleString('en-US')} quartiers`) + `\u200B`,
                                 color: interaction.member.displayHexColor,
                                 timestamp: new Date(),
                                 footer: {
@@ -1039,11 +1053,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             var newbc = results[0].scierie - parseInt(nombre);
 
@@ -1084,11 +1094,7 @@ module.exports = {
                                 UPDATE pays SET bois=bois+${demo_bois} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET brique=brique+${demo_brique} WHERE id_joueur='${interaction.member.id}';
                                 UPDATE pays SET metaux=metaux+${demo_metaux} WHERE id_joueur='${interaction.member.id}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             var newbc = results[0].usine_civile - parseInt(nombre);
 
@@ -1126,12 +1132,8 @@ module.exports = {
                 //region [Expansion - Choix pacifique]
             } else if (interaction.customId === 'choix_pacifique') {
 
-                var sql = `
-                    SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                     if (results[0].action_diplo < 10) {
 
@@ -1157,20 +1159,12 @@ module.exports = {
                                 var sql = sql + `;
                                 UPDATE pays SET reputation=reputation+0.1 WHERE id_joueur=${interaction.user.id}`
                             }
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             if ((results[0].T_total + territoire) > (results[0].hexagone * 15000)) {
                                 var sql = `
                                 UPDATE pays SET hexagone=hexagone+1 WHERE id_joueur=${interaction.user.id}`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
                                 var annonce = {
                                     author: {
@@ -1230,21 +1224,14 @@ module.exports = {
 
                         } else {
 
-                            var sql = `
-                            UPDATE pays SET action_diplo=action_diplo-10 WHERE id_joueur=${interaction.user.id}`;
+                            var sql = `UPDATE pays SET action_diplo=action_diplo-10 WHERE id_joueur=${interaction.user.id}`;
 
                             if (results[0].reputation < 99.8) {
-                                var sql = sql + `;
-                                UPDATE pays SET reputation=reputation+0.3 WHERE id_joueur=${interaction.user.id}`
+                                var sql = sql + `;UPDATE pays SET reputation=reputation+0.3 WHERE id_joueur=${interaction.user.id}`
                             }
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
 
                             const embed = {
-
                                 author: {
                                     name: `${results[0].rang} de ${results[0].nom}`,
                                     icon_url: interaction.member.displayAvatarURL()
@@ -1274,212 +1261,204 @@ module.exports = {
             } else if (interaction.customId.includes('acheter') == true) {
 
                 var id_joueur = interaction.customId.slice(8);
+                if (id_joueur == interaction.member.id) {
+                    var reponse = codeBlock('diff', `- Vous ne pouvez pas acheter votre offre`);
+                    interaction.reply({ content: reponse, ephemeral: true });
+                } else {
+                    var fields = interaction.message.embeds[0].fields
+                    var espace = fields[0].value.indexOf("Prix");
+                    var ressource = fields[0].value.slice(6, espace - 3)
 
-                var fields = interaction.message.embeds[0].fields
-                var espace = fields[0].value.indexOf("Prix");
-                var ressource = fields[0].value.slice(6, espace - 3)
+                    var quantite = interaction.message.embeds[0].fields[1].value.slice(6, fields[1].value.length - 4)
+                    const search = ',';
+                    const replaceWith = '';
+                    const quantité = parseInt(quantite.split(search).join(replaceWith));
 
-                var quantite = interaction.message.embeds[0].fields[1].value.slice(6, fields[1].value.length - 4)
-                const search = ',';
-                const replaceWith = '';
-                const quantité = parseInt(quantite.split(search).join(replaceWith));
+                    const texte = interaction.message.embeds[0].fields[2].value
+                    var prix_u = Number(texte.slice((texte.indexOf(":") + 2), (texte.indexOf("(") - 1)));
+                    var prix = Math.round(prix_u * quantité);
+                    //console.log(espace + ` | ` + ressource + ` | ` + prix_u + ` | ` + prix + ` | ` + texte + ` | ` + (texte.indexOf(":") + 2) + ` | ` + (texte.indexOf("Au") - 3))
 
-                const texte = interaction.message.embeds[0].fields[2].value
-                var prix_u = Number(texte.slice((texte.indexOf(":") + 2), (texte.indexOf("Au") - 2)));
-                var prix = Math.round(prix_u * quantité);
-                console.log(espace + ` | ` + ressource + ` | ` + prix_u + ` | ` + prix + ` | ` + texte + ` | ` + (texte.indexOf(":") + 2) + ` | ` + (texte.indexOf("Au") - 3))
-                var sql = `
-                        SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
 
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                    connection.query(sql, async(err) => {if (err) {throw err;}
 
-                    switch (ressource) {
-                        case 'Biens de consommation':
-                            var res = `bc`;
-                            break;
-                        case 'Bois':
-                            var res = `bois`;
-                            break;
-                        case 'Brique':
-                            var res = `brique`;
-                            break;
-                        case 'Eau':
-                            var res = `eau`;
-                            break;
-                        case 'Metaux':
-                            var res = `metaux`;
-                            break;
-                        case 'Nourriture':
-                            var res = `nourriture`;
-                            break;
-                        case 'Petrole':
-                            var res = `petrole`;
-                            break;
-                    }
+                        const pourcentage = fields[2].value.slice(fields[2].value.indexOf("(") - 1, fields[2].value.indexOf(")"));
 
-                    var sql = `
-                            SELECT * FROM pays WHERE id_joueur="${interaction.user.id}" LIMIT 1`;
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
+                        switch (ressource) {
+                            case 'Biens de consommation':
+                                var res = `bc`;
+                                break;
+                            case 'Bois':
+                                var res = `bois`;
+                                break;
+                            case 'Brique':
+                                var res = `brique`;
+                                break;
+                            case 'Eau':
+                                var res = `eau`;
+                                break;
+                            case 'Metaux':
+                                var res = `metaux`;
+                                break;
+                            case 'Nourriture':
+                                var res = `nourriture`;
+                                break;
+                            case 'Petrole':
+                                var res = `petrole`;
+                                break;
                         }
-                        if (results[0].cash >= prix) {
 
-                            const acheteur = {
-                                author: {
-                                    name: `${results[0].rang} de ${results[0].nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: results[0].drapeau,
-                                },
-                                title: `\`Achat validé :\``,
-                                fields: [{
-                                        name: `Vendeur :`,
-                                        value: `<@${id_joueur}>`
-                                    },
-                                    {
-                                        name: `Ressource :`,
-                                        value: codeBlock(`• ${ressource}`)
-                                    },
-                                    {
-                                        name: `Quantité :`,
-                                        value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
-                                    },
-                                    {
-                                        name: `Prix :`,
-                                        value: codeBlock(
-                                            `• A l'unité : ${prix_u}\n` +
-                                            `• Au total : ${prix.toLocaleString('en-US')} $`)
-                                    }
-                                ],
-                                color: interaction.member.displayHexColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${results[0].devise}`
-                                },
-                            };
+                        var sql = `SELECT * FROM pays WHERE id_joueur="${interaction.user.id}" LIMIT 1`;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                            const vendeur = {
-                                author: {
-                                    name: `${results[0].rang} de ${results[0].nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: results[0].drapeau,
-                                },
-                                title: `\`Marché conclu :\``,
-                                fields: [{
-                                        name: `Acheteur :`,
-                                        value: `<@${interaction.user.id}>`
-                                    },
-                                    {
-                                        name: `Ressource :`,
-                                        value: codeBlock(`• ${ressource}`)
-                                    },
-                                    {
-                                        name: `Quantité :`,
-                                        value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
-                                    },
-                                    {
-                                        name: `Prix :`,
-                                        value: codeBlock(`• A l'unité : ${prix_u}\n` +
-                                            `• Au total : ${prix.toLocaleString('en-US')} $`)
-                                    }
-                                ],
-                                color: interaction.member.displayHexColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${results[0].devise}`
-                                },
-                            };
+                            if (results[0].cash >= prix) {
 
-                            const commerce = {
-                                author: {
-                                    name: `${results[0].rang} de ${results[0].nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: results[0].drapeau,
-                                },
-                                title: `\`Marché conclu :\``,
-                                fields: [{
-                                        name: `Vendeur :`,
-                                        value: `<@${id_joueur}>`,
-                                        inline: true
+                                const acheteur = {
+                                    author: {
+                                        name: `${results[0].rang} de ${results[0].nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
                                     },
-                                    {
-                                        name: `Acheteur :`,
-                                        value: `<@${interaction.user.id}>`,
-                                        inline: true
+                                    thumbnail: {
+                                        url: results[0].drapeau,
                                     },
-                                    {
-                                        name: `Ressource :`,
-                                        value: codeBlock(`• ${ressource}`)
+                                    title: `\`Achat validé :\``,
+                                    fields: [{
+                                            name: `Vendeur :`,
+                                            value: `<@${id_joueur}>`
+                                        },
+                                        {
+                                            name: `Ressource :`,
+                                            value: codeBlock(`• ${ressource}`)
+                                        },
+                                        {
+                                            name: `Quantité :`,
+                                            value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                        },
+                                        {
+                                            name: `Prix :`,
+                                            value: codeBlock(
+                                                `• A l'unité : ${prix_u} (${pourcentage}%)\n` +
+                                                `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                        }
+                                    ],
+                                    color: interaction.member.displayHexColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${results[0].devise}`
                                     },
-                                    {
-                                        name: `Quantité :`,
-                                        value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                };
+
+                                const vendeur = {
+                                    author: {
+                                        name: `${results[0].rang} de ${results[0].nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
                                     },
-                                    {
-                                        name: `Prix :`,
-                                        value: codeBlock(`• A l'unité : ${prix_u}\n` +
-                                            `• Au total : ${prix.toLocaleString('en-US')} $`)
-                                    }
-                                ],
-                                color: interaction.member.displayHexColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${results[0].devise}`
-                                },
-                            };
+                                    thumbnail: {
+                                        url: results[0].drapeau,
+                                    },
+                                    title: `\`Marché conclu :\``,
+                                    fields: [{
+                                            name: `Acheteur :`,
+                                            value: `<@${interaction.user.id}>`
+                                        },
+                                        {
+                                            name: `Ressource :`,
+                                            value: codeBlock(`• ${ressource}`)
+                                        },
+                                        {
+                                            name: `Quantité :`,
+                                            value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                        },
+                                        {
+                                            name: `Prix :`,
+                                            value: codeBlock(
+                                                `• A l'unité : ${prix_u} (${pourcentage}%)\n` +
+                                                `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                        }
+                                    ],
+                                    color: interaction.member.displayHexColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${results[0].devise}`
+                                    },
+                                };
 
-                            const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
-                            salon_commerce.send({ embeds: [commerce] })
+                                const commerce = {
+                                    author: {
+                                        name: `${results[0].rang} de ${results[0].nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: results[0].drapeau,
+                                    },
+                                    title: `\`Marché conclu :\``,
+                                    fields: [{
+                                            name: `Vendeur :`,
+                                            value: `<@${id_joueur}>`,
+                                            inline: true
+                                        },
+                                        {
+                                            name: `Acheteur :`,
+                                            value: `<@${interaction.user.id}>`,
+                                            inline: true
+                                        },
+                                        {
+                                            name: `Ressource :`,
+                                            value: codeBlock(`• ${ressource}`)
+                                        },
+                                        {
+                                            name: `Quantité :`,
+                                            value: codeBlock(`• ${quantité.toLocaleString('en-US')}`)
+                                        },
+                                        {
+                                            name: `Prix :`,
+                                            value: codeBlock(
+                                                `• A l'unité : ${prix_u} (${pourcentage}%)\n` +
+                                                `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                        }
+                                    ],
+                                    color: interaction.member.displayHexColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${results[0].devise}`
+                                    },
+                                };
 
-                            interaction.user.send({ embeds: [acheteur] });
-                            const id_vendeur = await interaction.guild.members.fetch(id_joueur);
-                            id_vendeur.send({ embeds: [vendeur] });
+                                const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
+                                salon_commerce.send({ embeds: [commerce] })
 
-                            const thread = await interaction.channel.fetch();
-                            await thread.delete();
+                                interaction.user.send({ embeds: [acheteur] });
+                                const id_vendeur = await interaction.guild.members.fetch(id_joueur);
+                                id_vendeur.send({ embeds: [vendeur] });
+
+                                const thread = await interaction.channel.fetch();
+                                await thread.delete();
 
 
-                            var sql = `SELECT * FROM trade WHERE ressource="${ressource}" ORDER BY id_trade`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                                var arrayQvente = Object.values(results);
-                                var sql = `DELETE FROM trade WHERE id_trade='${arrayQvente[0].id_trade}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
+                                var sql = `SELECT * FROM trade WHERE ressource="${ressource}" ORDER BY id_trade`;
+                                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                                    var arrayQvente = Object.values(results);
+                                    var sql = `DELETE FROM trade WHERE id_trade='${arrayQvente[0].id_trade}'`;
+                                    connection.query(sql, async(err) => {if (err) {throw err;}});
                                 });
-                            });
 
-                            var sql = `
+                                var sql = `
                                     INSERT INTO trade SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
                                     UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
                                     UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${interaction.user.id}";
                                     UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${interaction.user.id}";
                                     INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="offre", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            })
+                                connection.query(sql, async(err) => {if (err) {throw err;}})
 
-                        } else {
-                            var reponse = codeBlock('diff', `- Vous n'avez pas l'argent nécessaire pour conclure l'affaire : ${results[0].cash.toLocaleString('en-US')}/${prix.toLocaleString('en-US')}`);
-                            await interaction.reply({ content: reponse, ephemeral: true });
-                        }
-                    })
-                });
+                            } else {
+                                var reponse = codeBlock('diff', `- Vous n'avez pas l'argent nécessaire pour conclure l'affaire : ${results[0].cash.toLocaleString('en-US')}/${prix.toLocaleString('en-US')}`);
+                                await interaction.reply({ content: reponse, ephemeral: true });
+                            }
+                        })
+                    });
+
+                }
                 //endregion
 
                 //region [Vendre]
@@ -1497,18 +1476,15 @@ module.exports = {
                     const replaceWith = '';
                     const quantité = parseInt(quantite.split(search).join(replaceWith));
 
-                    var espace2 = fields[2].value.indexOf("Au");
-                    var prix_u = fields[2].value.slice(18, espace2 - 3);
+                    var espace2 = fields[2].value.indexOf("(");
+                    var prix_u = fields[2].value.slice(18, espace2 - 1);
                     var prix = Math.round(prix_u * quantité);
                     //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
 
-                    var sql = `
-                    SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
+                    var sql = `SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                        const pourcentage = fields[2].value.slice(fields[2].value.indexOf("(") - 1, fields[2].value.indexOf(")"));
 
                         switch (ressource) {
                             case 'Biens de consommation':
@@ -1577,7 +1553,7 @@ module.exports = {
                                 },
                                 {
                                     name: `Prix :`,
-                                    value: codeBlock(`• A l'unité : ${prix_u.toLocaleString('en-US')}\n` +
+                                    value: codeBlock(`• A l'unité : ${prix_u.toLocaleString('en-US')} (${pourcentage}%)\n` +
                                         `• Au total : ${prix.toLocaleString('en-US')}`) + `\u200B`
                                 }
                             ],
@@ -1596,6 +1572,13 @@ module.exports = {
                                 .setCustomId('acheter-' + id_joueur)
                                 .setStyle('SUCCESS'),
                             )
+                            .addComponents(
+                                new MessageButton()
+                                .setLabel(`Supprimer`)
+                                .setEmoji(`✖️`)
+                                .setCustomId('supprimer-' + id_joueur)
+                                .setStyle('DANGER'),
+                            )
 
                         thread.send({ embeds: [offre], components: [row] });
 
@@ -1603,12 +1586,7 @@ module.exports = {
                         await vendreCommandCooldown.addUser(interaction.member.id);
 
                         var sql = `UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}"`;
-
-                        connection.query(sql, async(err, results) => {
-                            if (err) {
-                                throw err;
-                            }
-                        });
+                        connection.query(sql, async(err) => {if (err) {throw err;}});
                     });
 
                 } else {
@@ -1637,13 +1615,9 @@ module.exports = {
                     var prix = Math.round(prix_u * quantité);
                     //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
 
-                    var sql = `
-                    SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
+                    var sql = `SELECT * FROM pays WHERE id_joueur="${id_joueur}"`;
 
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         switch (ressource) {
                             case 'Biens de consommation':
@@ -1689,30 +1663,18 @@ module.exports = {
                         interaction.message.edit({ embeds: [embed], components: [] });
 
                         var sql = `SELECT * FROM qvente WHERE ressource="${ressource}" ORDER BY id_vente`;
-                        connection.query(sql, async(err, results) => {
-                            if (err) {
-                                throw err;
-                            }
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
                             var arrayQvente = Object.values(results);
                             var sql = `DELETE FROM qvente WHERE id_vente='${arrayQvente[0].id_vente}'`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            });
+                            connection.query(sql, async(err) => {if (err) {throw err;}});
                         });
 
                         var sql = `
-                        INSERT INTO qvente SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
-                        UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
-                        UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}";
-                        INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="qvente", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
-
-                        connection.query(sql, async(err, results) => {
-                            if (err) {
-                                throw err;
-                            }
-                        });
+                            INSERT INTO qvente SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}';
+                            UPDATE pays SET cash=cash+${prix} WHERE id_joueur="${id_joueur}";
+                            UPDATE pays SET ${res}=${res}-${quantité} WHERE id_joueur="${id_joueur}";
+                            INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="qvente", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
+                        connection.query(sql, async(err) => {if (err) {throw err;}});
                     });
 
                 } else {
@@ -1741,13 +1703,8 @@ module.exports = {
                     var prix = Math.round(prix_u * quantité);
                     //console.log(espace + ` | ` + ressource + ` | ` + espace2 + ` | ` + prix_u + ` | ` + prix)
 
-                    var sql = `
-                    SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
-
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${id_joueur}'`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         if (prix > results[0].cash) {
                             var reponse = codeBlock('diff', `- Vous n'avez pas assez d\'argent : ${results[0].cash.toLocaleString('en-US')}/${prix.toLocaleString('en-US')}`);
@@ -1797,18 +1754,11 @@ module.exports = {
                             await interaction.deferUpdate()
                             interaction.message.edit({ embeds: [embed], components: [] });
 
-                            var sql = `SELECT * FROM qachat WHERE ressource='${ressource}' ORDER BY id_vente`;
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
+                            var sql = `SELECT * FROM qachat WHERE ressource='${ressource}' ORDER BY id_achat`;
+                            connection.query(sql, async(err, results) => {if (err) {throw err;}
                                 var arrayQvente = Object.values(results);
-                                var sql = `DELETE FROM qachat WHERE ida_achat='${arrayQvente[0].id_vente}'`;
-                                connection.query(sql, async(err, results) => {
-                                    if (err) {
-                                        throw err;
-                                    }
-                                });
+                                var sql = `DELETE FROM qachat WHERE id_achat='${arrayQvente[0].id_achat}'`;
+                                connection.query(sql, async(err) => {if (err) {throw err;}});
                             });
 
                             var sql = `
@@ -1816,12 +1766,7 @@ module.exports = {
                                 UPDATE pays SET cash=cash-${prix} WHERE id_joueur="${id_joueur}";
                                 UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${id_joueur}";
                                 INSERT INTO historique SET id_joueur="${interaction.user.id}", id_salon="${interaction.channelId}", type="qachat", ressource="${ressource}", quantite='${quantité}', prix='${prix}', prix_u='${prix_u}'`;
-
-                            connection.query(sql, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
-                            });
+                            connection.query(sql, async(err) => {if (err) {throw err;}});
                         }
                     });
 
@@ -1829,6 +1774,9 @@ module.exports = {
                     var reponse = codeBlock('diff', `- Vous n'êtes pas l'auteur de cette commande`);
                     interaction.reply({ content: reponse, ephemeral: true });
                 }
+                //endregion
+
+                //#region [Refuser]
             } else if (interaction.customId.includes('refuser') == true) {
 
                 var id_joueur = interaction.customId.slice(8);
@@ -1838,37 +1786,79 @@ module.exports = {
                     var reponse = codeBlock('diff', `- Vous n'êtes pas l'auteur de cette commande`);
                     interaction.reply({ content: reponse, ephemeral: true });
                 }
+                //endregion
+
+                //#region [Supprimer]
+            } else if (interaction.customId.includes('supprimer') == true) {
+
+                var id_joueur = interaction.customId.slice(10);
+                if (id_joueur == interaction.member.id) {
+
+                    var fields = interaction.message.embeds[0].fields
+                    var espace = fields[0].value.indexOf("Prix");
+                    var ressource = fields[0].value.slice(6, espace - 3)
+
+                    var quantite = interaction.message.embeds[0].fields[1].value.slice(6, fields[1].value.length - 4)
+                    const search = ',';
+                    const replaceWith = '';
+                    const quantité = parseInt(quantite.split(search).join(replaceWith));
+
+                    switch (ressource) {
+                        case 'Biens de consommation':
+                            var res = `bc`;
+                            break;
+                        case 'Bois':
+                            var res = `bois`;
+                            break;
+                        case 'Brique':
+                            var res = `brique`;
+                            break;
+                        case 'Eau':
+                            var res = `eau`;
+                            break;
+                        case 'Metaux':
+                            var res = `metaux`;
+                            break;
+                        case 'Nourriture':
+                            var res = `nourriture`;
+                            break;
+                        case 'Petrole':
+                            var res = `petrole`;
+                            break;
+                    }
+
+                    var sql = `UPDATE pays SET ${res}=${res}+${quantité} WHERE id_joueur="${interaction.user.id}"`;
+                    connection.query(sql, async(err) => { if (err) { throw err; } })
+                    interaction.channel.delete()
+
+                } else {
+                    var reponse = codeBlock('diff', `- Vous n'êtes pas l'auteur de cette offre`);
+                    interaction.reply({ content: reponse, ephemeral: true });
+                }
             }
             //endregion
 
         } else if (interaction.isSelectMenu()) {
+            
+            var log = {
+                author: {
+                    name: interaction.member.displayName,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                title: `\`Select Menu\``,
+                description: `${interaction.customId} ${JSON.stringify(interaction.values)}`,
+                timestamp: new Date(),
+                footer: {
+                    text: '#' + interaction.channel.name
+                },
+            };
+
+            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+            salon_logs.send({ embeds: [log] });
 
             if (interaction.customId == 'usine') {
-
-                var sql = `
-                    SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-
-                    var log = {
-                        author: {
-                            name: interaction.member.displayName,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        title: `\`Select Menu\``,
-                        description: `${interaction.customId} ${JSON.stringify(interaction.values)}`,
-                        timestamp: new Date(),
-                        footer: {
-                            text: '#' + interaction.channel.name
-                        },
-                    };
-
-                    const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
-                    salon_logs.send({ embeds: [log] });
-
+                var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                     const jsonObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
                     //region [Usine - Briqueterie]
@@ -1981,14 +1971,14 @@ module.exports = {
                         interaction.reply({ embeds: [embed] })
                             //endregion
 
-                        //region [Usine - Centrale électrique]
-                    } else if (interaction.values == 'centrale_elec') {
+                        //region [Usine - Centrale au fioul]
+                    } else if (interaction.values == 'centrale_fioul') {
 
-                        prod_T_centrale_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec;
-                        prod_T_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec + process.env.PROD_EOLIENNE * results[0].eolienne;
-                        conso_T_centrale_elec_petrole = process.env.CONSO_CENTRALE_ELEC_PETROLE * results[0].centrale_elec;
+                        prod_T_centrale_fioul = process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul;
+                        prod_T_elec = process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne;
+                        conso_T_centrale_fioul_petrole = process.env.CONSO_CENTRALE_FIOUL_PETROLE * results[0].centrale_fioul;
 
-                        var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
+                        var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * results[0].quartier + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
                         var diff = (prod_T_elec - conso);
                         if (diff > 0) {
                             var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}'`);
@@ -2006,25 +1996,25 @@ module.exports = {
                             thumbnail: {
                                 url: `${results[0].drapeau}`,
                             },
-                            title: `\`Usine : Centrale électrique\``,
+                            title: `\`Usine : Centrale au fioul\``,
                             fields: [{
                                     name: `> Consommation : 🛢️`,
                                     value: `- Par usine : \n` +
-                                        codeBlock(`• Pétrole : ${parseInt(process.env.CONSO_CENTRALE_ELEC_PETROLE).toLocaleString('en-US')}`) + `\u200B`,
+                                        codeBlock(`• Pétrole : ${parseInt(process.env.CONSO_CENTRALE_FIOUL_PETROLE).toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
                                 },
                                 {
                                     name: `\u200B`,
                                     value: `- Totale : \n` +
-                                        codeBlock(`• Petrole : ${conso_T_centrale_elec_petrole.toLocaleString('en-US')}`) + `\u200B`,
+                                        codeBlock(`• Petrole : ${conso_T_centrale_fioul_petrole.toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
                                 },
                                 {
                                     name: `> Production :`,
                                     value: `Flux : ⚡ Electricité\n` +
                                         codeBlock(
-                                            `• Par usine : ${parseInt(process.env.PROD_CENTRALE_ELEC).toLocaleString('en-US')}\n` +
-                                            `• Totale : ${prod_T_centrale_elec.toLocaleString('en-US')}`) + `\u200B`
+                                            `• Par usine : ${parseInt(process.env.PROD_CENTRALE_FIOUL).toLocaleString('en-US')}\n` +
+                                            `• Totale : ${prod_T_centrale_fioul.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
                                     name: `> Flux :`,
@@ -2043,9 +2033,9 @@ module.exports = {
                     } else if (interaction.values == 'eolienne') {
 
                         prod_T_eolienne = process.env.PROD_EOLIENNE * results[0].eolienne;
-                        prod_T_elec = process.env.PROD_CENTRALE_ELEC * results[0].centrale_elec + process.env.PROD_EOLIENNE * results[0].eolienne;
+                        prod_T_elec = process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne;
 
-                        var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
+                        var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * results[0].quartier + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
                         var diff = (prod_T_elec - conso);
                         if (diff > 0) {
                             var electricite = codeBlock('py', `'${conso.toLocaleString('en-US')}/${prod_T_elec.toLocaleString('en-US')} | ${(prod_T_elec - conso).toLocaleString('en-US')}'`);
@@ -2403,6 +2393,28 @@ module.exports = {
                 wait(15000)
                 interaction.deleteReply();
             } //endregion
+        } else if (interaction.isModalSubmit()) {
+
+            var log = {
+                author: {
+                    name: interaction.member.displayName,
+                    icon_url: interaction.member.displayAvatarURL()
+                },
+                title: `\`Modals\``,
+                description: `${interaction.customId} ${JSON.stringify(interaction.fields)}`,
+                timestamp: new Date(),
+                footer: {
+                    text: '#' + interaction.channel.name
+                },
+            };
+
+            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+            salon_logs.send({ embeds: [log] });
+            
+            if (interaction.customId.includes('réglement') == true) {
+
+            }
+
         };
     }
 };

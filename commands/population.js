@@ -17,13 +17,8 @@ module.exports = {
         };
 
         function population(joueur) {
-            var sql = `
-            SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
-
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
+            var sql = `SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
+            connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                 if (!results[0]) {
                     var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
@@ -43,15 +38,22 @@ module.exports = {
                         title: `\`Vue globale de la population\``,
                         fields: [{
                                 name: `> 👪 Population`,
-                                value: codeBlock(`• ${results[0].population.toLocaleString('en-US')} habitants`) + `\u200B`
+                                value: codeBlock(
+                                    `• ${results[0].population.toLocaleString('en-US')} habitants\n` +
+                                    `• ${results[0].bonheur}% bonheur\n` +
+                                    `• ${densité.toLocaleString('en-US')} habitants/km²`) + `\u200B`
                             },
                             {
-                                name: `> Approvisionnement`,
-                                value: codeBlock(`• ${results[0].approvisionnement.toLocaleString('en-US')}`) + `\u200B`
+                                name: `> 🛒 Consommation/Approvisionnement`,
+                                value: codeBlock(
+                                    `• ${Math.round((results[0].population * parseFloat(process.env.EAU_CONSO))).toLocaleString('en-US')}/${results[0].eau_appro.toLocaleString('en-US')} eau\n` +
+                                    `• ${Math.round((results[0].population * parseFloat(process.env.NOURRITURE_CONSO))).toLocaleString('en-US')}/${results[0].nourriture_appro.toLocaleString('en-US')} nourriture\n` +
+                                    `• ${(1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04).toFixed(1)}/${(process.env.PROD_USINE_CIVILE * results[0].usine_civile * 48 / results[0].population).toFixed(1)} biens de consommation`) + `\u200B`
                             },
                             {
-                                name: `> Densité`,
-                                value: codeBlock(`• ${densité.toLocaleString('en-US')} habitants/km²`) + `\u200B`
+                                name: `> 🏘️ Batiments`,
+                                value: codeBlock(
+                                    `• ${results[0].quartier.toLocaleString('en-US')} quartiers`) + `\u200B`
                             }
                         ],
                         color: joueur.displayHexColor,

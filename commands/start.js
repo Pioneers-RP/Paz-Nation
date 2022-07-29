@@ -18,55 +18,35 @@ module.exports = {
         const cité = interaction.options.getString('cité');
         const salon_carte = interaction.client.channels.cache.get(process.env.SALON_CARTE);
 
-        var sql1 = `
-        SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-
-        connection.query(sql1, async(err, results) => {
-            if (err) {
-                throw err;
-            }
-
+        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
             if (!results[0]) {
 
-                console.log(`Pays créé`)
-
-                var sql = `
-                INSERT INTO pays SET id_joueur="${interaction.user.id}", nom="${cité}"`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-                });
+                var sql = `INSERT INTO pays SET id_joueur="${interaction.user.id}", nom="${cité}"`;
+                connection.query(sql, async(err) => { if (err) { throw err; } });
 
                 const salon = await interaction.guild.channels.create(`${cité}`, {
                     type: "GUILD_TEXT",
                     permissionOverwrites: [{
+                            id: interaction.member.id,
+                            allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_ROLES', 'READ_MESSAGE_HISTORY'],
+                        },
+                        {
                             id: interaction.guild.roles.everyone,
                             deny: ['VIEW_CHANNEL']
                         },
-                        {
-                            id: interaction.member.id,
-                            allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_ROLES', 'READ_MESSAGE_HISTORY'],
-                        }
                     ],
                     parent: process.env.CATEGORY_PAYS,
                 });
 
                 var T_total = chance.integer({ min: 14000, max: 14999 });
-                var T_occ = 15 + 1 * process.env.SURFACE_CHAMP + 1 * process.env.SURFACE_MINE + 1 * process.env.SURFACE_POMPE_A_EAU + 1 * process.env.SURFACE_PUMPJACK + 1 * process.env.SURFACE_SCIERIE + 1 * process.env.SURFACE_CENTRALE_ELEC;
+                var T_occ = 15 + 1 * process.env.SURFACE_CHAMP + 1 * process.env.SURFACE_MINE + 1 * process.env.SURFACE_POMPE_A_EAU + 1 * process.env.SURFACE_PUMPJACK + 1 * process.env.SURFACE_SCIERIE + 2 * process.env.SURFACE_EOLIENNE;
                 var T_libre = T_total - T_occ;
                 var cash = chance.integer({ min: 975000, max: 1025000 });
                 var pop = chance.integer({ min: 9500, max: 10500 });
 
-                var sql = `
-                UPDATE pays SET id_salon="${salon.id}", cash='${cash}', population='${pop}', T_total='${T_total}', T_occ='${T_occ}', T_libre='${T_libre}', pweeter="@${interaction.user.username}", avatarURL="${interaction.user.avatarURL()}" WHERE id_joueur="${interaction.member.id}" LIMIT 1`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-                });
+                var sql = `UPDATE pays SET id_salon="${salon.id}", cash='${cash}', population='${pop}', T_total='${T_total}', T_occ='${T_occ}', T_libre='${T_libre}', pweeter="@${interaction.user.username}", avatarURL="${interaction.user.avatarURL()}" WHERE id_joueur="${interaction.member.id}" LIMIT 1`;
+                connection.query(sql, async(err) => {if (err) {throw err;}});
 
                 interaction.member.setNickname(`[${cité}] ${interaction.member.displayName}`);
 

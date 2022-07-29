@@ -40,22 +40,11 @@ module.exports = {
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
 
-            var sql = `
-            UPDATE pays SET regime="${régime}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
+            var sql = `UPDATE pays SET regime="${régime}" WHERE id_joueur=${interaction.member.id} LIMIT 1`;
+            connection.query(sql, async(err) => {if (err) {throw err;}});
 
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
-            });
-
-            var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
+            var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+            connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                 const annonce = {
                     author: {

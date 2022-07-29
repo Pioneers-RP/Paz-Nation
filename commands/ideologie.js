@@ -22,6 +22,7 @@ module.exports = {
             option.setName('discours')
             .setDescription(`Vous devez faire un discours pour justifier votre acte (Minimum 50 caractères)`)
             .setRequired(true)),
+
     async execute(interaction) {
         const { connection } = require('../index.js');
 
@@ -41,22 +42,11 @@ module.exports = {
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
 
-            var sql = `
-            UPDATE pays SET ideologie="${ideologie}" WHERE id_joueur="${interaction.member.id}" LIMIT 1`;
+            var sql = `UPDATE pays SET ideologie="${ideologie}" WHERE id_joueur="${interaction.member.id}" LIMIT 1`;
+            connection.query(sql, async(err) => {if (err) {throw err;}});
 
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
-            });
-
-            var sql = `
-            SELECT * FROM pays WHERE id_joueur="${interaction.member.id}"`;
-
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
+            var sql = `SELECT * FROM pays WHERE id_joueur="${interaction.member.id}"`;
+            connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                 const annonce = {
                     author: {

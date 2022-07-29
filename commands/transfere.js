@@ -23,38 +23,23 @@ module.exports = {
             var reponse = codeBlock('diff', `- Veillez indiquer un montant positive`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
-            var sql = `
-                SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-            connection.query(sql, async(err, results) => {
-                if (err) {
-                    throw err;
-                }
-
+            var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+            connection.query(sql, async(err, results) => {if (err) {throw err;}
                 if (results[0].cash >= montant) {
 
                     var sql = `
                     UPDATE pays SET cash=cash-${montant} WHERE id_joueur='${interaction.member.id}';
                     UPDATE pays SET cash=cash+${montant} WHERE id_joueur='${user.id}'`;
+                    connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                    connection.query(sql, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
-                    });
-
-                    connection.query(`SELECT * FROM pays WHERE id_joueur='${user.id}'`, async(err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    var sql = `SELECT * FROM pays WHERE id_joueur='${user.id}'`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         var cité_user = `${results[0].rang} de ${results[0].nom}`;
                         var drapeau_user = results[0].drapeau;
 
-                        connection.query(`SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`, async(err, results) => {
-                            if (err) {
-                                throw err;
-                            }
+                        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                             var cité_joueur = `${results[0].rang} de ${results[0].nom}`;
                             var drapeau_joueur = results[0].drapeau;
@@ -94,10 +79,9 @@ module.exports = {
                             };
 
                             await interaction.reply({ embeds: [paiement] });
-                            connection.query(`SELECT * FROM pays WHERE id_joueur='${user.id}'`, async(err, results) => {
-                                if (err) {
-                                    throw err;
-                                }
+
+                            var sql = `SELECT * FROM pays WHERE id_joueur='${user.id}'`
+                            connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                                 const recu = {
                                     author: {

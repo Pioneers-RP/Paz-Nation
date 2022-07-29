@@ -8,13 +8,9 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `
-            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
             const embed = {
                 author: {
                     name: `${results[0].rang} de ${results[0].nom}`,

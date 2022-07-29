@@ -31,22 +31,12 @@ module.exports = {
                     if (!(compte[i] == '\n' || compte[i] == '\r'))
                         newcompte += compte[i];
 
-                var sql = `
-                UPDATE pays SET pweeter="@${newcompte}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+                var sql = `UPDATE pays SET pweeter="@${newcompte}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+                connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-                });
+                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
-                var sql = `
-                SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-                connection.query(sql, async(err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                     const embed = {
                         author: {

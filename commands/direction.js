@@ -18,22 +18,11 @@ module.exports = {
 
         const direction = interaction.options.getString('vers');
 
-        var sql = `
-        UPDATE pays SET direction="${direction}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+        var sql = `UPDATE pays SET direction="${direction}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+        connection.query(sql, async(err) => {if (err) {throw err;}});
 
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
-        });
-
-        var sql = `
-        SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-        connection.query(sql, async(err, results) => {
-            if (err) {
-                throw err;
-            }
+        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             const embed = {
                 author: {
