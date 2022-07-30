@@ -1,5 +1,6 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
+const { readFileSync } = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -33,6 +34,7 @@ module.exports = {
 
             var batiment = interaction.options.getString('bâtiment');
             const nombre = interaction.options.getInteger('nombre');
+            const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
             // if (batiment == 'Pompe_a_eau') {
             //     batiment = 'Pompe à eau'
             // } else if (batiment == 'Usine_civile') {
@@ -62,19 +64,19 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_BRIQUETERIE_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_BRIQUETERIE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_BRIQUETERIE_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_BRIQUETERIE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_BRIQUETERIE_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_BRIQUETERIE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -91,19 +93,19 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_CHAMP_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_CHAMP_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_CHAMP_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_CHAMP_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_CHAMP_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_CHAMP_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -120,19 +122,19 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_CENTRALE_FIOUL_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_CENTRALE_FIOUL_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_CENTRALE_FIOUL_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_CENTRALE_FIOUL_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -149,7 +151,7 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_metaux = process.env.CONST_EOLIENNE_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_EOLIENNE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -166,19 +168,19 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_MINE_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_MINE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_MINE_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_MINE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_MINE_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_MINE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -195,19 +197,19 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_POMPE_A_EAU_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_POMPE_A_EAU_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_POMPE_A_EAU_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_POMPE_A_EAU_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_POMPE_A_EAU_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_POMPE_A_EAU_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
@@ -224,24 +226,25 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_PUMPJACK_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_PUMPJACK_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_PUMPJACK_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_PUMPJACK_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_PUMPJACK_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_PUMPJACK_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
                         }
                         break;
+
                     case 'Quartier':
                         var need_bois = true;
                         var need_brique = true;
@@ -253,24 +256,25 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_QUARTIER_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_QUARTIER_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_QUARTIER_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_QUARTIER_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_QUARTIER_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_QUARTIER_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
                         }
                         break;
+
                     case 'Scierie':
                         var need_bois = true;
                         var need_brique = true;
@@ -282,24 +286,25 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_SCIERIE_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_SCIERIE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_SCIERIE_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_SCIERIE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_SCIERIE_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_SCIERIE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true
                         }
                         break;
+
                     case 'Usine civile':
                         var need_bois = true;
                         var need_brique = true;
@@ -311,19 +316,19 @@ module.exports = {
                             var manque_T_libre = true
                         }
 
-                        var const_bois = process.env.CONST_USINE_CIVILE_BOIS * nombre;
+                        var const_bois = Math.round(process.env.CONST_USINE_CIVILE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_bois > results[0].bois) {
                             var const_batiment = false
                             var manque_bois = true
                         }
 
-                        var const_brique = process.env.CONST_USINE_CIVILE_BRIQUE * nombre;
+                        var const_brique = Math.round(process.env.CONST_USINE_CIVILE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_brique > results[0].brique) {
                             var const_batiment = false
                             var manque_brique = true
                         }
 
-                        var const_metaux = process.env.CONST_USINE_CIVILE_METAUX * nombre;
+                        var const_metaux = Math.round(process.env.CONST_USINE_CIVILE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
                         if (const_metaux > results[0].metaux) {
                             var const_batiment = false
                             var manque_metaux = true

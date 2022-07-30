@@ -3,7 +3,6 @@ const { MessageActionRow, MessageButton } = require('discord.js');
 const { readFileSync } = require('fs');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
-const vendreCommandCooldown = new CommandCooldown('vendre', ms('10m'));
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -32,16 +31,17 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        const userCooldowned = await vendreCommandCooldown.getUser(interaction.member.id);
-        if (userCooldowned) {
-            const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-            const reponse = codeBlock('diff', `- Vous avez déjà fait une offre récemment. Il reste ${timeLeft.minutes}min ${timeLeft.seconds}sec avant de pouvoir la changer à nouveau.`);
-            await interaction.reply({ content: reponse, ephemeral: true });
-        } else {
-            
-            var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-            connection.query(sql, async(err, results) => {if (err) {throw err;}
+        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+            const vendreCommandCooldown = new CommandCooldown('vendre', ms(`${eval(`gouvernementObject.${results[0].ideologie}.commerce`)}m`));
 
+            const userCooldowned = await vendreCommandCooldown.getUser(interaction.member.id);
+            if (userCooldowned) {
+                const timeLeft = msToMinutes(userCooldowned.msLeft, false);
+                const reponse = codeBlock('diff', `- Vous avez déjà fait une offre récemment. Il reste ${timeLeft.minutes}min ${timeLeft.seconds}sec avant de pouvoir la changer à nouveau.`);
+                await interaction.reply({ content: reponse, ephemeral: true });
+            } else {
                 const ressource = interaction.options.getString('ressource');
                 var quantité = interaction.options.getInteger('quantité');
                 var prix_u = interaction.options.getNumber('prix');
@@ -251,7 +251,7 @@ module.exports = {
                             }
                     }
                 };
-            })
-        };
+            };
+        })
     },
 };

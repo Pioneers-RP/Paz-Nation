@@ -10,7 +10,6 @@ var chance = new Chance();
 const wait = require('node:timers/promises').setTimeout;
 const ms = require('ms');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
-const vendreCommandCooldown = new CommandCooldown('vendre', ms('10m'));
 
 module.exports = {
     name: 'interactionCreate',
@@ -155,7 +154,8 @@ module.exports = {
                         } else {
                             densité = results[0].population / results[0].T_total;
                             densité = densité.toFixed(0);
-
+                            const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+                            
                             const embed = {
                                 author: {
                                     name: `${results[0].rang} de ${results[0].nom}`,
@@ -177,7 +177,7 @@ module.exports = {
                                         value: codeBlock(
                                             `• ${Math.round((results[0].population * parseFloat(process.env.EAU_CONSO))).toLocaleString('en-US')}/${results[0].eau_appro.toLocaleString('en-US')} eau\n` +
                                             `• ${Math.round((results[0].population * parseFloat(process.env.NOURRITURE_CONSO))).toLocaleString('en-US')}/${results[0].nourriture_appro.toLocaleString('en-US')} nourriture\n` +
-                                            `• ${(1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04).toFixed(1)}/${(process.env.PROD_USINE_CIVILE * results[0].usine_civile * 48 / results[0].population).toFixed(1)} biens de consommation`) + `\u200B`
+                                            `• ${((1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04) * eval(`gouvernementObject.${value.ideologie}.conso_bc`)).toFixed(1)}/${((process.env.PROD_USINE_CIVILE * results[0].usine_civile * 48 * eval(`gouvernementObject.${value.ideologie}.production`)) / results[0].population).toFixed(1)} biens de consommation`) + `\u200B`
                                     },
                                     {
                                         name: `> 🏘️ Batiments`,
@@ -320,14 +320,15 @@ module.exports = {
                         var espace = title.indexOf(" ");
                         var nombre = title.slice(0, espace)
                         var batiment = title.slice(espace + 1)
+                        const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 
                         switch (batiment) {
 
                             case 'Briqueterie':
                                 var const_T_libre = process.env.SURFACE_BRIQUETERIE * nombre;
-                                var const_bois = process.env.CONST_BRIQUETERIE_BOIS * nombre;
-                                var const_brique = process.env.CONST_BRIQUETERIE_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_BRIQUETERIE_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_BRIQUETERIE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_BRIQUETERIE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_BRIQUETERIE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET briqueterie=briqueterie+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -362,9 +363,9 @@ module.exports = {
 
                             case 'Champ':
                                 var const_T_libre = process.env.SURFACE_CHAMP * nombre;
-                                var const_bois = process.env.CONST_CHAMP_BOIS * nombre;
-                                var const_brique = process.env.CONST_CHAMP_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_CHAMP_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_CHAMP_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_CHAMP_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_CHAMP_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET champ=champ+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -399,9 +400,9 @@ module.exports = {
 
                             case 'Centrale au fioul':
                                 var const_T_libre = process.env.SURFACE_CENTRALE_FIOUL * nombre;
-                                var const_bois = process.env.CONST_CENTRALE_FIOUL_BOIS * nombre;
-                                var const_brique = process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_CENTRALE_FIOUL_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_CENTRALE_FIOUL_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_CENTRALE_FIOUL_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_CENTRALE_FIOUL_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET centrale_fioul=centrale_fioul+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -436,7 +437,7 @@ module.exports = {
 
                             case 'Eolienne':
                                 var const_T_libre = process.env.SURFACE_EOLIENNE * nombre;
-                                var const_metaux = process.env.CONST_EOLIENNE_METAUX * nombre;
+                                var const_metaux = Math.round(process.env.CONST_EOLIENNE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                         UPDATE pays SET eolienne=eolienne+${nombre} WHERE id_joueur="${interaction.member.id}";
@@ -469,9 +470,9 @@ module.exports = {
 
                             case 'Mine':
                                 var const_T_libre = process.env.SURFACE_MINE * nombre;
-                                var const_bois = process.env.CONST_MINE_BOIS * nombre;
-                                var const_brique = process.env.CONST_MINE_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_MINE_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_MINE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_MINE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_MINE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET mine=mine+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -506,9 +507,9 @@ module.exports = {
 
                             case 'Pompe à eau':
                                 var const_T_libre = process.env.SURFACE_POMPE_A_EAU * nombre;
-                                var const_bois = process.env.CONST_POMPE_A_EAU_BOIS * nombre;
-                                var const_brique = process.env.CONST_POMPE_A_EAU_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_POMPE_A_EAU_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_POMPE_A_EAU_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_POMPE_A_EAU_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_POMPE_A_EAU_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET pompe_a_eau=pompe_a_eau+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -543,9 +544,9 @@ module.exports = {
 
                             case 'Pumpjack':
                                 var const_T_libre = process.env.SURFACE_PUMPJACK * nombre;
-                                var const_bois = process.env.CONST_PUMPJACK_BOIS * nombre;
-                                var const_brique = process.env.CONST_PUMPJACK_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_PUMPJACK_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_PUMPJACK_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_PUMPJACK_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_PUMPJACK_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET pumpjack=pumpjack+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -580,9 +581,9 @@ module.exports = {
 
                             case 'Quartier':
                                 var const_T_libre = process.env.SURFACE_QUARTIER * nombre;
-                                var const_bois = process.env.CONST_QUARTIER_BOIS * nombre;
-                                var const_brique = process.env.CONST_QUARTIER_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_QUARTIER_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_QUARTIER_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_QUARTIER_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_QUARTIER_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                         UPDATE pays SET quartier=quartier+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -616,9 +617,9 @@ module.exports = {
 
                             case 'Scierie':
                                 var const_T_libre = process.env.SURFACE_SCIERIE * nombre;
-                                var const_bois = process.env.CONST_SCIERIE_BOIS * nombre;
-                                var const_brique = process.env.CONST_SCIERIE_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_SCIERIE_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_SCIERIE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_SCIERIE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_SCIERIE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET scierie=scierie+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -653,9 +654,9 @@ module.exports = {
 
                             case 'Usine civile':
                                 var const_T_libre = process.env.SURFACE_USINE_CIVILE * nombre;
-                                var const_bois = process.env.CONST_USINE_CIVILE_BOIS * nombre;
-                                var const_brique = process.env.CONST_USINE_CIVILE_BRIQUE * nombre;
-                                var const_metaux = process.env.CONST_USINE_CIVILE_METAUX * nombre;
+                                var const_bois = Math.round(process.env.CONST_USINE_CIVILE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_brique = Math.round(process.env.CONST_USINE_CIVILE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
+                                var const_metaux = Math.round(process.env.CONST_USINE_CIVILE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
 
                                 var sql = `
                                     UPDATE pays SET usine_civile=usine_civile+${nombre} WHERE id_joueur='${interaction.member.id}';
@@ -1485,6 +1486,8 @@ module.exports = {
                     connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                         const pourcentage = fields[2].value.slice(fields[2].value.indexOf("(") - 1, fields[2].value.indexOf(")"));
+                        const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+                        const vendreCommandCooldown = new CommandCooldown('vendre', ms(`${eval(`gouvernementObject.${results[0].ideologie}.commerce`)}m`));
 
                         switch (ressource) {
                             case 'Biens de consommation':
@@ -1860,15 +1863,16 @@ module.exports = {
                 var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                    const jsonObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
+                    const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
+                    const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
                     //region [Usine - Briqueterie]
                     if (interaction.values == 'briqueterie') {
 
 
-                        prod_T_briqueterie = process.env.PROD_BRIQUETERIE * results[0].briqueterie;
-                        conso_T_briqueterie_bois = process.env.CONSO_BRIQUETERIE_BOIS * results[0].briqueterie;
-                        conso_T_briqueterie_eau = process.env.CONSO_BRIQUETERIE_EAU * results[0].briqueterie;
-                        conso_T_briqueterie_elec = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie;
+                        prod_T_briqueterie = Math.round(process.env.PROD_BRIQUETERIE * results[0].briqueterie * eval(`gouvernementObject.${results[0].ideologie}.production`));
+                        conso_T_briqueterie_bois = Math.round(process.env.CONSO_BRIQUETERIE_BOIS * results[0].briqueterie * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
+                        conso_T_briqueterie_eau = Math.round(process.env.CONSO_BRIQUETERIE_EAU * results[0].briqueterie * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
+                        conso_T_briqueterie_elec = Math.round(process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie);
 
                         const embed = {
                             author: {
@@ -1883,8 +1887,8 @@ module.exports = {
                                     name: `> Consommation : 🪵💧`,
                                     value: `- Par usine : \n` +
                                         codeBlock(
-                                            `• Bois : ${parseInt(process.env.CONSO_BRIQUETERIE_BOIS).toLocaleString('en-US')}\n` +
-                                            `• Eau : ${parseInt(process.env.CONSO_BRIQUETERIE_EAU).toLocaleString('en-US')}`) +
+                                            `• Bois : ${Math.round(process.env.CONSO_BRIQUETERIE_BOIS * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}\n` +
+                                            `• Eau : ${Math.round(process.env.CONSO_BRIQUETERIE_EAU * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}`) +
                                         codeBlock(
                                             `• ⚡ Electricité : ${parseInt(process.env.CONSO_BRIQUETERIE_ELECTRICITE).toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
@@ -1903,7 +1907,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 🧱 brique\n` +
                                         codeBlock(
-                                            `• Par usine : ${parseInt(process.env.PROD_BRIQUETERIE).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${Math.round(process.env.PROD_BRIQUETERIE  * eval(`gouvernementObject.${results[0].ideologie}.production`)).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_briqueterie.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -1922,9 +1926,9 @@ module.exports = {
                         //region [Usine - Champ]
                     } else if (interaction.values == 'champ') {
 
-                        prod_champ = Math.round(process.env.PROD_CHAMP * ((parseInt((eval(`jsonObject.${results[0].region}.nourriture`))) + 100) / 100));
-                        conso_T_champ_eau = process.env.CONSO_CHAMP_EAU * results[0].champ;
-                        conso_T_champ_elec = process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ;
+                        prod_champ = Math.round(process.env.PROD_CHAMP * eval(`gouvernementObject.${results[0].ideologie}.production`) * ((parseInt((eval(`regionObject.${results[0].region}.nourriture`))) + 100) / 100));
+                        conso_T_champ_eau = Math.round(process.env.CONSO_CHAMP_EAU * results[0].champ * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
+                        conso_T_champ_elec = Math.round(process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ);
 
                         const embed = {
                             author: {
@@ -1974,8 +1978,8 @@ module.exports = {
                         //region [Usine - Centrale au fioul]
                     } else if (interaction.values == 'centrale_fioul') {
 
-                        prod_T_centrale_fioul = process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul;
-                        prod_T_elec = process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne;
+                        prod_T_centrale_fioul = Math.round(process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul);
+                        prod_T_elec = Math.round((process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne));
                         conso_T_centrale_fioul_petrole = process.env.CONSO_CENTRALE_FIOUL_PETROLE * results[0].centrale_fioul;
 
                         var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * results[0].quartier + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
@@ -2013,7 +2017,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Flux : ⚡ Electricité\n` +
                                         codeBlock(
-                                            `• Par usine : ${parseInt(process.env.PROD_CENTRALE_FIOUL).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${Math.round(process.env.PROD_CENTRALE_FIOUL).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_centrale_fioul.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -2032,8 +2036,8 @@ module.exports = {
                         //region [Usine - Eolienne]
                     } else if (interaction.values == 'eolienne') {
 
-                        prod_T_eolienne = process.env.PROD_EOLIENNE * results[0].eolienne;
-                        prod_T_elec = process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne;
+                        prod_T_eolienne = Math.round(process.env.PROD_EOLIENNE * results[0].eolienne);
+                        prod_T_elec = Math.round((process.env.PROD_CENTRALE_FIOUL * results[0].centrale_fioul + process.env.PROD_EOLIENNE * results[0].eolienne));
 
                         var conso = process.env.CONSO_BRIQUETERIE_ELECTRICITE * results[0].briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * results[0].champ + process.env.CONSO_MINE_ELECTRICITE * results[0].mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * results[0].quartier + process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
                         var diff = (prod_T_elec - conso);
@@ -2058,7 +2062,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Flux : ⚡ Electricité\n` +
                                         codeBlock(
-                                            `• Par usine : ${parseInt(process.env.PROD_EOLIENNE).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${Math.round(process.env.PROD_EOLIENNE).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_eolienne.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -2077,9 +2081,9 @@ module.exports = {
                         //region [Usine - Mine]
                     } else if (interaction.values == 'mine') {
 
-                        prod_mine = Math.round(process.env.PROD_MINE * ((parseInt((eval(`jsonObject.${results[0].region}.metaux`))) + 100) / 100));
-                        conso_T_mine_bois = process.env.CONSO_MINE_BOIS * results[0].mine;
-                        conso_T_mine_petrole = process.env.CONSO_MINE_PETROLE * results[0].mine;
+                        prod_mine = Math.round(process.env.PROD_MINE * eval(`gouvernementObject.${results[0].ideologie}.production`) * ((parseInt((eval(`regionObject.${results[0].region}.metaux`))) + 100) / 100));
+                        conso_T_mine_bois = Math.round(process.env.CONSO_MINE_BOIS * results[0].mine * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
+                        conso_T_mine_petrole = Math.round(process.env.CONSO_MINE_PETROLE * results[0].mine * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
                         conso_T_mine_elec = process.env.CONSO_MINE_ELECTRICITE * results[0].mine;
 
                         const embed = {
@@ -2095,8 +2099,8 @@ module.exports = {
                                     name: `> Consommation :`,
                                     value: `- Par usine : 🪵🛢️\n` +
                                         codeBlock(
-                                            `• Bois : ${parseInt(process.env.CONSO_MINE_BOIS).toLocaleString('en-US')}\n` +
-                                            `• Pétrole : ${parseInt(process.env.CONSO_MINE_PETROLE).toLocaleString('en-US')}`) +
+                                            `• Bois : ${Math.round(process.env.CONSO_MINE_BOIS * eval(`gouvernementObject.${results[0].ideologie}.production`)).toLocaleString('en-US')}\n` +
+                                            `• Pétrole : ${Math.round(process.env.CONSO_MINE_PETROLE * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}`) +
                                         codeBlock(
                                             `• ⚡ Electricité : ${parseInt(process.env.CONSO_MINE_ELECTRICITE).toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
@@ -2134,8 +2138,8 @@ module.exports = {
                         //region [Usine - Pompe à eau]
                     } else if (interaction.values == 'pompe_a_eau') {
 
-                        prod_pompe_a_eau = Math.round(process.env.PROD_POMPE_A_EAU * ((parseInt((eval(`jsonObject.${results[0].region}.eau`))) + 100) / 100));
-                        conso_T_pompe_a_eau_petrole = process.env.CONSO_POMPE_A_EAU_PETROLE * results[0].pompe_a_eau;
+                        prod_pompe_a_eau = Math.round(process.env.PROD_POMPE_A_EAU * eval(`gouvernementObject.${results[0].ideologie}.production`) * ((parseInt((eval(`regionObject.${results[0].region}.eau`))) + 100) / 100));
+                        conso_T_pompe_a_eau_petrole = Math.round(process.env.CONSO_POMPE_A_EAU_PETROLE * results[0].pompe_a_eau * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
                         conso_T_pompe_a_eau_elec = process.env.CONSO_POMPE_A_EAU_ELECTRICITE * results[0].pompe_a_eau;
 
                         const embed = {
@@ -2150,7 +2154,7 @@ module.exports = {
                             fields: [{
                                     name: `> Consommation : 🛢️`,
                                     value: `- Par usine : \n` +
-                                        codeBlock(`• Pétrole : ${parseInt(process.env.CONSO_POMPE_A_EAU_PETROLE).toLocaleString('en-US')}\n`) +
+                                        codeBlock(`• Pétrole : ${Math.round(process.env.CONSO_POMPE_A_EAU_PETROLE * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}\n`) +
                                         codeBlock(
                                             `• ⚡ Electricité : ${parseInt(process.env.CONSO_POMPE_A_EAU_ELECTRICITE).toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
@@ -2186,7 +2190,7 @@ module.exports = {
                         //region [Usine - Pumpjack]
                     } else if (interaction.values == 'pumpjack') {
 
-                        prod_pumpjack = Math.round(process.env.PROD_PUMPJACK * ((parseInt((eval(`jsonObject.${results[0].region}.petrole`))) + 100) / 100));
+                        prod_pumpjack = Math.round(process.env.PROD_PUMPJACK * eval(`gouvernementObject.${results[0].ideologie}.production`) * ((parseInt((eval(`regionObject.${results[0].region}.petrole`))) + 100) / 100));
                         conso_T_pumpjack_elec = process.env.CONSO_PUMPJACK_ELECTRICITE * results[0].pumpjack;
 
                         const embed = {
@@ -2235,8 +2239,8 @@ module.exports = {
                         //region [Usine - Scierie]
                     } else if (interaction.values == 'scierie') {
 
-                        prod_scierie = Math.round(process.env.PROD_SCIERIE * ((parseInt((eval(`jsonObject.${results[0].region}.bois`))) + 100) / 100));
-                        conso_T_scierie_petrole = process.env.CONSO_SCIERIE_PETROLE * results[0].scierie;
+                        prod_scierie = Math.round(process.env.PROD_SCIERIE * eval(`gouvernementObject.${results[0].ideologie}.production`) * ((parseInt((eval(`regionObject.${results[0].region}.bois`))) + 100) / 100));
+                        conso_T_scierie_petrole = Math.round(process.env.CONSO_SCIERIE_PETROLE * results[0].scierie * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
                         conso_T_scierie_elec = process.env.CONSO_SCIERIE_ELECTRICITE * results[0].scierie;
 
                         const embed = {
@@ -2251,7 +2255,7 @@ module.exports = {
                             fields: [{
                                     name: `> Consommation : 🛢️`,
                                     value: `- Par usine : \n` +
-                                        codeBlock(`• Pétrole : ${parseInt(process.env.CONSO_SCIERIE_PETROLE).toLocaleString('en-US')}`) +
+                                        codeBlock(`• Pétrole : ${Math.round(process.env.CONSO_SCIERIE_PETROLE * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}`) +
                                         codeBlock(
                                             `• ⚡ Electricité : ${parseInt(process.env.CONSO_SCIERIE_ELECTRICITE).toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
@@ -2287,10 +2291,10 @@ module.exports = {
                         //region [Usine - Usine civile]
                     } else if (interaction.values == 'usine_civile') {
 
-                        prod_T_usine_civile = process.env.PROD_USINE_CIVILE * results[0].usine_civile;
-                        conso_T_usine_civile_bois = process.env.CONSO_USINE_CIVILE_BOIS * results[0].usine_civile;
-                        conso_T_usine_civile_metaux = process.env.CONSO_USINE_CIVILE_METAUX * results[0].usine_civile;
-                        conso_T_usine_civile_petrole = process.env.CONSO_USINE_CIVILE_PETROLE * results[0].usine_civile;
+                        prod_T_usine_civile = Math.round(process.env.PROD_USINE_CIVILE * results[0].usine_civile * eval(`gouvernementObject.${results[0].ideologie}.production`));
+                        conso_T_usine_civile_bois = Math.round(process.env.CONSO_USINE_CIVILE_BOIS * results[0].usine_civile * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
+                        conso_T_usine_civile_metaux = Math.round(process.env.CONSO_USINE_CIVILE_METAUX * results[0].usine_civile * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
+                        conso_T_usine_civile_petrole = Math.round(process.env.CONSO_USINE_CIVILE_PETROLE * results[0].usine_civile * eval(`gouvernementObject.${results[0].ideologie}.consommation`));
                         conso_T_usine_civile_elec = process.env.CONSO_USINE_CIVILE_ELECTRICITE * results[0].usine_civile;
 
                         const embed = {
@@ -2306,9 +2310,9 @@ module.exports = {
                                     name: `> Consommation : 🪵🪨🛢️`,
                                     value: `- Par usine : \n` +
                                         codeBlock(
-                                            `• Bois : ${parseInt(process.env.CONSO_USINE_CIVILE_BOIS).toLocaleString('en-US')}\n` +
-                                            `• Métaux : ${parseInt(process.env.CONSO_USINE_CIVILE_METAUX).toLocaleString('en-US')}\n` +
-                                            `• Pétrole : ${parseInt(process.env.CONSO_USINE_CIVILE_PETROLE).toLocaleString('en-US')}\n`) +
+                                            `• Bois : ${Math.round(process.env.CONSO_USINE_CIVILE_BOIS * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}\n` +
+                                            `• Métaux : ${Math.round(process.env.CONSO_USINE_CIVILE_METAUX * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}\n` +
+                                            `• Pétrole : ${Math.round(process.env.CONSO_USINE_CIVILE_PETROLE * eval(`gouvernementObject.${results[0].ideologie}.consommation`)).toLocaleString('en-US')}\n`) +
                                         codeBlock(
                                             `• ⚡ Electricité : ${parseInt(process.env.CONSO_USINE_CIVILE_ELECTRICITE).toLocaleString('en-US')}`) + `\u200B`,
                                     inline: true
@@ -2328,7 +2332,7 @@ module.exports = {
                                     name: `> Production :`,
                                     value: `Ressource : 💻 Biens de consommation\n` +
                                         codeBlock(
-                                            `• Par usine : ${parseInt(process.env.PROD_USINE_CIVILE).toLocaleString('en-US')}\n` +
+                                            `• Par usine : ${Math.round(process.env.PROD_USINE_CIVILE * eval(`gouvernementObject.${results[0].ideologie}.production`)).toLocaleString('en-US')}\n` +
                                             `• Totale : ${prod_T_usine_civile.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
@@ -2345,10 +2349,9 @@ module.exports = {
                             //endregion
                     }
                 });
-
-                //#region [Roles]
             } else if (interaction.customId == 'roles') {
-
+                
+                //region [Roles]
                 if (interaction.values.indexOf('annonce') != '-1') {
                     let role = interaction.guild.roles.cache.find(r => r.name === "📢 » Annonce");
                     interaction.member.roles.add(role)
@@ -2392,7 +2395,8 @@ module.exports = {
                 interaction.reply('👍');
                 wait(15000)
                 interaction.deleteReply();
-            } //endregion
+                 //endregion
+            }
         } else if (interaction.isModalSubmit()) {
 
             var log = {
@@ -2407,14 +2411,121 @@ module.exports = {
                     text: '#' + interaction.channel.name
                 },
             };
-
+            
             const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
             salon_logs.send({ embeds: [log] });
+
+            //#region [Start]
+            if (interaction.customId.includes('start') == true) {
+	            const cite = interaction.fields.getTextInputValue('nom_cite');
+                var sql = `SELECT * FROM pays WHERE nom="${cite}"`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    if (!results[0]) {
+                        function success (salon) {
+                                const nouveau_salon = {
+                                author: {
+                                    name: `Cité de ${cite}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                                },
+                                title: `\`Bienvenue dans votre cité !\``,
+                                fields: [{
+                                    name: `Commencement :`,
+                                    value: `Menez votre peuple à la gloire !`
+                                }],
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `Paz Nation, le meilleur serveur Discord Français`
+                                },
+                            };
+                            salon.send({ content: `<@${interaction.member.id}>`, embeds: [nouveau_salon] })
+
+                            var T_total = chance.integer({ min: 14000, max: 14999 });
+                            var T_occ = 15 + 1 * process.env.SURFACE_CHAMP + 1 * process.env.SURFACE_MINE + 1 * process.env.SURFACE_POMPE_A_EAU + 1 * process.env.SURFACE_PUMPJACK + 1 * process.env.SURFACE_PUMPJACK + 1 * process.env.SURFACE_SCIERIE + 2 * process.env.SURFACE_EOLIENNE;
+                            var T_libre = T_total - T_occ;
+                            var cash = chance.integer({ min: 975000, max: 1025000 });
+                            var jeune = chance.integer({ min: 29000, max: 31000 });
             
-            if (interaction.customId.includes('réglement') == true) {
+                            var sql = `INSERT INTO pays SET id_joueur="${interaction.user.id}", nom="${cite}", id_salon="${salon.id.toString()}", cash='${cash}', jeune='${jeune}', T_total='${T_total}', T_occ='${T_occ}', T_libre='${T_libre}', pweeter="@${interaction.user.username}", avatarURL="${interaction.user.avatarURL()}"`;
+                            connection.query(sql, async(err) => {if (err) {throw err;}});
+            
+                            interaction.member.setNickname(`[${cite}] ${interaction.member.displayName}`);
+            
+                            let roleJoueur = interaction.guild.roles.cache.find(r => r.name === "👤 » Joueur");
+                            interaction.member.roles.add(roleJoueur)
+            
+                            let roleInvité = interaction.guild.roles.cache.find(r => r.name === "👤 » Invité");
+                            interaction.member.roles.remove(roleInvité)
 
+                            const ville = {
+                                author: {
+                                    name: `Cité de ${cite}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                                },
+                                title: `\`Vous avez fondé votre cité !\``,
+                                fields: [{
+                                    name: `Place de votre gouvernement :`,
+                                    value: `${salon.toString()}`
+                                }],
+                                color: interaction.member.displayHexColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `Paz Nation, le meilleur serveur Discord Français`
+                                },
+                            };
+            
+                            const annonce = {
+                                description: `**<@${interaction.member.id}> a fondé une nouvelle Cité : ${cite}**`,
+                                image: {
+                                    url: 'https://media.discordapp.net/attachments/848913340737650698/947508565415981096/zefghyiuuie.png',
+                                },
+                                color: interaction.member.displayHexColor,
+                                footer: {
+                                    text: `Paz Nation, le meilleur serveur Discord Français`
+                                },
+                            };
+            
+                            const salon_carte = interaction.client.channels.cache.get(process.env.SALON_CARTE);
+                            salon_carte.send({ embeds: [annonce] });
+                            interaction.user.send({ embeds: [ville] });
+                        }
+
+                        interaction.guild.channels.create(`${cite}`, {
+                            type: "GUILD_TEXT",
+                            permissionOverwrites: [{
+                                    id: interaction.member.id,
+                                    allow: ['VIEW_CHANNEL', 'SEND_MESSAGES', 'MANAGE_CHANNELS', 'MANAGE_ROLES', 'READ_MESSAGE_HISTORY', 'MANAGE_MESSAGES', 'USE_APPLICATION_COMMANDS'],
+                                },
+                                {
+                                    id: interaction.guild.roles.everyone,
+                                    deny: ['VIEW_CHANNEL']
+                                },
+                            ],
+                            parent: process.env.CATEGORY_PAYS,
+                        })
+                        .then(salon => success(salon))
+                    } else {
+                        var reponse = codeBlock('diff', `- Cette cité est déjà prise. Pour voir la liste des cités déjà controlées, cliquez sur le bouton ci-dessous`);
+                        var row = new MessageActionRow()
+                        .addComponents(
+                            new MessageButton()
+                            .setLabel(`Liste des cités`)
+                            .setEmoji(`🌇`)
+                            .setURL('https://discord.com/channels/826427184305537054/983316109367345152/987038188801503332')
+                            .setStyle('LINK'),
+                        )
+                        await interaction.user.send({ content: reponse, components: [row] });
+                    }
+                })
+                interaction.deferUpdate()
+            //endregion
             }
-
         };
     }
 };

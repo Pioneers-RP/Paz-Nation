@@ -10,5 +10,8 @@
         "gouvernance": 0.5,
         "assimilation": 0,
         "commerce": 30
+    },
+    "Communisme": {
+        "commerce": 60
     }
 }

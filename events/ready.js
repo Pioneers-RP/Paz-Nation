@@ -72,9 +72,10 @@ module.exports = {
             '0 0,10,20,30,40,50 * * * *',
 
             function autoUpdate() {
-                const jsonObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
+                const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
+                const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 
-                var sql = `SELECT * FROM pays WHERE id_joueur="764403931534065675"`;
+                var sql = `SELECT * FROM pays`;
                 connection.query(sql, async(err, results) => {
 
                     var arrayPays = Object.values(results);
@@ -83,19 +84,19 @@ module.exports = {
                     function chaquePays(value, index, array) {
                         //console.log(process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul)
                         if (value.petrole >= process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul) {
-                            var prod_centrale = process.env.PROD_CENTRALE_FIOUL * value.centrale_fioul
+                            var prod_centrale = Math.round(process.env.PROD_CENTRALE_FIOUL * value.centrale_fioul)
                         } else {
                             var prod_centrale = 0
                                 //console.log(prod_centrale)
                         }
                         //console.log(prod_centrale)
-                        var prod_elec = prod_centrale + process.env.PROD_EOLIENNE * value.eolienne;
+                        var prod_elec = Math.round(prod_centrale + process.env.PROD_EOLIENNE * value.eolienne);
                         //console.log(Number((value.petrole / (process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul)).toFixed(1)))
                         var conso_elec = process.env.CONSO_BRIQUETERIE_ELECTRICITE * value.briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * value.champ + process.env.CONSO_MINE_ELECTRICITE * value.mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * value.pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * value.pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * value.quartier + process.env.CONSO_SCIERIE_ELECTRICITE * value.scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * value.usine_civile;
 
                         if (prod_elec > conso_elec) {
                             if (value.petrole >= process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul) {
-                                var conso_centrale_petrole = process.env.PROD_CENTRALE_FIOUL * value.centrale_fioul;
+                                var conso_centrale_petrole = process.env.CONSO_CENTRALE_FIOUL * value.centrale_fioul;
                                 var sql = `UPDATE pays SET petrole=petrole-${conso_centrale_petrole} WHERE id_joueur="${value.id_joueur}"`;
                             }
                             if (value.nourriture_acces < 1008) {
@@ -107,13 +108,13 @@ module.exports = {
                             connection.query(sql, async(err, results) => {
                                 var conso_briqueterie = true
 
-                                var conso_T_briqueterie_bois = process.env.CONSO_BRIQUETERIE_BOIS * value.briqueterie;
+                                var conso_T_briqueterie_bois = Math.round(process.env.CONSO_BRIQUETERIE_BOIS * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_briqueterie_bois > results[0].bois) {
                                     var conso_briqueterie = false
                                     var manque_bois = true
                                 }
 
-                                var conso_T_briqueterie_eau = process.env.CONSO_BRIQUETERIE_EAU * value.briqueterie;
+                                var conso_T_briqueterie_eau = Math.round(process.env.CONSO_BRIQUETERIE_EAU * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_briqueterie_eau > results[0].eau) {
                                     var conso_briqueterie = false
                                     var manque_eau = true
@@ -121,7 +122,7 @@ module.exports = {
 
                                 if (conso_briqueterie == true) {
 
-                                    var prod_T_briqueterie = process.env.PROD_BRIQUETERIE * value.briqueterie;
+                                    var prod_T_briqueterie = Math.round(process.env.PROD_BRIQUETERIE * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.production`));
                                     var sql = `
                                     UPDATE pays SET bois=bois-${conso_T_briqueterie_bois} WHERE id_joueur="${value.id_joueur}";
                                     UPDATE pays SET eau=eau-${conso_T_briqueterie_eau} WHERE id_joueur="${value.id_joueur}";
@@ -167,14 +168,14 @@ module.exports = {
                             connection.query(sql, async(err, results) => {
                                 var conso_champ = true
 
-                                var conso_T_champ_eau = process.env.CONSO_CHAMP_EAU * value.champ;
+                                var conso_T_champ_eau = Math.round(process.env.CONSO_CHAMP_EAU * value.champ * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_champ_eau > results[0].eau) {
                                     var conso_champ = false
                                     var manque_eau = true
                                 }
 
                                 if (conso_champ == true) {
-                                    var prod_T_champ = Math.round(process.env.PROD_CHAMP * value.champ * ((parseInt((eval(`jsonObject.${value.region}.nourriture`))) + 100) / 100));
+                                    var prod_T_champ = Math.round(process.env.PROD_CHAMP * value.champ * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.nourriture`))) + 100) / 100));
                                     var sql = `
                                     UPDATE pays SET eau=eau-${conso_T_champ_eau} WHERE id_joueur="${value.id_joueur}";
                                     UPDATE pays SET nourriture=nourriture+${prod_T_champ} WHERE id_joueur="${value.id_joueur}"`;
@@ -213,13 +214,13 @@ module.exports = {
                             connection.query(sql, async(err, results) => {
                                 var conso_mine = true
 
-                                var conso_T_mine_bois = process.env.CONSO_MINE_BOIS * value.mine;
+                                var conso_T_mine_bois = Math.round(process.env.CONSO_MINE_BOIS * value.mine * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_mine_bois > results[0].bois) {
                                     var conso_mine = false
                                     var manque_bois = true
                                 }
 
-                                var conso_T_mine_petrole = process.env.CONSO_MINE_PETROLE * value.mine;
+                                var conso_T_mine_petrole = Math.round(process.env.CONSO_MINE_PETROLE * value.mine * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_mine_petrole > results[0].petrole) {
                                     var conso_mine = false
                                     var manque_petrole = true
@@ -227,7 +228,7 @@ module.exports = {
 
                                 if (conso_mine == true) {
 
-                                    var prod_T_mine = Math.round(process.env.PROD_MINE * value.mine * ((parseInt((eval(`jsonObject.${value.region}.metaux`))) + 100) / 100));
+                                    var prod_T_mine = Math.round(process.env.PROD_MINE * value.mine * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.metaux`))) + 100) / 100));
                                     var sql = `
                                         UPDATE pays SET bois=bois-${conso_T_mine_bois} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET petrole=petrole-${conso_T_mine_petrole} WHERE id_joueur="${value.id_joueur}";
@@ -273,7 +274,7 @@ module.exports = {
                             connection.query(sql, async(err, results) => {
                                 var conso_pompe_a_eau = true
 
-                                var conso_T_pompe_a_eau_petrole = process.env.CONSO_POMPE_A_EAU_PETROLE * value.pompe_a_eau;
+                                var conso_T_pompe_a_eau_petrole = Math.round(process.env.CONSO_POMPE_A_EAU_PETROLE * value.pompe_a_eau * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_pompe_a_eau_petrole > results[0].petrole) {
                                     var conso_pompe_a_eau = false
                                     var manque_petrole = true
@@ -281,7 +282,7 @@ module.exports = {
 
                                 if (conso_pompe_a_eau == true) {
 
-                                    var prod_T_pompe_a_eau = Math.round(process.env.PROD_POMPE_A_EAU * value.pompe_a_eau * ((parseInt((eval(`jsonObject.${value.region}.eau`))) + 100) / 100));
+                                    var prod_T_pompe_a_eau = Math.round(process.env.PROD_POMPE_A_EAU * value.pompe_a_eau * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.eau`))) + 100) / 100));
                                     var sql = `
                                         UPDATE pays SET petrole=petrole-${conso_T_pompe_a_eau_petrole} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET eau=eau+${prod_T_pompe_a_eau} WHERE id_joueur="${value.id_joueur}"`;
@@ -322,7 +323,7 @@ module.exports = {
 
                                 if (conso_pumpjack == true) {
 
-                                    var prod_T_pumpjack = Math.round(process.env.PROD_PUMPJACK * value.pumpjack * ((parseInt((eval(`jsonObject.${value.region}.petrole`))) + 100) / 100));
+                                    var prod_T_pumpjack = Math.round(process.env.PROD_PUMPJACK * value.pumpjack * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.petrole`))) + 100) / 100));
                                     var sql = `UPDATE pays SET petrole=petrole+${prod_T_pumpjack} WHERE id_joueur="${value.id_joueur}"`;
                                     connection.query(sql, async(err) => {if (err) {throw err;}})
 
@@ -352,7 +353,7 @@ module.exports = {
                             connection.query(sql, async(err, results) => {
                                 var conso_scierie = true
 
-                                var conso_T_scierie_petrole = process.env.CONSO_SCIERIE_PETROLE * value.scierie;
+                                var conso_T_scierie_petrole = Math.round(process.env.CONSO_SCIERIE_PETROLE * value.scierie * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_scierie_petrole > results[0].petrole) {
                                     var conso_scierie = false
                                     var manque_petrole = true
@@ -360,7 +361,7 @@ module.exports = {
 
                                 if (conso_scierie == true) {
 
-                                    var prod_T_scierie = Math.round(process.env.PROD_SCIERIE * value.scierie * ((parseInt((eval(`jsonObject.${value.region}.bois`))) + 100) / 100));
+                                    var prod_T_scierie = Math.round(process.env.PROD_SCIERIE * value.scierie * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.bois`))) + 100) / 100));
                                     var sql = `
                                         UPDATE pays SET petrole=petrole-${conso_T_scierie_petrole} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET bois=bois+${prod_T_scierie} WHERE id_joueur="${value.id_joueur}"`;
@@ -399,19 +400,19 @@ module.exports = {
                             connection.query(sql, async(err, results) => {
                                 var conso_usine_civile = true
 
-                                var conso_T_usine_civile_bois = process.env.CONSO_USINE_CIVILE_BOIS * value.usine_civile;
+                                var conso_T_usine_civile_bois = Math.round(process.env.CONSO_USINE_CIVILE_BOIS * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_usine_civile_bois > results[0].bois) {
                                     var conso_usine_civile = false
                                     var manque_bois = true
                                 }
 
-                                var conso_T_usine_civile_metaux = process.env.CONSO_USINE_CIVILE_METAUX * value.usine_civile;
+                                var conso_T_usine_civile_metaux = Math.round(process.env.CONSO_USINE_CIVILE_METAUX * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_usine_civile_metaux > results[0].metaux) {
                                     var conso_usine_civile = false
                                     var manque_metaux = true
                                 }
 
-                                var conso_T_usine_civile_petrole = process.env.CONSO_USINE_CIVILE_PETROLE * value.usine_civile;
+                                var conso_T_usine_civile_petrole = Math.round(process.env.CONSO_USINE_CIVILE_PETROLE * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_usine_civile_petrole > results[0].petrole) {
                                     var conso_usine_civile = false
                                     var manque_petrole = true
@@ -419,7 +420,7 @@ module.exports = {
 
                                 if (conso_usine_civile == true) {
 
-                                    var prod_T_usine_civile = process.env.PROD_USINE_CIVILE * value.usine_civile;
+                                    var prod_T_usine_civile = Math.round(process.env.PROD_USINE_CIVILE * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.production`));
                                     var sql = `
                                         UPDATE pays SET bois=bois-${conso_T_usine_civile_bois} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET metaux=metaux-${conso_T_usine_civile_metaux} WHERE id_joueur="${value.id_joueur}";
@@ -480,7 +481,7 @@ module.exports = {
                             const embed = {
                                 author: {
                                     name: `${value.rang} de ${value.nom}`,
-                                    icon_url: client.users.cache.get(value.id_joueur).displayAvatarURL()
+                                    icon_url: value.avatarURL
                                 },
                                 thumbnail: {
                                     url: `${value.drapeau}`,
@@ -504,7 +505,7 @@ module.exports = {
                             const embed = {
                                 author: {
                                     name: `${value.rang} de ${value.nom}`,
-                                    icon_url: client.users.cache.get(value.id_joueur).displayAvatarURL()
+                                    icon_url: value.avatarURL
                                 },
                                 thumbnail: {
                                     url: `${value.drapeau}`,
@@ -578,6 +579,7 @@ module.exports = {
                     arrayPays.forEach(chaquePays);
 
                     function chaquePays(value, index, array) {
+                        const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 
                         if (value.nourriture >= (value.population * parseFloat(process.env.NOURRITURE_CONSO))) {
                             if (value.nourriture_appro >= (value.population * parseFloat(process.env.NOURRITURE_CONSO))) {
@@ -605,11 +607,13 @@ module.exports = {
                             var sql = sql + `UPDATE pays SET eau_acces=0 WHERE id_joueur="${value.id_joueur}";`;
                         }
 
-                        const conso_bc = (1 + value.bc_acces * 0.04 + value.bonheur * 0.016 + (value.population / 10000000) * 0.04) * value.population
+                        const conso_bc = (1 + value.bc_acces * 0.04 + value.bonheur * 0.016 + (value.population / 10000000) * 0.04) * value.population * eval(`gouvernementObject.${value.ideologie}.conso_bc`)
                             //console.log(conso_bc)
                         if (value.bc > (conso_bc)) {
                             if (value.bc_acces < 21) {
                                 var sql = sql + `UPDATE pays SET bc_acces=bc_acces+0.33 WHERE id_joueur="${value.id_joueur}";UPDATE pays SET bc=bc-${conso_bc} WHERE id_joueur="${value.id_joueur}"`;
+                            } else {
+                                var sql = sql + `UPDATE pays SET bc=bc-${conso_bc} WHERE id_joueur="${value.id_joueur}"`
                             }
                         } else {
                             var sql = sql + `UPDATE pays SET bc_acces=0 WHERE id_joueur="${value.id_joueur}";UPDATE pays SET bc=0 WHERE id_joueur="${value.id_joueur}"`;
@@ -631,7 +635,7 @@ module.exports = {
                             const bc_acces = results[0].bc_acces * 1.45;
                             //console.log(bc_acces)
 
-                            var tauxbcmadein = (process.env.PROD_USINE_CIVILE * results[0].usine_civile) / (results[0].population * 9 * 0.5);
+                            var tauxbcmadein = (process.env.PROD_USINE_CIVILE * results[0].usine_civile * eval(`gouvernementObject.${value.ideologie}.production`)) / (results[0].population * 9 * 0.5);
                             if (tauxbcmadein > 0.8) {
                                 var tauxbcmadein = 0.8;
                             }
@@ -647,7 +651,7 @@ module.exports = {
                             const sdf = (1 - pourcentage_sans_abri) * 18;
                             //console.log(sdf)
 
-                            const modifier = parseFloat(process.env.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf;
+                            const modifier = parseFloat(process.env.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf + eval(`gouvernementObject.${value.ideologie}.bonheur`);
                             const bonheur = parseFloat(((-92 * Math.exp(-0.02 * modifier)) + 100).toFixed(1));
                             //console.log(modifier)
                             //console.log(bonheur)

@@ -26,6 +26,7 @@ module.exports = {
                 } else {
                     densité = results[0].population / results[0].T_total;
                     densité = densité.toFixed(0);
+                    const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 
                     const embed = {
                         author: {
@@ -48,7 +49,7 @@ module.exports = {
                                 value: codeBlock(
                                     `• ${Math.round((results[0].population * parseFloat(process.env.EAU_CONSO))).toLocaleString('en-US')}/${results[0].eau_appro.toLocaleString('en-US')} eau\n` +
                                     `• ${Math.round((results[0].population * parseFloat(process.env.NOURRITURE_CONSO))).toLocaleString('en-US')}/${results[0].nourriture_appro.toLocaleString('en-US')} nourriture\n` +
-                                    `• ${(1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04).toFixed(1)}/${(process.env.PROD_USINE_CIVILE * results[0].usine_civile * 48 / results[0].population).toFixed(1)} biens de consommation`) + `\u200B`
+                                    `• ${((1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04) * eval(`gouvernementObject.${value.ideologie}.conso_bc`)).toFixed(1)}/${((process.env.PROD_USINE_CIVILE * results[0].usine_civile * 48 * eval(`gouvernementObject.${value.ideologie}.production`)) / results[0].population).toFixed(1)} biens de consommation`) + `\u200B`
                             },
                             {
                                 name: `> 🏘️ Batiments`,
