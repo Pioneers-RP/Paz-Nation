@@ -15,6 +15,7 @@ module.exports = {
 
             var prod = Math.round(process.env.PROD_USINE_CIVILE * results[0].usine_civile * eval(`gouvernementObject.${results[0].ideologie}.production`));
             var conso = Math.round((1 + results[0].bc_acces * 0.04 + results[0].bonheur * 0.016 + (results[0].population / 10000000) * 0.04) * results[0].population / 48 * eval(`gouvernementObject.${results[0].ideologie}.conso_bc`));
+
             var diff = (prod - conso);
             if (diff > 0) {
                 var bc = codeBlock('ml', `"-${conso.toLocaleString('en-US')} | +${prod.toLocaleString('en-US')} | :${(prod - conso).toLocaleString('en-US')}" | 📦 ${results[0].bc.toLocaleString('en-US')}`);
