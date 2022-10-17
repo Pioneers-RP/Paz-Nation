@@ -17,30 +17,30 @@ module.exports = {
             .addChoice(`Nourriture`, 'Nourriture')
             .addChoice(`Pétrole`, 'Petrole')
             .setRequired(true))
-        .addIntegerOption(quantité =>
-            quantité.setName('quantité')
+        .addIntegerOption(quantite =>
+            quantite.setName('quantité')
             .setDescription(`La quantité de ressource que vous voulez acheter`)
             .setRequired(true)),
 
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
 
         connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             const ressource = interaction.options.getString('ressource');
-            var quantité = interaction.options.getInteger('quantité');
+            const quantite = interaction.options.getInteger('quantité');
             const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
-            if (quantité < 0) {
-                var reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
+            if (quantite < 0) {
+                const reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             } else {
                 function offre(prix_moyen) {
 
-                    var prix_achat = parseFloat((prix_moyen * 1.3).toFixed(2));
-                    var prix = Math.round(quantité * prix_achat);
+                    const prix_achat = parseFloat((prix_moyen * 1.3).toFixed(2));
+                    const prix = Math.round(quantite * prix_achat);
 
                     const embed = {
                         author: {
@@ -59,7 +59,7 @@ module.exports = {
                             },
                             {
                                 name: `Quantité :`,
-                                value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
+                                value: codeBlock(`• ${quantite.toLocaleString('en-US')}`) + `\u200B`
                             },
                             {
                                 name: `Prix :`,

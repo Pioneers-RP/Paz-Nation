@@ -13,40 +13,40 @@ module.exports = {
             .setDescription(`Le montant du transfert`)
             .setRequired(true)),
 
-    async execute(interaction, client) {
+    async execute(interaction) {
         const { connection } = require('../index.js');
 
         const user = interaction.options.getUser('joueur');
         const montant = interaction.options.getInteger('montant');
 
         if (montant <= 0) {
-            var reponse = codeBlock('diff', `- Veillez indiquer un montant positive`);
+            const reponse = codeBlock('diff', `- Veillez indiquer un montant positive`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
-            var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+            const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
                 if (results[0].cash >= montant) {
 
-                    var sql = `
+                    let sql = `
                     UPDATE pays SET cash=cash-${montant} WHERE id_joueur='${interaction.member.id}';
                     UPDATE pays SET cash=cash+${montant} WHERE id_joueur='${user.id}'`;
                     connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                    var sql = `SELECT * FROM pays WHERE id_joueur='${user.id}'`;
+                    sql = `SELECT * FROM pays WHERE id_joueur='${user.id}'`;
                     connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                        var cité_user = `${results[0].rang} de ${results[0].nom}`;
-                        var drapeau_user = results[0].drapeau;
+                        const cite_user = `${results[0].rang} de ${results[0].nom}`;
+                        const drapeau_user = results[0].drapeau;
 
-                        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`
+                        const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                         connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                            var cité_joueur = `${results[0].rang} de ${results[0].nom}`;
-                            var drapeau_joueur = results[0].drapeau;
+                            const cite_joueur = `${results[0].rang} de ${results[0].nom}`;
+                            const drapeau_joueur = results[0].drapeau;
 
                             const paiement = {
                                 author: {
-                                    name: cité_user,
+                                    name: cite_user,
                                     icon_url: user.displayAvatarURL()
                                 },
                                 thumbnail: {
@@ -80,12 +80,12 @@ module.exports = {
 
                             await interaction.reply({ embeds: [paiement] });
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur='${user.id}'`
+                            const sql = `SELECT * FROM pays WHERE id_joueur='${user.id}'`;
                             connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                                 const recu = {
                                     author: {
-                                        name: `${cité_joueur}`,
+                                        name: `${cite_joueur}`,
                                         icon_url: interaction.member.displayAvatarURL()
                                     },
                                     thumbnail: {
@@ -120,7 +120,7 @@ module.exports = {
                     });
 
                 } else {
-                    var reponse = codeBlock('diff', `- Vous n'avez pas assez d'argent : ${results[0].cash.toLocaleString('en-US')}/${montant.toLocaleString('en-US')}`);
+                    const reponse = codeBlock('diff', `- Vous n'avez pas assez d'argent : ${results[0].cash.toLocaleString('en-US')}/${montant.toLocaleString('en-US')}`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 }
             });

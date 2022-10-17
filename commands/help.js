@@ -8,10 +8,10 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-            var embed = {
+            const embed = {
                 author: {
                     name: `${results[0].rang} de ${results[0].nom}`,
                     icon_url: interaction.member.displayAvatarURL()

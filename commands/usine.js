@@ -1,5 +1,6 @@
 const { MessageActionRow, MessageSelectMenu } = require('discord.js');
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
+const { readFileSync } = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,20 +9,21 @@ module.exports = {
 
     async execute(interaction) {
         const { connection } = require('../index.js');
+        const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 
-        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-            surface_T_briqueterie = process.env.SURFACE_BRIQUETERIE * results[0].briqueterie;
-            surface_T_champ = process.env.SURFACE_CHAMP * results[0].champ;
-            surface_T_centrale_fioul = process.env.SURFACE_CENTRALE_FIOUL * results[0].centrale_fioul;
-            surface_T_eolienne = process.env.SURFACE_EOLIENNE * results[0].eolienne;
-            surface_T_mine = process.env.SURFACE_MINE * results[0].mine;
-            surface_T_pompe_a_eau = process.env.SURFACE_POMPE_A_EAU * results[0].pompe_a_eau;
-            surface_T_pumpjack = process.env.SURFACE_PUMPJACK * results[0].pumpjack;
-            surface_T_scierie = process.env.SURFACE_SCIERIE * results[0].scierie;
-            surface_T_usine_civile = process.env.SURFACE_USINE_CIVILE * results[0].usine_civile;
-            surface_T = surface_T_briqueterie + surface_T_champ + surface_T_centrale_fioul + surface_T_eolienne + surface_T_pompe_a_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
+            let surface_T_briqueterie = batimentObject.briqueterie.SURFACE_BRIQUETERIE * results[0].briqueterie;
+            let surface_T_champ = batimentObject.champ.SURFACE_CHAMP * results[0].champ;
+            let surface_T_centrale_fioul = batimentObject.centrale_fioul.SURFACE_CENTRALE_FIOUL * results[0].centrale_fioul;
+            let surface_T_eolienne = batimentObject.eolienne.SURFACE_EOLIENNE * results[0].eolienne;
+            let surface_T_mine = batimentObject.mine.SURFACE_MINE * results[0].mine;
+            let surface_T_pompe_a_eau = batimentObject.pompe_a_eau.SURFACE_POMPE_A_EAU * results[0].pompe_a_eau;
+            let surface_T_pumpjack = batimentObject.pumpjack.SURFACE_PUMPJACK * results[0].pumpjack;
+            let surface_T_scierie = batimentObject.scierie.SURFACE_SCIERIE * results[0].scierie;
+            let surface_T_usine_civile = batimentObject.usine_civile.SURFACE_USINE_CIVILE * results[0].usine_civile;
+            let surface_T = surface_T_briqueterie + surface_T_champ + surface_T_centrale_fioul + surface_T_eolienne + surface_T_pompe_a_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
 
             const embed = {
                 author: {
@@ -36,11 +38,11 @@ module.exports = {
                     `• Nombre d'usines totale : ${results[0].usine_total.toLocaleString('en-US')}\n` +
                     `• Surface totale : ${surface_T.toLocaleString('en-US')}`) + `\u200B`,
                 fields: [{
-                        name: `> 🧱 Briqueterie :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${results[0].briqueterie.toLocaleString('en-US')}\n` +
-                            `• Surface totale : ${surface_T_briqueterie.toLocaleString('en-US')} km²`) + `\u200B`
-                    },
+                    name: `> 🧱 Briqueterie :`,
+                    value: codeBlock(
+                        `• Nombre d'usine : ${results[0].briqueterie.toLocaleString('en-US')}\n` +
+                        `• Surface totale : ${surface_T_briqueterie.toLocaleString('en-US')} km²`) + `\u200B`
+                },
                     {
                         name: `> 🌽 Champ :`,
                         value: codeBlock(
@@ -100,63 +102,63 @@ module.exports = {
             const row = new MessageActionRow()
                 .addComponents(
                     new MessageSelectMenu()
-                    .setCustomId('usine')
-                    .setPlaceholder(`Le type d\'usine`)
-                    .addOptions([{
+                        .setCustomId('usine')
+                        .setPlaceholder(`Le type d\'usine`)
+                        .addOptions([{
                             label: `Briqueterie`,
                             emoji: `🧱`,
                             description: `Produit de la brique`,
                             value: 'briqueterie',
                         },
-                        {
-                            label: `Champ`,
-                            emoji: `🌽`,
-                            description: `Produit de la nourriture`,
-                            value: 'champ',
-                        },
-                        {
-                            label: `Centrale au fioul`,
-                            emoji: `⚡`,
-                            description: `Produit de l'électricité`,
-                            value: 'centrale_fioul',
-                        },
-                        {
-                            label: `Eolienne`,
-                            emoji: `⚡`,
-                            description: `Produit de l'électricité`,
-                            value: 'eolienne',
-                        },
-                        {
-                            label: `Mine`,
-                            emoji: `🪨`,
-                            description: `Produit des métaux`,
-                            value: 'mine',
-                        },
-                        {
-                            label: `Pompe à eau`,
-                            emoji: `💧`,
-                            description: `Produit de l\'eau`,
-                            value: 'pompe_a_eau',
-                        },
-                        {
-                            label: `Pumpjack`,
-                            emoji: `🛢️`,
-                            description: `Produit du pétrole`,
-                            value: 'pumpjack',
-                        },
-                        {
-                            label: `Scierie`,
-                            emoji: `🪵`,
-                            description: `Produit du bois`,
-                            value: 'scierie',
-                        },
-                        {
-                            label: `Usine civile`,
-                            emoji: `💻`,
-                            description: `Produit des biens de consommation`,
-                            value: 'usine_civile',
-                        },
-                    ]),
+                            {
+                                label: `Champ`,
+                                emoji: `🌽`,
+                                description: `Produit de la nourriture`,
+                                value: 'champ',
+                            },
+                            {
+                                label: `Centrale au fioul`,
+                                emoji: `⚡`,
+                                description: `Produit de l'électricité`,
+                                value: 'centrale_fioul',
+                            },
+                            {
+                                label: `Eolienne`,
+                                emoji: `⚡`,
+                                description: `Produit de l'électricité`,
+                                value: 'eolienne',
+                            },
+                            {
+                                label: `Mine`,
+                                emoji: `🪨`,
+                                description: `Produit des métaux`,
+                                value: 'mine',
+                            },
+                            {
+                                label: `Pompe à eau`,
+                                emoji: `💧`,
+                                description: `Produit de l\'eau`,
+                                value: 'pompe_a_eau',
+                            },
+                            {
+                                label: `Pumpjack`,
+                                emoji: `🛢️`,
+                                description: `Produit du pétrole`,
+                                value: 'pumpjack',
+                            },
+                            {
+                                label: `Scierie`,
+                                emoji: `🪵`,
+                                description: `Produit du bois`,
+                                value: 'scierie',
+                            },
+                            {
+                                label: `Usine civile`,
+                                emoji: `💻`,
+                                description: `Produit des biens de consommation`,
+                                value: 'usine_civile',
+                            },
+                        ]),
                 );
 
             await interaction.reply({ embeds: [embed], components: [row] });

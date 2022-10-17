@@ -12,6 +12,75 @@
         "commerce": 30
     },
     "Communisme": {
+        "bonheur": -13,
+        "conso_bc": 0.8,
+        "production": 0.8,
+        "consommation": 1.2,
+        "construction": 0.7,
+        "entretien": 0.8,
+        "salaire": 0.5,
+        "gouvernance": 1.5,
+        "assimilation": 1.3,
         "commerce": 60
+    },
+    "Socialisme": {
+        "bonheur": 0,
+        "conso_bc": 0.8,
+        "production": 0.9,
+        "consommation": 0.6,
+        "construction": 1.2,
+        "entretien": 1.2,
+        "salaire": 1.3,
+        "gouvernance": 0.9,
+        "assimilation": 0.7,
+        "commerce": 15
+    },
+    "Centrisme": {
+        "bonheur": -2,
+        "conso_bc": 0.9,
+        "production": 1,
+        "consommation": 0.8,
+        "construction": 1.2,
+        "entretien": 1.1,
+        "salaire": 1.1,
+        "gouvernance": 1,
+        "assimilation": 0.9,
+        "commerce": 15
+    },
+    "Libéralisme": {
+        "bonheur": -12,
+        "conso_bc": 1.3,
+        "production": 1.2,
+        "consommation": 1,
+        "construction": 1.2,
+        "entretien": 0.8,
+        "salaire": 0.7,
+        "gouvernance": 1.2,
+        "assimilation": 0.9,
+        "commerce": 0
+    },
+    "Conservatisme": {
+        "bonheur": -10,
+        "conso_bc": 1.2,
+        "production": 1.25,
+        "consommation": 0.8,
+        "construction": 1.4,
+        "entretien": 1.2,
+        "salaire": 1,
+        "gouvernance": 1.4,
+        "assimilation": 1.2,
+        "commerce": 20
+    },
+    "Oligarchisme": {
+        "bonheur": -19,
+        "conso_bc": 1.2,
+        "production": 1.3,
+        "consommation": 1.4,
+        "construction": 1.7,
+        "entretien": 0.8,
+        "salaire": 0.6,
+        "gouvernance": 1.6,
+        "assimilation": 0.6,
+        "commerce": 10
     }
 }

@@ -52,31 +52,32 @@ module.exports = {
             .setDescription('NE PAS UTILISER SVP')),
 
     async execute(interaction) {
+        let channelName;
         const { connection } = require('../index.js');
 
-        switch (interaction.options.getSubcommand()) {
+        let embed;switch (interaction.options.getSubcommand()) {
             case 'give':
                 const joueur = interaction.options.getUser('joueur');
                 const item = interaction.options.getString('item');
-                var quantité = interaction.options.getInteger('quantité');
+                const quantite = interaction.options.getInteger('quantité');
 
-                var sql = `SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
+                const sql = `SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
                 connection.query(sql, async(err, results) => {if (err) { throw err; }
 
                     if (!results[0]) {
-                        var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
+                        const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
                         await interaction.reply({ content: reponse, ephemeral: true });
                     } else {
 
-                        var sql = `UPDATE pays SET ${item}=${item}+${quantité} WHERE id_joueur="${joueur.id}"`;
+                        let sql = `UPDATE pays SET ${item}=${item}+${quantite} WHERE id_joueur="${joueur.id}"`;
 
-                        if (item === 'T_libre' | 't_occ') {
-                            var sql = sql + `;UPDATE pays SET T_total=T_total+${quantité} WHERE id_joueur=${interaction.user.id}`
+                        if (item === 'T_libre' || 't_occ') {
+                            sql = sql + `;UPDATE pays SET T_total=T_total+${quantite} WHERE id_joueur=${interaction.user.id}`;
 
-                            if ((results[0].T_total + quantité) > (results[0].hexagone * 15000)) {
-                                var sql = sql + `;UPDATE pays SET hexagone=hexagone+1 WHERE id_joueur=${interaction.user.id}`
+                            if ((results[0].T_total + quantite) > (results[0].hexagone * 15000)) {
+                                sql = sql + `;UPDATE pays SET hexagone=hexagone+1 WHERE id_joueur=${interaction.user.id}`;
 
-                                var annonce = {
+                                const annonce = {
                                     author: {
                                         name: `${results[0].rang} de ${results[0].nom}`,
                                         icon_url: interaction.member.displayAvatarURL()
@@ -119,59 +120,59 @@ module.exports = {
                         };
 
                         await interaction.reply({ embeds: [embed] });
-                    };
+                    }
                 });
                 break;
 
                 case 'start':
-                    var embed = {
+                    embed = {
                         author: {
                             name: `Bienvenue sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
                         },
                         title: `\`Commencer à jouer \``,
                         color: '#3BA55C',
-                        description: codeBlock(` Cliquez sur le bouton ci dessous pour commencer votre aventure.`),
+                        description: codeBlock(`Cliquez sur le bouton ci dessous pour commencer votre aventure.`),
                     };
-    
-                    var row = new MessageActionRow()
+
+                    let row = new MessageActionRow()
                         .addComponents(
                             new MessageButton()
-                            .setLabel(`Créer votre Cité`)
-                            .setEmoji(`📯`)
-                            .setCustomId('start')
-                            .setStyle('SUCCESS'),
-                        )
-    
+                                .setLabel(`Créer votre Cité`)
+                                .setEmoji(`📯`)
+                                .setCustomId('start')
+                                .setStyle('SUCCESS'),
+                        );
+
                     await interaction.reply({ embeds: [embed], components: [row] });
                     break;
 
             case 'bouton':
-                var reglement1 = {
+                const reglement1 = {
                     author: {
                         name: `Règlement de 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
                     },
                     title: `\`I/ Règles générales \``,
                     description: codeBlock(`- Respectez les TOS (Termes et conditions) de Discord.\n\n- Votre pseudo, votre description (“À propos”) et votre avatar ne doivent pas contenir de message à caractère diffamatoire, haineux, pornographique, et illégaux.`),
                 };
-                var reglement2 = {
+                const reglement2 = {
                     title: `\`II/ Discussions et Langage\``,
                     description: codeBlock(`- Évitez le langage malpoli et vulgaire. Vous avez le droit de dire merde, vous pouvez être familier, mais un langage en majorité correct et poli est préférable.\n\n` +
                         `Remarque : Comme partout, ce serveur est composé de personnes majeures et d'autres mineures.`),
                 };
-                var reglement3 = {
+                const reglement3 = {
                     title: `\`III/ Utilisation du serveur, des salons et des bots\``,
                     description: codeBlock(`- Chaque salon textuel a une fonction particulière. Elles sont précisées dans le nom ou la description (affichée en haut de la fenêtre quand vous êtes dans le salon, cliquez dessus pour l’afficher en entier). Merci de les respecter.\n\n` +
                         `- Publicité : La publicité pour un site, un réseau social ou un serveur est interdite. Si vous souhaitez partager votre contenu ou votre serveur Discord, adressez vous à un membre du Staff.\n\n` +
                         `- NSFW : Il n’y a pas de salons NSFW, le contenu “NSFW” (Not Safe For Work) est tout simplement interdit.\n\n` +
                         `- L’abus des fonctionnalités des bots, l’utilisation de failles et de bugs sont interdits. Si vous en trouvez, signalez-les.`),
                 };
-                var reglement4 = {
+                const reglement4 = {
                     title: `\`IV/ Paz Nation le jeu\``,
                     description: codeBlock(` - Paz Nation est un Semi-Rp géopolitique, des salons sont dédiés pour le rp et d'autre non, merci donc de bien vouloir respecter.\n\n` +
                         `- L'utilisation de second compte est strictement interdit.`),
                 };
 
-                var embed = {
+                embed = {
                     title: `\`Accepter le réglement\``,
                     description: `En cliquant sur le bouton ci-dessous, vous acceptez le réglement`,
                     color: '#3BA55C',
@@ -181,16 +182,16 @@ module.exports = {
                     },
                 };
 
-                var row = new MessageActionRow()
+                row = new MessageActionRow()
                     .addComponents(
                         new MessageButton()
-                        .setLabel(`Rejoindre le serveur`)
-                        .setEmoji(`✔`)
-                        .setCustomId('réglement')
-                        .setStyle('SUCCESS'),
-                    )
+                            .setLabel(`Rejoindre le serveur`)
+                            .setEmoji(`✔`)
+                            .setCustomId('réglement')
+                            .setStyle('SUCCESS'),
+                    );
 
-                var salon_reglement = interaction.client.channels.cache.get('829292098921693194');
+                const salon_reglement = interaction.client.channels.cache.get('829292098921693194');
                 salon_reglement.send({ embeds: [reglement1] })
                 salon_reglement.send({ embeds: [reglement2] })
                 salon_reglement.send({ embeds: [reglement3] })
@@ -201,7 +202,7 @@ module.exports = {
 
             case 'role':
 
-                var embed = {
+                embed = {
                     title: `\`👥 » Rôles Notifications\``,
                     description: `<@&845691866116915250> Pour être averti(e) des annonces\n` +
                         `<@&845692674111045673> Pour être averti(e) des concours\n` +
@@ -215,58 +216,58 @@ module.exports = {
                     },
                 };
 
-                var row = new MessageActionRow()
+                row = new MessageActionRow()
                     .addComponents(
                         new MessageSelectMenu()
-                        .setCustomId('roles')
-                        .setMaxValues(5)
-                        .setPlaceholder(`Vos rôles notifications`)
-                        .addOptions([{
+                            .setCustomId('roles')
+                            .setMaxValues(5)
+                            .setPlaceholder(`Vos rôles notifications`)
+                            .addOptions([{
                                 label: `Annonce`,
                                 emoji: `📢`,
                                 description: `Pour être averti(e) d'une annonce`,
                                 value: 'annonce',
                             },
-                            {
-                                label: `Concours`,
-                                emoji: `🏆`,
-                                description: `Pour être averti(e) d'un concours`,
-                                value: 'concours',
-                            },
-                            {
-                                label: `Giveaway`,
-                                emoji: `🎁`,
-                                description: `Pour être averti(e) d'un giveaway`,
-                                value: 'giveaway',
-                            },
-                            {
-                                label: `Animation`,
-                                emoji: `🧩`,
-                                description: `Pour être averti(e) des animations`,
-                                value: 'animation',
-                            },
-                            {
-                                label: `Mise à jour`,
-                                emoji: `🎮`,
-                                description: `Pour être averti(e) d'une mise à jour`,
-                                value: 'mise_a_jour',
-                            }
-                        ]),
+                                {
+                                    label: `Concours`,
+                                    emoji: `🏆`,
+                                    description: `Pour être averti(e) d'un concours`,
+                                    value: 'concours',
+                                },
+                                {
+                                    label: `Giveaway`,
+                                    emoji: `🎁`,
+                                    description: `Pour être averti(e) d'un giveaway`,
+                                    value: 'giveaway',
+                                },
+                                {
+                                    label: `Animation`,
+                                    emoji: `🧩`,
+                                    description: `Pour être averti(e) des animations`,
+                                    value: 'animation',
+                                },
+                                {
+                                    label: `Mise à jour`,
+                                    emoji: `🎮`,
+                                    description: `Pour être averti(e) d'une mise à jour`,
+                                    value: 'mise_a_jour',
+                                }
+                            ]),
                     );
 
-                var salon_roles = interaction.client.channels.cache.get('845657854266441768');
+                const salon_roles = interaction.client.channels.cache.get('845657854266441768');
                 salon_roles.send({ embeds: [embed], components: [row] })
                 await interaction.reply({ content: `Roles envoyés` });
                 break;
             case 'lock':
-                var channel = interaction.channel;
+                const channel = interaction.channel;
                 if (channel.name.includes("🔒") == true) {
-                    var channelName = channel.name.slice(2);
+                    channelName = channel.name.slice(2);
                     channel.setName(channelName);
                     channel.permissionOverwrites.edit('875056356820918292', { SEND_MESSAGES: true })
                     await interaction.reply({ content: `Channel lock` });
                 } else {
-                    var channelName = channel.name;
+                    channelName = channel.name;
                     channel.setName("🔒-" + channelName);
                     channel.permissionOverwrites.edit('875056356820918292', { SEND_MESSAGES: false })
                     await interaction.reply({ content: `Channel unlock` });

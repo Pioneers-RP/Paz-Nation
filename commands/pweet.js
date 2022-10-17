@@ -14,21 +14,23 @@ module.exports = {
             .setDescription(`L'URL de l'image`)),
 
     async execute(interaction) {
+        let sql;
+        let reponse;
         const { connection } = require('../index.js');
 
         const pweet = interaction.options.getString('pweet');
         const image = interaction.options.getString('url');
 
         if (pweet.length >= 280) {
-            var reponse = codeBlock('diff', `- Votre pweet doit faire au maximum : 280 caractères`);
+            reponse = codeBlock('diff', `- Votre pweet doit faire au maximum : 280 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (image) {
-                if (await isImageURL(image) == true) {
-                    var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                if (await isImageURL(image) === true) {
+                    sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                     connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                        var annonce = {
+                        const annonce = {
                             author: {
                                 name: `${results[0].rang} de ${results[0].nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
@@ -50,20 +52,20 @@ module.exports = {
                         salon_pweeter.send({ embeds: [annonce] }).then(sentMessage => {
                             sentMessage.react('<:Pike:981918620282134579>');
                         });
-                        var reponse = `${salon_pweeter}`;
+                        const reponse = `${salon_pweeter}`;
 
                         await interaction.reply({ content: reponse });
                     });
                 } else {
-                    var reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
+                    reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
                     await interaction.reply({ content: reponse, ephemeral: true });
-                };
+                }
 
             } else {
-                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                    var annonce = {
+                    const annonce = {
                         author: {
                             name: `${results[0].rang} de ${results[0].nom}`,
                             icon_url: interaction.member.displayAvatarURL()
@@ -82,13 +84,11 @@ module.exports = {
                     salon_pweeter.send({ embeds: [annonce] }).then(sentMessage => {
                         sentMessage.react('<:Pike:981918620282134579>');
                     });
-                    var reponse = `${salon_pweeter}`;
+                    const reponse = `${salon_pweeter}`;
 
                     await interaction.reply({ content: reponse });
                 });
-
-            };
-
-        };
+            }
+        }
     }
 };

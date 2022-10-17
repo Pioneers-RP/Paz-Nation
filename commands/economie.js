@@ -10,18 +10,18 @@ module.exports = {
 
     async execute(interaction) {
         const { connection } = require('../index.js');
-        var joueur = interaction.options.getUser('joueur');
+        let joueur = interaction.options.getUser('joueur');
 
         if (!joueur) {
-            var joueur = interaction.member;
-        };
+            joueur = interaction.member;
+        }
 
         function economie(joueur) {
-            var sql = `SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
+            const sql = `SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                 if (!results[0]) {
-                    var reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
+                    const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 } else {
 
@@ -53,7 +53,7 @@ module.exports = {
                     await interaction.reply({ embeds: [embed] });
                 }
             });
-        };
+        }
 
         economie(joueur)
     },

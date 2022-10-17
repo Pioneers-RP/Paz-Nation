@@ -36,10 +36,10 @@ module.exports = {
                 break;
         }
 
-        var sql = `UPDATE pays SET ${donnee}='${quantite}' WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+        let sql = `UPDATE pays SET ${donnee}='${quantite}' WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
         connection.query(sql, async(err) => { if (err) { throw err; } });
 
-        var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
 
             const embed = {

@@ -17,6 +17,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
+        let reponse;
         const { connection } = require('../index.js');
 
         const devise = interaction.options.getString('définir');
@@ -25,30 +26,30 @@ module.exports = {
         const userCooldowned = await deviseCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-            var reponse = codeBlock('diff', `- Vous avez déjà changé votre devise récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
+            reponse = codeBlock('diff', `- Vous avez déjà changé votre devise récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (discours.length <= 115) {
-            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 50 caractères`);
+            reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 50 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (discours.length >= 2000) {
-            var reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
+            reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (devise.length <= 60) {
 
-                var newdevise = "";
+                let newdevise = "";
 
-                for (var i = 0; i < devise.length; i++)
+                for (let i = 0; i < devise.length; i++)
                     if (!(devise[i] == '\n' || devise[i] == '\r'))
                         newdevise += devise[i];
 
-                var sql = `UPDATE pays SET devise="${newdevise}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+                let sql = `UPDATE pays SET devise="${newdevise}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
                 connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
 
-                    var annonce = {
+                    const annonce = {
                         author: {
                             name: `${results[0].rang} de ${results[0].nom}`,
                             icon_url: interaction.member.displayAvatarURL()
@@ -69,13 +70,13 @@ module.exports = {
                     const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
 
                     salon_annonce.send({ embeds: [annonce] });
-                    var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
+                    const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
                     await interaction.reply({ content: reponse });
 
                     await deviseCommandCooldown.addUser(interaction.member.id);
                 });
             } else {
-                var reponse = codeBlock('diff', `- Vous avez dépassé la limite de caratères : 60 max`);
+                reponse = codeBlock('diff', `- Vous avez dépassé la limite de caratères : 60 max`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             }
         }

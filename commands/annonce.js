@@ -7,32 +7,34 @@ module.exports = {
         .setDescription(`Faites un annonce`)
         .addStringOption(option =>
             option.setName('annonce')
-            .setDescription(`Le contenu de votre annonce (Maximum 2000 caractères)`)
-            .setRequired(true))
+                .setDescription(`Le contenu de votre annonce (Maximum 2000 caractères)`)
+                .setRequired(true))
         .addStringOption(option =>
             option.setName('url')
-            .setDescription(`L'URL de l'image`)),
+                .setDescription(`L'URL de l'image`)),
 
     async execute(interaction) {
+        let sql;
+        let reponse;
         const { connection } = require('../index.js');
 
         const annonce = interaction.options.getString('annonce');
         const image = interaction.options.getString('url');
 
         if (annonce.length <= 50) {
-            var reponse = codeBlock('diff', `- Votre annonce doit faire au minimum : 50 caractères`);
+            reponse = codeBlock('diff', `- Votre annonce doit faire au minimum : 50 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (annonce.length >= 2000) {
-            var reponse = codeBlock('diff', `- Votre annonce doit faire au maximum : 2000 caractères`);
+            reponse = codeBlock('diff', `- Votre annonce doit faire au maximum : 2000 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (image) {
                 if (await isImageURL(image) == true) {
 
-                    var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                    sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                     connection.query(sql, async(err, results) => {if (err) { throw err; }
 
-                        var embed = {
+                        const embed = {
                             author: {
                                 name: `${results[0].rang} de ${results[0].nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
@@ -54,20 +56,20 @@ module.exports = {
                         const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
 
                         salon_annonce.send({ embeds: [embed] })
-                        var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
+                        const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
 
                         await interaction.reply({ content: reponse });
                     });
                 } else {
-                    var reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
+                    reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
                     await interaction.reply({ content: reponse, ephemeral: true });
-                };
+                }
 
             } else {
-                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) { throw err; }
 
-                    var embed = {
+                    const embed = {
                         author: {
                             name: `${results[0].rang} de ${results[0].nom}`,
                             icon_url: interaction.member.displayAvatarURL()
@@ -86,11 +88,11 @@ module.exports = {
                     const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
 
                     salon_annonce.send({ embeds: [embed] })
-                    var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
+                    const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
 
                     await interaction.reply({ content: reponse });
                 });
-            };
-        };
+            }
+        }
     }
 };

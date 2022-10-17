@@ -5,10 +5,14 @@ const { connection } = require('../index.js');
 const { globalBox } = require('global-box');
 const box = globalBox();
 const dotenv = require('dotenv');
-var Chance = require('chance');
-var chance = new Chance();
+const Chance = require('chance');
+const chance = new Chance();
 const ms = require('ms');
-var CronJob = require('cron').CronJob;
+const CronJob = require('cron').CronJob;
+const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
+const populationObject = JSON.parse(readFileSync('data/population.json', 'utf-8'));
 
 module.exports = {
     name: 'ready',
@@ -17,10 +21,10 @@ module.exports = {
         console.log(`Lancé sous le bot ${client.user.tag}`);
 
         const arrayStatut = [{
-                type: 'PLAYING',
-                content: '🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑',
-                status: 'online'
-            },
+            type: 'PLAYING',
+            content: '🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑',
+            status: 'online'
+        },
             {
                 type: 'WATCHING',
                 content: '🖥️ Subcher Dev #1',
@@ -68,66 +72,80 @@ module.exports = {
         }
         setInterval(pickPresence, ms('5s'));
 
-        var autoUpdate = new CronJob(
+        const autoUpdate = new CronJob(
             '0 0,10,20,30,40,50 * * * *',
 
             function autoUpdate() {
-                const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
-                const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 
-                var sql = `SELECT * FROM pays`;
-                connection.query(sql, async(err, results) => {
+                const sql = `SELECT * FROM pays`;
+                connection.query(sql, async (err, results) => {
 
-                    var arrayPays = Object.values(results);
+                    const arrayPays = Object.values(results);
                     arrayPays.forEach(chaquePays);
 
                     function chaquePays(value, index, array) {
-                        //console.log(process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul)
-                        if (value.petrole >= process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul) {
-                            var prod_centrale = Math.round(process.env.PROD_CENTRALE_FIOUL * value.centrale_fioul)
+                        let sql;
+                        let prod_centrale;
+//Check if assez de pétrole pour faire tourner les centrales
+                        if (value.petrole >= batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul) {
+                            prod_centrale = Math.round(batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * value.centrale_fioul);
                         } else {
-                            var prod_centrale = 0
-                                //console.log(prod_centrale)
+                            prod_centrale = 0;
                         }
-                        //console.log(prod_centrale)
-                        var prod_elec = Math.round(prod_centrale + process.env.PROD_EOLIENNE * value.eolienne);
-                        //console.log(Number((value.petrole / (process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul)).toFixed(1)))
-                        var conso_elec = process.env.CONSO_BRIQUETERIE_ELECTRICITE * value.briqueterie + process.env.CONSO_CHAMP_ELECTRICITE * value.champ + process.env.CONSO_MINE_ELECTRICITE * value.mine + process.env.CONSO_POMPE_A_EAU_ELECTRICITE * value.pompe_a_eau + process.env.CONSO_PUMPJACK_ELECTRICITE * value.pumpjack + process.env.CONSO_QUARTIER_ELECTRICITE * value.quartier + process.env.CONSO_SCIERIE_ELECTRICITE * value.scierie + process.env.CONSO_USINE_CIVILE_ELECTRICITE * value.usine_civile;
 
-                        if (prod_elec > conso_elec) {
-                            if (value.petrole >= process.env.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul) {
-                                var conso_centrale_petrole = process.env.CONSO_CENTRALE_FIOUL * value.centrale_fioul;
-                                var sql = `UPDATE pays SET petrole=petrole-${conso_centrale_petrole} WHERE id_joueur="${value.id_joueur}"`;
+                        const prod_elec = Math.round(prod_centrale + batimentObject.eolienne.PROD_EOLIENNE * value.eolienne);
+                        const conso_elec = Math.round(batimentObject.briqueterie.CONSO_BRIQUETERIE_ELECTRICITE * value.briqueterie + batimentObject.champ.CONSO_CHAMP_ELECTRICITE * value.champ + batimentObject.mine.CONSO_MINE_ELECTRICITE * value.mine + batimentObject.pompe_a_eau.CONSO_POMPE_A_EAU_ELECTRICITE * value.pompe_a_eau + batimentObject.pumpjack.CONSO_PUMPJACK_ELECTRICITE * value.pumpjack + batimentObject.quartier.CONSO_QUARTIER_ELECTRICITE * value.quartier + batimentObject.scierie.CONSO_SCIERIE_ELECTRICITE * value.scierie + batimentObject.usine_civile.CONSO_USINE_CIVILE_ELECTRICITE * value.usine_civile);
+
+                        if (prod_elec >= conso_elec) {
+
+                            if (value.petrole >= (batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul)) {
+                                const conso_centrale_petrole = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_PETROLE * value.centrale_fioul;
+                                sql = `UPDATE pays SET petrole=petrole-${conso_centrale_petrole} WHERE id_joueur="${value.id_joueur}"`;
+                                connection.query(sql, async (err) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                })
                             }
                             if (value.nourriture_acces < 1008) {
-                                var sql = sql + `;UPDATE pays SET elec_acces=elec_acces+1 WHERE id_joueur="${value.id_joueur}"`;
+                                sql = `UPDATE pays SET elec_acces=elec_acces+1 WHERE id_joueur="${value.id_joueur}"`;
+                                connection.query(sql, async (err) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                })
                             }
-                            connection.query(sql, async(err) => { if (err) { throw err; } })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
-                                var conso_briqueterie = true
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
+                                let conso_briqueterie = true;
+                                let manque_bois = false;
+                                let manque_eau = false;
 
-                                var conso_T_briqueterie_bois = Math.round(process.env.CONSO_BRIQUETERIE_BOIS * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                const conso_T_briqueterie_bois = Math.round(batimentObject.briqueterie.CONSO_BRIQUETERIE_BOIS * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_briqueterie_bois > results[0].bois) {
-                                    var conso_briqueterie = false
-                                    var manque_bois = true
+                                    conso_briqueterie = false;
+                                    manque_bois = true;
                                 }
 
-                                var conso_T_briqueterie_eau = Math.round(process.env.CONSO_BRIQUETERIE_EAU * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                const conso_T_briqueterie_eau = Math.round(batimentObject.briqueterie.CONSO_BRIQUETERIE_EAU * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_briqueterie_eau > results[0].eau) {
-                                    var conso_briqueterie = false
-                                    var manque_eau = true
+                                    conso_briqueterie = false;
+                                    manque_eau = true;
                                 }
 
                                 if (conso_briqueterie == true) {
 
-                                    var prod_T_briqueterie = Math.round(process.env.PROD_BRIQUETERIE * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.production`));
+                                    var prod_T_briqueterie = Math.round(batimentObject.briqueterie.PROD_BRIQUETERIE * value.briqueterie * eval(`gouvernementObject.${value.ideologie}.production`));
                                     var sql = `
                                     UPDATE pays SET bois=bois-${conso_T_briqueterie_bois} WHERE id_joueur="${value.id_joueur}";
                                     UPDATE pays SET eau=eau-${conso_T_briqueterie_eau} WHERE id_joueur="${value.id_joueur}";
                                     UPDATE pays SET brique=brique+${prod_T_briqueterie} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}})
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    })
 
                                 } else {
                                     var manque = [];
@@ -156,30 +174,34 @@ module.exports = {
                                         fields: manque,
                                         color: 'RED',
                                         timestamp: new Date(),
-                                        footer: { text: `${value.devise}` }
+                                        footer: {text: `${value.devise}`}
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
                                 var conso_champ = true
 
-                                var conso_T_champ_eau = Math.round(process.env.CONSO_CHAMP_EAU * value.champ * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_champ_eau = Math.round(batimentObject.champ.CONSO_CHAMP_EAU * value.champ * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_champ_eau > results[0].eau) {
                                     var conso_champ = false
                                     var manque_eau = true
                                 }
 
                                 if (conso_champ == true) {
-                                    var prod_T_champ = Math.round(process.env.PROD_CHAMP * value.champ * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.nourriture`))) + 100) / 100));
+                                    var prod_T_champ = Math.round(batimentObject.champ.PROD_CHAMP * value.champ * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.nourriture`))) + 100) / 100));
                                     var sql = `
                                     UPDATE pays SET eau=eau-${conso_T_champ_eau} WHERE id_joueur="${value.id_joueur}";
                                     UPDATE pays SET nourriture=nourriture+${prod_T_champ} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}})
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    })
 
                                 } else {
                                     var manque = [];
@@ -202,25 +224,25 @@ module.exports = {
                                         fields: manque,
                                         color: 'RED',
                                         timestamp: new Date(),
-                                        footer: { text: `${value.devise}` }
+                                        footer: {text: `${value.devise}`}
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
                                 var conso_mine = true
 
-                                var conso_T_mine_bois = Math.round(process.env.CONSO_MINE_BOIS * value.mine * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_mine_bois = Math.round(batimentObject.mine.CONSO_MINE_BOIS * value.mine * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_mine_bois > results[0].bois) {
                                     var conso_mine = false
                                     var manque_bois = true
                                 }
 
-                                var conso_T_mine_petrole = Math.round(process.env.CONSO_MINE_PETROLE * value.mine * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_mine_petrole = Math.round(batimentObject.mine.CONSO_MINE_PETROLE * value.mine * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_mine_petrole > results[0].petrole) {
                                     var conso_mine = false
                                     var manque_petrole = true
@@ -228,12 +250,16 @@ module.exports = {
 
                                 if (conso_mine == true) {
 
-                                    var prod_T_mine = Math.round(process.env.PROD_MINE * value.mine * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.metaux`))) + 100) / 100));
+                                    var prod_T_mine = Math.round(batimentObject.mine.PROD_MINE * value.mine * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.metaux`))) + 100) / 100));
                                     var sql = `
                                         UPDATE pays SET bois=bois-${conso_T_mine_bois} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET petrole=petrole-${conso_T_mine_petrole} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET metaux=metaux+${prod_T_mine} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}})
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    })
 
                                 } else {
                                     var manque = [];
@@ -262,19 +288,19 @@ module.exports = {
                                         fields: manque,
                                         color: 'RED',
                                         timestamp: new Date(),
-                                        footer: { text: `${value.devise}` }
+                                        footer: {text: `${value.devise}`}
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
                                 var conso_pompe_a_eau = true
 
-                                var conso_T_pompe_a_eau_petrole = Math.round(process.env.CONSO_POMPE_A_EAU_PETROLE * value.pompe_a_eau * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_pompe_a_eau_petrole = Math.round(batimentObject.pompe_a_eau.CONSO_POMPE_A_EAU_PETROLE * value.pompe_a_eau * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_pompe_a_eau_petrole > results[0].petrole) {
                                     var conso_pompe_a_eau = false
                                     var manque_petrole = true
@@ -282,11 +308,15 @@ module.exports = {
 
                                 if (conso_pompe_a_eau == true) {
 
-                                    var prod_T_pompe_a_eau = Math.round(process.env.PROD_POMPE_A_EAU * value.pompe_a_eau * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.eau`))) + 100) / 100));
+                                    var prod_T_pompe_a_eau = Math.round(batimentObject.pompe_a_eau.PROD_POMPE_A_EAU * value.pompe_a_eau * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.eau`))) + 100) / 100));
                                     var sql = `
                                         UPDATE pays SET petrole=petrole-${conso_T_pompe_a_eau_petrole} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET eau=eau+${prod_T_pompe_a_eau} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}})
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    })
 
                                 } else {
                                     var manque = [];
@@ -309,23 +339,27 @@ module.exports = {
                                         fields: manque,
                                         color: 'RED',
                                         timestamp: new Date(),
-                                        footer: { text: `${value.devise}` }
+                                        footer: {text: `${value.devise}`}
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
                                 var conso_pumpjack = true
 
                                 if (conso_pumpjack == true) {
 
-                                    var prod_T_pumpjack = Math.round(process.env.PROD_PUMPJACK * value.pumpjack * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.petrole`))) + 100) / 100));
+                                    var prod_T_pumpjack = Math.round(batimentObject.pumpjack.PROD_PUMPJACK * value.pumpjack * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.petrole`))) + 100) / 100));
                                     var sql = `UPDATE pays SET petrole=petrole+${prod_T_pumpjack} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}})
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    })
 
                                 } else {
 
@@ -341,19 +375,19 @@ module.exports = {
                                         fields: manque,
                                         color: 'RED',
                                         timestamp: new Date(),
-                                        footer: { text: `${value.devise}` }
+                                        footer: {text: `${value.devise}`}
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
                                 var conso_scierie = true
 
-                                var conso_T_scierie_petrole = Math.round(process.env.CONSO_SCIERIE_PETROLE * value.scierie * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_scierie_petrole = Math.round(batimentObject.scierie.CONSO_SCIERIE_PETROLE * value.scierie * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_scierie_petrole > results[0].petrole) {
                                     var conso_scierie = false
                                     var manque_petrole = true
@@ -361,11 +395,15 @@ module.exports = {
 
                                 if (conso_scierie == true) {
 
-                                    var prod_T_scierie = Math.round(process.env.PROD_SCIERIE * value.scierie * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.bois`))) + 100) / 100));
+                                    var prod_T_scierie = Math.round(batimentObject.scierie.PROD_SCIERIE * value.scierie * eval(`gouvernementObject.${value.ideologie}.production`) * ((parseInt((eval(`regionObject.${value.region}.bois`))) + 100) / 100));
                                     var sql = `
                                         UPDATE pays SET petrole=petrole-${conso_T_scierie_petrole} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET bois=bois+${prod_T_scierie} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}});
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    });
 
                                 } else {
                                     var manque = [];
@@ -379,7 +417,7 @@ module.exports = {
                                     var embed = {
                                         author: {
                                             name: `${value.rang} de ${value.nom}`,
-                                            icon_url: stats[0].avatarURL
+                                            icon_url: value.avatarURL
                                         },
                                         thumbnail: {
                                             url: `${value.drapeau}`,
@@ -388,31 +426,31 @@ module.exports = {
                                         fields: manque,
                                         color: 'RED',
                                         timestamp: new Date(),
-                                        footer: { text: `${value.devise}` }
+                                        footer: {text: `${value.devise}`}
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             })
 
-                            var sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err, results) => {
+                            sql = `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err, results) => {
                                 var conso_usine_civile = true
 
-                                var conso_T_usine_civile_bois = Math.round(process.env.CONSO_USINE_CIVILE_BOIS * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_usine_civile_bois = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_BOIS * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_usine_civile_bois > results[0].bois) {
                                     var conso_usine_civile = false
                                     var manque_bois = true
                                 }
 
-                                var conso_T_usine_civile_metaux = Math.round(process.env.CONSO_USINE_CIVILE_METAUX * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_usine_civile_metaux = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_METAUX * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_usine_civile_metaux > results[0].metaux) {
                                     var conso_usine_civile = false
                                     var manque_metaux = true
                                 }
 
-                                var conso_T_usine_civile_petrole = Math.round(process.env.CONSO_USINE_CIVILE_PETROLE * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
+                                var conso_T_usine_civile_petrole = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_PETROLE * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.consommation`));
                                 if (conso_T_usine_civile_petrole > results[0].petrole) {
                                     var conso_usine_civile = false
                                     var manque_petrole = true
@@ -420,13 +458,17 @@ module.exports = {
 
                                 if (conso_usine_civile == true) {
 
-                                    var prod_T_usine_civile = Math.round(process.env.PROD_USINE_CIVILE * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.production`));
+                                    var prod_T_usine_civile = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * value.usine_civile * eval(`gouvernementObject.${value.ideologie}.production`));
                                     var sql = `
                                         UPDATE pays SET bois=bois-${conso_T_usine_civile_bois} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET metaux=metaux-${conso_T_usine_civile_metaux} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET petrole=petrole-${conso_T_usine_civile_petrole} WHERE id_joueur="${value.id_joueur}";
                                         UPDATE pays SET bc=bc+${prod_T_usine_civile} WHERE id_joueur="${value.id_joueur}"`;
-                                    connection.query(sql, async(err) => {if (err) {throw err;}})
+                                    connection.query(sql, async (err) => {
+                                        if (err) {
+                                            throw err;
+                                        }
+                                    })
 
                                 } else {
                                     var manque = [];
@@ -466,17 +508,21 @@ module.exports = {
                                         }
                                     };
 
-                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                                    client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                         .catch(console.error);
                                 }
                             });
-                        } else if (prod_elec > process.env.CONSO_QUARTIER_ELECTRICITE * value.quartier) {
-                            var sql = `UPDATE pays SET petrole=0 WHERE id_joueur="${value.id_joueur}";`;
+                        } else if (prod_elec > batimentObject.quartier.CONSO_QUARTIER_ELECTRICITE * value.quartier) {
+                            sql = `UPDATE pays SET petrole=0 WHERE id_joueur="${value.id_joueur}";`;
 
-                            if (value.nourriture_acces < 1008) {
-                                var sql = sql + `UPDATE pays SET elec_acces=elec_acces+1 WHERE id_joueur="${value.id_joueur}"`;
+                            if (value.elec_acces < 1008) {
+                                sql = sql + `UPDATE pays SET elec_acces=elec_acces+1 WHERE id_joueur="${value.id_joueur}"`;
                             }
-                            connection.query(sql, async(err) => { if (err) { throw err;}})
+                            connection.query(sql, async (err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                            })
 
                             const embed = {
                                 author: {
@@ -494,13 +540,17 @@ module.exports = {
                                 },
                                 color: 'RED',
                                 timestamp: new Date(),
-                                footer: { text: `${value.devise}` }
+                                footer: {text: `${value.devise}`}
                             }
-                            client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                            client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                 .catch(console.error);
                         } else {
-                            var sql = `UPDATE pays SET petrole=0 WHERE id_joueur="${value.id_joueur}"`;
-                            connection.query(sql, async(err) => { if (err) { throw err; }})
+                            sql = `UPDATE pays SET petrole=0 WHERE id_joueur="${value.id_joueur}"`;
+                            connection.query(sql, async (err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                            })
 
                             const embed = {
                                 author: {
@@ -518,12 +568,12 @@ module.exports = {
                                 },
                                 color: 'RED',
                                 timestamp: new Date(),
-                                footer: { text: `${value.devise}` }
+                                footer: {text: `${value.devise}`}
                             }
-                            client.channels.cache.get(value.id_salon).send({ embeds: [embed] })
+                            client.channels.cache.get(value.id_salon).send({embeds: [embed]})
                                 .catch(console.error);
                         }
-                    };
+                    }
                 });
             },
             null,
@@ -579,12 +629,12 @@ module.exports = {
                     arrayPays.forEach(chaquePays);
 
                     function chaquePays(value, index, array) {
-                        const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+                        const habitants = results[0].enfant + results[0].jeune + results[0].adulte + results[0].vieux;
 
-                        if (value.nourriture >= (value.population * parseFloat(process.env.NOURRITURE_CONSO))) {
-                            if (value.nourriture_appro >= (value.population * parseFloat(process.env.NOURRITURE_CONSO))) {
+                        if (value.nourriture >= (habitants * parseFloat(populationObject.NOURRITURE_CONSO))) {
+                            if (value.nourriture_appro >= (habitants * parseFloat(populationObject.NOURRITURE_CONSO))) {
                                 if (value.nourriture_acces < 21) {
-                                    var sql = `UPDATE pays SET nourriture_acces=nourriture_acces+0.333 WHERE id_joueur="${value.id_joueur}";`;
+                                    var sql = `UPDATE pays SET nourriture_acces=nourriture_acces+0.33 WHERE id_joueur="${value.id_joueur}";`;
                                 } else {
                                     var sql = ``;
                                 }
@@ -595,8 +645,8 @@ module.exports = {
                             var sql = `UPDATE pays SET nourriture_acces=0 WHERE id_joueur="${value.id_joueur}";`;
                         }
 
-                        if (value.eau > (value.population * parseFloat(process.env.EAU_CONSO))) {
-                            if (value.eau_appro >= (value.population * parseFloat(process.env.EAU_CONSO))) {
+                        if (value.eau > (habitants * parseFloat(populationObject.EAU_CONSO))) {
+                            if (value.eau_appro >= (habitants * parseFloat(populationObject.EAU_CONSO))) {
                                 if (value.eau_acces < 21) {
                                     var sql = sql + `UPDATE pays SET eau_acces=eau_acces+0.33 WHERE id_joueur="${value.id_joueur}";`;
                                 }
@@ -607,16 +657,16 @@ module.exports = {
                             var sql = sql + `UPDATE pays SET eau_acces=0 WHERE id_joueur="${value.id_joueur}";`;
                         }
 
-                        const conso_bc = (1 + value.bc_acces * 0.04 + value.bonheur * 0.016 + (value.population / 10000000) * 0.04) * value.population * eval(`gouvernementObject.${value.ideologie}.conso_bc`)
-                            //console.log(conso_bc)
+                        const conso_bc = (1 + value.bc_acces * 0.04 + value.bonheur * 0.016 + (habitants / 10000000) * 0.04) * habitants * eval(`gouvernementObject.${value.ideologie}.conso_bc`)
+                        //console.log(conso_bc)
                         if (value.bc > (conso_bc)) {
                             if (value.bc_acces < 21) {
-                                var sql = sql + `UPDATE pays SET bc_acces=bc_acces+0.33 WHERE id_joueur="${value.id_joueur}";UPDATE pays SET bc=bc-${conso_bc} WHERE id_joueur="${value.id_joueur}"`;
+                                var sql = sql + `UPDATE pays SET bc_acces=bc_acces+0.33 WHERE id_joueur="${value.id_joueur}";UPDATE pays SET bc=bc-${conso_bc} WHERE id_joueur="${value.id_joueur}";`;
                             } else {
-                                var sql = sql + `UPDATE pays SET bc=bc-${conso_bc} WHERE id_joueur="${value.id_joueur}"`
+                                var sql = sql + `UPDATE pays SET bc=bc-${conso_bc} WHERE id_joueur="${value.id_joueur}";`
                             }
                         } else {
-                            var sql = sql + `UPDATE pays SET bc_acces=0 WHERE id_joueur="${value.id_joueur}";UPDATE pays SET bc=0 WHERE id_joueur="${value.id_joueur}"`;
+                            var sql = sql + `UPDATE pays SET bc_acces=0 WHERE id_joueur="${value.id_joueur}";UPDATE pays SET bc=0 WHERE id_joueur="${value.id_joueur}";`;
                         }
 
                         var sql = sql + `SELECT * FROM pays WHERE id_joueur="${value.id_joueur}"`;
@@ -635,23 +685,23 @@ module.exports = {
                             const bc_acces = results[0].bc_acces * 1.45;
                             //console.log(bc_acces)
 
-                            var tauxbcmadein = (process.env.PROD_USINE_CIVILE * results[0].usine_civile * eval(`gouvernementObject.${value.ideologie}.production`)) / (results[0].population * 9 * 0.5);
+                            var tauxbcmadein = (batimentObject.usine_civile.PROD_USINE_CIVILE * results[0].usine_civile * eval(`gouvernementObject.${value.ideologie}.production`)) / (habitants * 9 * 0.5);
                             if (tauxbcmadein > 0.8) {
                                 var tauxbcmadein = 0.8;
                             }
                             var tauxbcmadein = tauxbcmadein * 29
-                                //console.log(tauxbcmadein)
+                            //console.log(tauxbcmadein)
 
                             const place = (results[0].quartier * 1500)
-                            var sans_abri = (results[0].population - place)
+                            var sans_abri = (habitants - place)
                             if (sans_abri < 0) {
                                 var sans_abri = 0
                             }
-                            const pourcentage_sans_abri = (sans_abri / results[0].population)
+                            const pourcentage_sans_abri = (sans_abri / habitants)
                             const sdf = (1 - pourcentage_sans_abri) * 18;
                             //console.log(sdf)
 
-                            const modifier = parseFloat(process.env.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf + eval(`gouvernementObject.${value.ideologie}.bonheur`);
+                            const modifier = parseFloat(populationObject.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf + eval(`gouvernementObject.${value.ideologie}.bonheur`);
                             const bonheur = parseFloat(((-92 * Math.exp(-0.02 * modifier)) + 100).toFixed(1));
                             //console.log(modifier)
                             //console.log(bonheur)
@@ -660,20 +710,20 @@ module.exports = {
                         })
 
                         const pop_taux_demo = ((10 + value.eau_acces * 2.3 + value.nourriture_acces * 2.3 + value.bonheur * 1) / 100).toFixed(2);
-                        var enfant = (15 / 16) * value.enfant + (process.env.NATALITE_JEUNE * pop_taux_demo * value.jeune) + (process.env.NATALITE_ADULTE * pop_taux_demo * value.adulte) - process.env.MORTALITE_ENFANT * value.enfant;
+                        var enfant = Math.round((15 / 16) * value.enfant + (populationObject.NATALITE_JEUNE * pop_taux_demo * value.jeune) + (populationObject.NATALITE_ADULTE * pop_taux_demo * value.adulte) - populationObject.MORTALITE_ENFANT * value.enfant);
                         if (enfant < 0) {
                             var enfant = 0;
                         }
-                        var jeune = (8 / 9) * value.jeune + (1 / 15) * value.enfant - process.env.MORTALITE_JEUNE * value.jeune;
+                        var jeune = Math.round((8 / 9) * value.jeune + (1 / 15) * value.enfant - populationObject.MORTALITE_JEUNE * value.jeune);
                         if (jeune < 0) {
                             var jeune = 0;
                         }
-                        var adulte = (30 / 31) * value.adulte + (1 / 9) * value.jeunes - process.env.MORTALITE_ADULTE * value.adulte;
-                        if (enfant < 0) {
+                        var adulte = Math.round((30 / 31) * value.adulte + (1 / 9) * value.jeunes - populationObject.MORTALITE_ADULTE * value.adulte);
+                        if (adulte < 0) {
                             var adulte = 0;
                         }
-                        var vieux = value.vieux + (1 / 31) * value.adulte - process.env.MORTALITE_VIEUX * value.vieux;
-                        if (enfant < 0) {
+                        var vieux = Math.round(value.vieux + (1 / 31) * value.adulte - populationObject.MORTALITE_VIEUX * value.vieux);
+                        if (vieux < 0) {
                             var vieux = 0;
                         }
 
@@ -685,11 +735,13 @@ module.exports = {
                         UPDATE pays SET vieux="${vieux}" WHERE id_joueur="${value.id_joueur}";`;
                         connection.query(sql, async(err) => { if (err) { throw err; }})
 
-                        if (value.nourriture >= value.population * process.env.NOURRITURE_CONSO) {
-                            if (value.nourriture_appro <= value.population * process.env.NOURRITURE_CONSO) {
-                                var manque = (value.population * process.env.NOURRITURE_CONSO) - value.nourriture_appro;
+                        if (value.nourriture >= habitants * populationObject.NOURRITURE_CONSO) {
+                            if (value.nourriture_appro >= habitants * populationObject.NOURRITURE_CONSO) {
+                                //C'est good
+                            } else {
+                                var manque = (habitants * populationObject.NOURRITURE_CONSO) - value.nourriture_appro;
                                 var mort = Math.round(manque * 0.2);
-                                var habitants_next = value.population - mort;
+                                var habitants_next = habitants - mort;
 
                                 if (value.nourriture_acces != 0) {
                                     const embed = {
@@ -703,8 +755,8 @@ module.exports = {
                                         title: `\`Une famine frappe votre pays :\``,
                                         fields: {
                                             name: `> ⛔ Manque d'approvisionnement en nourriture ⛔ :`,
-                                            value: `Nourriture : ${value.nourriture_appro.toLocaleString('en-US')}/${(value.population * process.env.NOURRITURE_CONSO).toLocaleString('en-US')}\n` +
-                                                `Morts : ${mort.toLocaleString('en-US')}\n` +
+                                            value: `Approvisionnement : ${value.nourriture_appro.toLocaleString('en-US')}/${(habitants * populationObject.NOURRITURE_CONSO).toLocaleString('en-US')}\n` +
+                                                `Morts : ${(mort * 4).toLocaleString('en-US')}\n` +
                                                 `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
                                         },
                                         color: 'RED',
@@ -716,50 +768,97 @@ module.exports = {
 
                                 var sql = `
                                 UPDATE pays SET nourriture=nourriture-${value.nourriture_appro} WHERE id_joueur="${value.id_joueur}";
-                                UPDATE pays SET population=population-${mort} WHERE id_joueur="${value.id_joueur}"`;
+                                UPDATE pays SET enfant=enfant-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET jeune=jeune-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET adulte=adulte-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET vieux=vieux-${mort} WHERE id_joueur="${value.id_joueur}"`;
                                 connection.query(sql, async(err) => { if (err) { throw err; }})
                             }
                         } else {
-                            var manque = (value.population * process.env.NOURRITURE_CONSO) - value.nourriture
-                            var mort = Math.round(manque * 0.2)
-                            var habitants_next = value.population - mort
+                            if (value.nourriture_appro >= habitants * populationObject.NOURRITURE_CONSO) {
+                                var manque = (habitants * populationObject.NOURRITURE_CONSO) - value.nourriture;
+                                var mort = Math.round(manque * 0.2);
+                                var habitants_next = habitants - mort;
 
-                            if (value.nourriture_acces != 0) {
-                                const embed = {
-                                    author: {
-                                        name: `${value.rang} de ${value.nom}`,
-                                        icon_url: `${value.drapeau}`
-                                    },
-                                    thumbnail: {
-                                        url: `${value.drapeau}`,
-                                    },
-                                    title: `\`Une famine frappe votre pays :\``,
-                                    fields: {
-                                        name: `> ⛔ Manque de nourriture ⛔ :`,
-                                        value: `Nourriture : ${value.nourriture.toLocaleString('en-US')}/${(value.population * parseFloat(process.env.NOURRITURE_CONSO)).toLocaleString('en-US')}\n` +
-                                            `Morts : ${mort.toLocaleString('en-US')}\n` +
-                                            `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
-                                    },
-                                    color: 'RED',
-                                    timestamp: new Date(),
-                                    footer: { text: `${value.devise}` }
-                                };
+                                if (value.nourriture_acces != 0) {
+                                    const embed = {
+                                        author: {
+                                            name: `${value.rang} de ${value.nom}`,
+                                            icon_url: `${value.drapeau}`
+                                        },
+                                        thumbnail: {
+                                            url: `${value.drapeau}`,
+                                        },
+                                        title: `\`Une famine frappe votre pays :\``,
+                                        fields: {
+                                            name: `> ⛔ Manque de nourriture ⛔ :`,
+                                            value: `Nourriture : ${value.nourriture.toLocaleString('en-US')}/${(habitants * populationObject.NOURRITURE_CONSO).toLocaleString('en-US')}\n` +
+                                                `Morts : ${(mort * 4).toLocaleString('en-US')}\n` +
+                                                `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
+                                        },
+                                        color: 'RED',
+                                        timestamp: new Date(),
+                                        footer: { text: `${value.devise}` }
+                                    };
+                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] });
+                                }
 
-                                client.channels.cache.get(value.id_salon).send({ embeds: [embed] });
+                                var sql = `
+                                UPDATE pays SET nourriture=0 WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET enfant=enfant-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET jeune=jeune-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET adulte=adulte-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET vieux=vieux-${mort} WHERE id_joueur="${value.id_joueur}"`;
+                                connection.query(sql, async(err) => { if (err) { throw err; }})
+                            } else {
+                                var manque = (habitants * populationObject.NOURRITURE_CONSO) - value.nourriture
+                                var mort = Math.round(manque * 0.2)
+                                var habitants_next = habitants - mort
+
+                                if (value.nourriture_acces != 0) {
+                                    const embed = {
+                                        author: {
+                                            name: `${value.rang} de ${value.nom}`,
+                                            icon_url: `${value.drapeau}`
+                                        },
+                                        thumbnail: {
+                                            url: `${value.drapeau}`,
+                                        },
+                                        title: `\`Une famine frappe votre pays :\``,
+                                        fields: {
+                                            name: `> ⛔ Manque de nourriture et d'approvisionnement⛔ :`,
+                                            value: `Nourriture : ${value.nourriture.toLocaleString('en-US')}/${(habitants * parseFloat(populationObject.NOURRITURE_CONSO)).toLocaleString('en-US')}\n` +
+                                                `Approvisionnement : ${value.nourriture_appro.toLocaleString('en-US')}/${(habitants * parseFloat(populationObject.NOURRITURE_CONSO)).toLocaleString('en-US')}\n` +
+                                                `Morts : ${(mort * 4).toLocaleString('en-US')}\n` +
+                                                `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
+                                        },
+                                        color: 'RED',
+                                        timestamp: new Date(),
+                                        footer: { text: `${value.devise}` }
+                                    };
+
+                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] });
+                                }
+
+                                var sql = `
+                                UPDATE pays SET nourriture=0 WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET enfant=enfant-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET jeune=jeune-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET adulte=adulte-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET vieux=vieux-${mort} WHERE id_joueur="${value.id_joueur}"`;
+
+                                connection.query(sql, async(err) => { if (err) { throw err; } })
+
                             }
-
-                            var sql = `
-                            UPDATE pays SET nourriture=0 WHERE id_joueur="${value.id_joueur}";
-                            UPDATE pays SET population=population-${mort} WHERE id_joueur="${value.id_joueur}"`;
-
-                            connection.query(sql, async(err) => { if (err) { throw err; } })
                         }
 
-                        if (value.eau >= value.population * process.env.EAU_CONSO) {
-                            if (value.eau_appro <= value.population * process.env.EAU_CONSO) {
-                                var manque = (value.population * process.env.EAU_CONSO) - value.eau_appro;
+                        if (value.eau >= habitants * populationObject.EAU_CONSO) {
+                            if (value.eau_appro >= habitants * populationObject.EAU_CONSO) {
+                                //C'est good
+                            } else {
+                                var manque = (habitants * populationObject.EAU_CONSO) - value.eau_appro;
                                 var mort = Math.round(manque * 0.2);
-                                var habitants_next = value.population - mort;
+                                var habitants_next = habitants - mort;
 
                                 if (value.eau_acces != 0) {
                                     const embed = {
@@ -773,8 +872,8 @@ module.exports = {
                                         title: `\`Une pénurie frappe votre pays :\``,
                                         fields: {
                                             name: `> ⛔ Manque d'approvisionnement en eau ⛔ :`,
-                                            value: `Nourriture : ${value.eau_appro.toLocaleString('en-US')}/${(value.population * parseFloat(process.env.EAU_CONSO)).toLocaleString('en-US')}\n` +
-                                                `Morts : ${mort.toLocaleString('en-US')}\n` +
+                                            value: `Approvisionnement : ${value.eau_appro.toLocaleString('en-US')}/${(habitants * populationObject.EAU_CONSO).toLocaleString('en-US')}\n` +
+                                                `Morts : ${(mort * 4).toLocaleString('en-US')}\n` +
                                                 `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
                                         },
                                         color: 'RED',
@@ -786,43 +885,87 @@ module.exports = {
 
                                 var sql = `
                                 UPDATE pays SET eau=eau-${value.eau_appro} WHERE id_joueur="${value.id_joueur}";
-                                UPDATE pays SET population=population-${mort} WHERE id_joueur="${value.id_joueur}"`;
-                                connection.query(sql, async(err) => { if (err) { throw err; } })
+                                UPDATE pays SET enfant=enfant-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET jeune=jeune-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET adulte=adulte-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET vieux=vieux-${mort} WHERE id_joueur="${value.id_joueur}"`;
+                                connection.query(sql, async(err) => { if (err) { throw err; }})
                             }
                         } else {
-                            var manque = (value.population * process.env.EAU_CONSO) - value.eau
-                            var mort = Math.round(manque * 0.2)
-                            var habitants_next = value.population - mort
+                            if (value.eau_appro >= habitants * populationObject.EAU_CONSO) {
+                                var manque = (habitants * populationObject.EAU_CONSO) - value.eau;
+                                var mort = Math.round(manque * 0.2);
+                                var habitants_next = habitants - mort;
 
-                            if (value.eau_acces != 0) {
-                                const embed = {
-                                    author: {
-                                        name: `${value.rang} de ${value.nom}`,
-                                        icon_url: `${value.drapeau}`
-                                    },
-                                    thumbnail: {
-                                        url: `${value.drapeau}`,
-                                    },
-                                    title: `\`Une pénurie frappe votre pays :\``,
-                                    fields: {
-                                        name: `> ⛔ Manque d'eau ⛔ :`,
-                                        value: `Nourriture : ${value.eau.toLocaleString('en-US')}/${(value.population * parseFloat(process.env.EAU_CONSO)).toLocaleString('en-US')}\n` +
-                                            `Morts : ${mort.toLocaleString('en-US')}\n` +
-                                            `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
-                                    },
-                                    color: 'RED',
-                                    timestamp: new Date(),
-                                    footer: { text: `${value.devise}` }
-                                };
+                                if (value.eau_acces != 0) {
+                                    const embed = {
+                                        author: {
+                                            name: `${value.rang} de ${value.nom}`,
+                                            icon_url: `${value.drapeau}`
+                                        },
+                                        thumbnail: {
+                                            url: `${value.drapeau}`,
+                                        },
+                                        title: `\`Une pénurie frappe votre pays :\``,
+                                        fields: {
+                                            name: `> ⛔ Manque d'eau ⛔ :`,
+                                            value: `Nourriture : ${value.eau.toLocaleString('en-US')}/${(habitants * populationObject.EAU_CONSO).toLocaleString('en-US')}\n` +
+                                                `Morts : ${(mort * 4).toLocaleString('en-US')}\n` +
+                                                `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
+                                        },
+                                        color: 'RED',
+                                        timestamp: new Date(),
+                                        footer: { text: `${value.devise}` }
+                                    };
+                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] });
+                                }
 
-                                client.channels.cache.get(value.id_salon).send({ embeds: [embed] });
+                                var sql = `
+                                UPDATE pays SET eau=0 WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET enfant=enfant-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET jeune=jeune-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET adulte=adulte-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET vieux=vieux-${mort} WHERE id_joueur="${value.id_joueur}"`;
+                                connection.query(sql, async(err) => { if (err) { throw err; }})
+                            } else {
+                                var manque = (habitants * populationObject.EAU_CONSO) - value.eau
+                                var mort = Math.round(manque * 0.2)
+                                var habitants_next = habitants - mort
+
+                                if (value.eau_acces != 0) {
+                                    const embed = {
+                                        author: {
+                                            name: `${value.rang} de ${value.nom}`,
+                                            icon_url: `${value.drapeau}`
+                                        },
+                                        thumbnail: {
+                                            url: `${value.drapeau}`,
+                                        },
+                                        title: `\`Une famine frappe votre pays :\``,
+                                        fields: {
+                                            name: `> ⛔ Manque d'eau et d'approvisionnement⛔ :`,
+                                            value: `Eau : ${value.eau.toLocaleString('en-US')}/${(habitants * parseFloat(populationObject.EAU_CONSO)).toLocaleString('en-US')}\n` +
+                                                `Approvisionnement : ${value.eau_appro.toLocaleString('en-US')}/${(habitants * parseFloat(populationObject.EAU_CONSO)).toLocaleString('en-US')}\n` +
+                                                `Morts : ${(mort * 4).toLocaleString('en-US')}\n` +
+                                                `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
+                                        },
+                                        color: 'RED',
+                                        timestamp: new Date(),
+                                        footer: { text: `${value.devise}` }
+                                    };
+
+                                    client.channels.cache.get(value.id_salon).send({ embeds: [embed] });
+                                }
+
+                                var sql = `
+                                UPDATE pays SET eau=0 WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET enfant=enfant-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET jeune=jeune-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET adulte=adulte-${mort} WHERE id_joueur="${value.id_joueur}";
+                                UPDATE pays SET vieux=vieux-${mort} WHERE id_joueur="${value.id_joueur}"`;
+
+                                connection.query(sql, async(err) => { if (err) { throw err; } })
                             }
-
-                            var sql = `
-                            UPDATE pays SET eau=0 WHERE id_joueur="${value.id_joueur}";
-                            UPDATE pays SET population=population-${mort} WHERE id_joueur="${value.id_joueur}"`;
-
-                            connection.query(sql, async(err) => { if (err) { throw err; } })
                         }
                     }
                 })
@@ -835,7 +978,7 @@ module.exports = {
         var autoMarket = new CronJob(
             '0 0,10,20,30,40,50 * * * *',
 
-            async function marketUpdate() {
+            function marketUpdate() {
                 box.set('bc_prix_total', 5)
                 box.set('bc_res_total', 1)
 

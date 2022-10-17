@@ -13,6 +13,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
+        let reponse;
         const { connection } = require('../index.js');
 
         const compte = interaction.options.getString('compte');
@@ -20,21 +21,21 @@ module.exports = {
         const userCooldowned = await pweeterCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-            var reponse = codeBlock('diff', `- Vous avez déjà changé le nom de votre compte récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
+            reponse = codeBlock('diff', `- Vous avez déjà changé le nom de votre compte récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (compte.length <= 60) {
 
-                var newcompte = "";
+                let newcompte = "";
 
-                for (var i = 0; i < compte.length; i++)
+                for (let i = 0; i < compte.length; i++)
                     if (!(compte[i] == '\n' || compte[i] == '\r'))
                         newcompte += compte[i];
 
-                var sql = `UPDATE pays SET pweeter="@${newcompte}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+                let sql = `UPDATE pays SET pweeter="@${newcompte}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
                 connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
 
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
 
@@ -56,7 +57,7 @@ module.exports = {
                     await pweeterCommandCooldown.addUser(interaction.member.id);
                 });
             } else {
-                var reponse = codeBlock('diff', `- Le nom de votre compte doit faire au maximum : 60 caractères`);
+                reponse = codeBlock('diff', `- Le nom de votre compte doit faire au maximum : 60 caractères`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             }
         }

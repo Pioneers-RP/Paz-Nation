@@ -18,6 +18,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
+        let reponse;
         const { connection } = require('../index.js');
 
         const drapeau = interaction.options.getString('url');
@@ -26,21 +27,21 @@ module.exports = {
         const userCooldowned = await drapeauCommandCooldown.getUser(interaction.member.id);
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-            var reponse = codeBlock('diff', `- Vous avez déjà changé votre drapeau récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir le changer à nouveau.`);
+            reponse = codeBlock('diff', `- Vous avez déjà changé votre drapeau récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir le changer à nouveau.`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (discours.length <= 115) {
-            var reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 50 caractères`);
+            reponse = codeBlock('diff', `- Votre discours doit faire au minimum : 50 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else if (discours.length >= 2000) {
-            var reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
+            reponse = codeBlock('diff', `- Votre discours doit faire au maximum : 2000 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
-            if (await isImageURL(drapeau) == true) {
+            if (await isImageURL(drapeau) === true) {
 
-                var sql = `UPDATE pays SET drapeau="${drapeau}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+                let sql = `UPDATE pays SET drapeau="${drapeau}" WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
                 connection.query(sql, async(err) => {if (err) {throw err;}});
 
-                var sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
 
                     var annonce = {
@@ -63,13 +64,13 @@ module.exports = {
                     const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
 
                     salon_annonce.send({ embeds: [annonce] });
-                    var reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
+                    const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
                     await interaction.reply({ content: reponse });
 
                     await drapeauCommandCooldown.addUser(interaction.member.id);
                 });
             } else {
-                var reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
+                reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             }
 

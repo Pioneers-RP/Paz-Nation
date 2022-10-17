@@ -1,118 +1,34 @@
-[
-    'GUILD_TEXT',
-    <ref *1> Guild {
-      id: '942796847611801610',
-      name: 'PAZ template',
-      icon: null,
-      features: [ 'NEWS', 'TEXT_IN_VOICE_ENABLED', 'COMMUNITY' ],
-      commands: GuildApplicationCommandManager {
-        permissions: [ApplicationCommandPermissionsManager],
-        guild: [Circular *1]
-      },
-      members: GuildMemberManager { guild: [Circular *1] },
-      channels: GuildChannelManager { guild: [Circular *1] },
-      bans: GuildBanManager { guild: [Circular *1] },
-      roles: RoleManager { guild: [Circular *1] },
-      presences: PresenceManager {},
-      voiceStates: VoiceStateManager { guild: [Circular *1] },
-      stageInstances: StageInstanceManager { guild: [Circular *1] },
-      invites: GuildInviteManager { guild: [Circular *1] },
-      scheduledEvents: GuildScheduledEventManager { guild: [Circular *1] },
-      available: true,
-      shardId: 0,
-      splash: null,
-      banner: null,
-      description: null,
-      verificationLevel: 'LOW',
-      vanityURLCode: null,
-      nsfwLevel: 'DEFAULT',
-      premiumSubscriptionCount: 0,
-      discoverySplash: null,
-      memberCount: 9,
-      large: false,
-      premiumProgressBarEnabled: false,
-      applicationId: null,
-      afkTimeout: 300,
-      afkChannelId: null,
-      systemChannelId: '942796854863724615',
-      premiumTier: 'NONE',
-      explicitContentFilter: 'ALL_MEMBERS',
-      mfaLevel: 'NONE',
-      joinedTimestamp: 1645353459354,
-      defaultMessageNotifications: 'ONLY_MENTIONS',
-      systemChannelFlags: SystemChannelFlags { bitfield: 13 },
-      maximumMembers: 500000,
-      maximumPresences: null,
-      approximateMemberCount: null,
-      approximatePresenceCount: null,
-      vanityURLUses: null,
-      rulesChannelId: '942796849222398039',
-      publicUpdatesChannelId: '942796849222398032',
-      preferredLocale: 'fr',
-      ownerId: '506401492996194336',
-      emojis: GuildEmojiManager { guild: [Circular *1] },
-      stickers: GuildStickerManager { guild: [Circular *1] }
-    },'942796847611801610',
-    '942796852863070228',
-    <ref 2> PermissionOverwriteManager {
-      channel: TextChannel {
-        type: 'GUILD_TEXT',
-        guild: [Guild],
-        guildId: '942796847611801610',
-        parentId: '942796852863070228',
-        permissionOverwrites: [Circular2],
-        messages: [MessageManager],
-        threads: [ThreadManager],
-        nsfw: false,
-        id: '1002668719480262716',
-        name: 'lulea',
-        rawPosition: 48,
-        topic: null,
-        lastMessageId: null,
-        rateLimitPerUser: 0
-      }
-    },
-    <ref 3> MessageManager {
-      channel: TextChannel {
-        type: 'GUILD_TEXT',
-        guild: [Guild],
-        guildId: '942796847611801610',
-        parentId: '942796852863070228',
-        permissionOverwrites: [PermissionOverwriteManager],
-        messages: [Circular3],
-        threads: [ThreadManager],
-        nsfw: false,
-        id: '1002668719480262716',
-        name: 'lulea',
-        rawPosition: 48,
-        topic: null,
-        lastMessageId: null,
-        rateLimitPerUser: 0
-      }
-    },
-    <ref 4> ThreadManager {
-      channel: TextChannel {
-        type: 'GUILD_TEXT',
-        guild: [Guild],
-        guildId: '942796847611801610',
-        parentId: '942796852863070228',
-        permissionOverwrites: [PermissionOverwriteManager],
-        messages: [MessageManager],
-        threads: [Circular4],
-        nsfw: false,
-        id: '1002668719480262716',
-        name: 'lulea',
-        rawPosition: 48,
-        topic: null,
-        lastMessageId: null,
-        rateLimitPerUser: 0
-      }
-    },
-    false,
-    '1002668719480262716',
-    'lulea',
-    48,
-    null,
-    null,
-    0
-  ]
+const { readFileSync } = require('fs');
+const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
+const populationObject = JSON.parse(readFileSync('data/population.json', 'utf-8'));
+
+const nourriture_acces = 6 * 1.7;
+//console.log(nourriture_acces)
+
+const eau_acces = 3 * 2.1;
+//console.log(eau_acces)
+const elec_acces = 100 * (0.8 / (6 * 8));
+
+const bc_acces = 4 * 1.45;
+//console.log(bc_acces)
+
+var tauxbcmadein = (batimentObject.usine_civile.PROD_USINE_CIVILE * 10 * eval(`gouvernementObject.Centrisme.production`)) / (100000 * 9 * 0.5);
+if (tauxbcmadein > 0.8) {
+    var tauxbcmadein = 0.8;
+}
+var tauxbcmadein = tauxbcmadein * 29
+//console.log(tauxbcmadein)
+
+const place = (100 * 1500)
+var sans_abri = (100000 - place)
+if (sans_abri < 0) {
+    var sans_abri = 0
+}
+const pourcentage_sans_abri = (sans_abri / 100000)
+const sdf = (1 - pourcentage_sans_abri) * 18;
+//console.log(sdf)
+
+const modifier = parseFloat(populationObject.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf + eval(`gouvernementObject.Centrisme.bonheur`);
+const bonheur = parseFloat(((-92 * Math.exp(-0.02 * modifier)) + 100).toFixed(1));
+console.log(bonheur)

@@ -19,8 +19,8 @@ module.exports = {
             .addChoice(`Nourriture`, 'Nourriture')
             .addChoice(`Pétrole`, 'Petrole')
             .setRequired(true))
-        .addIntegerOption(quantité =>
-            quantité.setName('quantité')
+        .addIntegerOption(quantite =>
+            quantite.setName('quantité')
             .setDescription(`La quantité de ressource que vous voulez vendre`)
             .setRequired(true))
         .addNumberOption(prix =>
@@ -31,8 +31,12 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        var sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-        connection.query(sql, async(err, results) => {if (err) {throw err;}
+        const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        connection.query(sql, async(err, results) => {
+            let prix_haut;
+            let prix_bas;
+            let reponse;
+            if (err) {throw err;}
             const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
             const vendreCommandCooldown = new CommandCooldown('vendre', ms(`${eval(`gouvernementObject.${results[0].ideologie}.commerce`)}m`));
 
@@ -43,18 +47,18 @@ module.exports = {
                 await interaction.reply({ content: reponse, ephemeral: true });
             } else {
                 const ressource = interaction.options.getString('ressource');
-                var quantité = interaction.options.getInteger('quantité');
-                var prix_u = interaction.options.getNumber('prix');
+                const quantite = interaction.options.getInteger('quantité');
+                const prix_u = interaction.options.getNumber('prix');
                 const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
-                if (quantité <= 0) {
-                    var reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
+                if (quantite <= 0) {
+                    reponse = codeBlock('diff', `- Veillez indiquer une quantité positive`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 } else {
 
                     function offre(prix_moyen) {
                         const pourcentage = (prix_u / prix_moyen * 100).toFixed(1)
-                        const prix = Math.round(quantité * prix_u);
+                        const prix = Math.round(quantite * prix_u);
 
                         const embed = {
                             author: {
@@ -73,7 +77,7 @@ module.exports = {
                                 },
                                 {
                                     name: `Quantité :`,
-                                    value: codeBlock(`• ${quantité.toLocaleString('en-US')}`) + `\u200B`
+                                    value: codeBlock(`• ${quantite.toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
                                     name: `Prix :`,
@@ -110,19 +114,19 @@ module.exports = {
 
                     switch (ressource) {
                         case 'Biens de consommation':
-                            if (quantité > results[0].bc) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez de biens de consommation : ${results[0].bc.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].bc) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez de biens de consommation : ${results[0].bc.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.bc * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.bc * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente des biens de consommations est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente des biens de consommations est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente des biens de consommations est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente des biens de consommations est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.bc)
@@ -130,19 +134,19 @@ module.exports = {
                                 break;
                             }
                         case 'Bois':
-                            if (quantité > results[0].bois) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez de bois : ${results[0].bois.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].bois) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez de bois : ${results[0].bois.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.bois * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.bois * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.bois * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.bois * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente du bois est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente du bois est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente du bois est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente du bois est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.bois)
@@ -150,19 +154,19 @@ module.exports = {
                                 break;
                             }
                         case 'Brique':
-                            if (quantité > results[0].brique) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez de brique : ${results[0].brique.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].brique) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez de brique : ${results[0].brique.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.brique * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.brique * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.brique * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.brique * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente des briques est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente des briques est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente des briques est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente des briques est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.brique)
@@ -170,19 +174,19 @@ module.exports = {
                                 break;
                             }
                         case 'Eau':
-                            if (quantité > results[0].eau) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez d'eau : ${results[0].eau.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].eau) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez d'eau : ${results[0].eau.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.eau * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.eau * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.eau * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.eau * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente de l'eau est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente de l'eau est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente de l'eau est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente de l'eau est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.eau)
@@ -190,19 +194,19 @@ module.exports = {
                                 break;
                             }
                         case 'Metaux':
-                            if (quantité > results[0].metaux) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez de métaux : ${results[0].metaux.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].metaux) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez de métaux : ${results[0].metaux.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.metaux * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.metaux * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.metaux * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.metaux * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente des métaux est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente des métaux est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente des métaux est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente des métaux est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.metaux)
@@ -210,19 +214,19 @@ module.exports = {
                                 break;
                             }
                         case 'Nourriture':
-                            if (quantité > results[0].nourriture) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez de nourriture : ${results[0].nourriture.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].nourriture) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez de nourriture : ${results[0].nourriture.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.nourriture * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.nourriture * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.nourriture * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.nourriture * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente de la nourriture est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente de la nourriture est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente de la nourriture est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente de la nourriture est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.nourriture)
@@ -230,19 +234,19 @@ module.exports = {
                                 break;
                             }
                         case 'Petrole':
-                            if (quantité > results[0].petrole) {
-                                var reponse = codeBlock('diff', `- Vous n'avez pas assez de pétrole : ${results[0].petrole.toLocaleString('en-US')}/${quantité.toLocaleString('en-US')}`);
+                            if (quantite > results[0].petrole) {
+                                reponse = codeBlock('diff', `- Vous n'avez pas assez de pétrole : ${results[0].petrole.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                                 break;
                             } else {
-                                var prix_bas = (jsonPrix.petrole * 0.7).toFixed(2);
-                                var prix_haut = (jsonPrix.petrole * 1.3).toFixed(2);
+                                prix_bas = (jsonPrix.petrole * 0.7).toFixed(2);
+                                prix_haut = (jsonPrix.petrole * 1.3).toFixed(2);
 
                                 if (prix_u < prix_bas) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente du pétrole est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente du pétrole est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else if (prix_u > prix_haut) {
-                                    var reponse = codeBlock('diff', `- Le prix de vente du pétrole est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
+                                    reponse = codeBlock('diff', `- Le prix de vente du pétrole est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                     await interaction.reply({ content: reponse, ephemeral: true });
                                 } else {
                                     offre(jsonPrix.petrole)
@@ -250,8 +254,8 @@ module.exports = {
                                 break;
                             }
                     }
-                };
-            };
+                }
+            }
         })
     },
 };

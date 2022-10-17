@@ -1,19 +1,19 @@
 const fs = require('fs');
-const { Client, Collection, Intents, Guild } = require('discord.js');
+const { Client, Collection, Guild } = require('discord.js');
 //
 const dotenv = require('dotenv');
 dotenv.config();
 //
-var mysql = require('mysql');
+const mysql = require('mysql');
 //
 const { globalBox } = require('global-box');
 const box = globalBox();
 //
 const connection = new mysql.createConnection({
     host: 'eu01-sql.pebblehost.com',
-    user: 'customer_260507_paznation',
+    user: 'customer_355631_paznation',
     password: 'lidmGbk8edPkKXv1#ZO',
-    database: 'customer_260507_paznation',
+    database: 'customer_355631_paznation',
     multipleStatements: true
 })
 
@@ -27,7 +27,7 @@ connection.connect(function(err) {
     console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
 });
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({ intents: 1 });
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -59,56 +59,6 @@ client.on('interactionCreate', async interaction => {
     } catch (error) {
         console.error(error);
         await interaction.reply({ content: 'Il y a eu une erreur !', ephemeral: true });
-    }
-});
-
-client.on('guildMemberAdd', async member => {
-    if (member.guild != '826427184305537054') {
-        var embed = {
-            author: {
-                name: `Nouveau membre !`,
-                icon_url: `https://cdn.discordapp.com/attachments/772878794213031936/845971000892981248/image-removebg-preview_13.png`
-            },
-            thumbnail: {
-                url: `https://cdn.discordapp.com/attachments/845674635810439200/845970548445806612/PAZ_1-removebg-preview_1.png`,
-            },
-            timestamp: new Date(),
-            description: `Bienvenue à ${member} sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑 !\n` +
-                `Rendez-vous dans <#845687492526473246> pour commencer l'aventure !`,
-            color: '#32EB42',
-            footer: {
-                text: `N'hésitez pas à demander de l'aide dans les salons #💬┃public et #🔧┃support !`
-            },
-        };
-
-        const paz = client.guilds.cache.get('826427184305537054');
-        const salon_public = paz.channels.cache.get('942796849625055236');
-        salon_public.send({ embeds: [embed] })
-    }
-});
-
-client.on('guildMemberRemove', async member => {
-    if (member.guild != '826427184305537054') {
-        var embed = {
-            author: {
-                name: `Nouveau membre !`,
-                icon_url: `https://cdn.discordapp.com/attachments/772878794213031936/845971000892981248/image-removebg-preview_13.png`
-            },
-            thumbnail: {
-                url: `https://cdn.discordapp.com/attachments/845674635810439200/845970548445806612/PAZ_1-removebg-preview_1.png`,
-            },
-            timestamp: new Date(),
-            description: `Bienvenue à ${member} sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑 !\n` +
-                `Rendez-vous dans <#845687492526473246> pour commencer l'aventure !`,
-            color: '#32EB42',
-            footer: {
-                text: `N'hésitez pas à demander de l'aide dans les salons #💬┃public et #🔧┃support !`
-            },
-        };
-
-        const paz = client.guilds.cache.get('826427184305537054');
-        const salon_public = paz.channels.cache.get('942796849625055236');
-        salon_public.send({ embeds: [embed] })
     }
 });
 
