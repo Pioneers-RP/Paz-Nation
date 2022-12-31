@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
+const {connection} = require("../index");
 const ideologieCommandCooldown = new CommandCooldown('ideologie', ms('7d'));
 
 module.exports = {
@@ -26,11 +27,11 @@ module.exports = {
     async execute(interaction) {
         let reponse;
         const { connection } = require('../index.js');
-
         const ideologie = interaction.options.getString('ideologie');
         const discours = interaction.options.getString('discours');
-
         const userCooldowned = await ideologieCommandCooldown.getUser(interaction.member.id);
+        const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             reponse = codeBlock('diff', `- Vous avez déjà changé votre idéologie récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
@@ -48,14 +49,15 @@ module.exports = {
 
             sql = `SELECT * FROM pays WHERE id_joueur="${interaction.member.id}"`;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
+                const Pays = results[0];
 
                 const annonce = {
                     author: {
-                        name: `${results[0].rang} de ${results[0].nom}`,
+                        name: `${Pays.rang} de ${Pays.nom}`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
                     thumbnail: {
-                        url: `${results[0].drapeau}`,
+                        url: `${Pays.drapeau}`,
                     },
                     title: `Une nouvelle idéologie a été mis en place :`,
                     description: discours,
@@ -66,7 +68,6 @@ module.exports = {
                     color: interaction.member.displayHexColor
                 };
 
-                const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
                 salon_annonce.send({ embeds: [annonce] });
                 const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
 
@@ -74,6 +75,22 @@ module.exports = {
 
                 await interaction.reply({ content: reponse });
             });
+
+            sql = `
+                SELECT * FROM diplomatie WHERE id_joueur='${item.id_joueur}';
+                SELECT * FROM pays WHERE id_joueur='${item.id_joueur}'
+            `;
+            connection.query(sql, async (err, results) => {if (err) {throw err;}
+                const Diplomatie = results[0][0];
+                const Pays = results[1][0]
+
+                function cg(influence, gouv, jour){
+                    return parseFloat((72.4+(310.4-72.4)/180*jour)*gouv*Math.exp(influence*0.01).toFixed(2))
+                }
+
+                let sql = `UPDATE territoire SET cg=${cg(Diplomatie.influence, eval(`gouvernementObject.${Pays.ideologie}.gouvernance`), (Pays.jour))} WHERE id_joueur="${interaction.member.id}"`;
+                connection.query(sql, async (err) => {if (err) {throw err;}})
+            })
         }
     },
 };

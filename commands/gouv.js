@@ -16,9 +16,10 @@ module.exports = {
             joueur = interaction.member;
         }
 
-        function gouv(joueur) {
+        function getGouvernement(joueur) {
             const sql = `SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
+                const Pays = results[0];
 
                 if (!results[0]) {
                     const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
@@ -27,37 +28,37 @@ module.exports = {
 
                     const embed = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: joueur.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: `${results[0].drapeau}`
+                            url: `${Pays.drapeau}`
                         },
                         title: `\`Menu du gouvernement\``,
                         fields: [{
                                 name: `> 🪧 Nom de l'Etat : `,
-                                value: codeBlock(`• ${results[0].nom}`) + `\u200B`
+                                value: codeBlock(`• ${Pays.nom}`) + `\u200B`
                             },
                             {
                                 name: `> ®️ Rang : `,
-                                value: codeBlock(`• ${results[0].rang}`) + `\u200B`
+                                value: codeBlock(`• ${Pays.rang}`) + `\u200B`
                             },
                             {
                                 name: `> 🔱 Régime politique : `,
-                                value: codeBlock(`• ${results[0].regime}`) + `\u200B`
+                                value: codeBlock(`• ${Pays.regime}`) + `\u200B`
                             },
                             {
                                 name: `> 🧠 Idéologie : `,
-                                value: codeBlock(`• ${results[0].ideologie}`) + `\u200B`
+                                value: codeBlock(`• ${Pays.ideologie}`) + `\u200B`
                             },
                             {
                                 name: `> 📯 Devise : `,
-                                value: codeBlock(`• ${results[0].devise}`) + `\u200B`
+                                value: codeBlock(`• ${Pays.devise}`) + `\u200B`
                             }
                         ],
                         color: joueur.displayHexColor,
                         timestamp: new Date(),
-                        footer: { text: `${results[0].devise}` }
+                        footer: { text: `${Pays.devise}` }
                     };
 
                     await interaction.reply({ embeds: [embed] });
@@ -65,6 +66,6 @@ module.exports = {
             });
         }
 
-        gouv(joueur);
+        getGouvernement(joueur);
     },
 };

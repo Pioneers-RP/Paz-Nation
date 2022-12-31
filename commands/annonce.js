@@ -17,47 +17,45 @@ module.exports = {
         let sql;
         let reponse;
         const { connection } = require('../index.js');
+        const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+        const Annonce = interaction.options.getString('annonce');
+        const Image = interaction.options.getString('url');
 
-        const annonce = interaction.options.getString('annonce');
-        const image = interaction.options.getString('url');
-
-        if (annonce.length <= 50) {
+        if (Annonce.length <= 50) {
             reponse = codeBlock('diff', `- Votre annonce doit faire au minimum : 50 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
-        } else if (annonce.length >= 2000) {
+        } else if (Annonce.length >= 2000) {
             reponse = codeBlock('diff', `- Votre annonce doit faire au maximum : 2000 caractères`);
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
-            if (image) {
-                if (await isImageURL(image) == true) {
+            if (Image) {
+                if (await isImageURL(Image) === true) {
 
                     sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                     connection.query(sql, async(err, results) => {if (err) { throw err; }
+                        const Pays = results[0];
 
                         const embed = {
                             author: {
-                                name: `${results[0].rang} de ${results[0].nom}`,
+                                name: `${Pays.rang} de ${Pays.nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
                             },
                             thumbnail: {
-                                url: `${results[0].drapeau}`,
+                                url: `${Pays.drapeau}`,
                             },
                             image: {
-                                url: image,
+                                url: Image,
                             },
                             timestamp: new Date(),
-                            description: annonce,
+                            description: Annonce,
                             color: '#1DA1F2',
                             footer: {
-                                text: `${results[0].devise}`
+                                text: `${Pays.devise}`
                             },
                         };
 
-                        const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-
-                        salon_annonce.send({ embeds: [embed] })
-                        const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
-
+                        SalonAnnonce.send({ embeds: [embed] })
+                        const reponse = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
                         await interaction.reply({ content: reponse });
                     });
                 } else {
@@ -68,28 +66,26 @@ module.exports = {
             } else {
                 sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) { throw err; }
+                    const Pays = results[0];
 
                     const embed = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: `${results[0].drapeau}`,
+                            url: `${Pays.drapeau}`,
                         },
                         timestamp: new Date(),
-                        description: annonce,
+                        description: Annonce,
                         color: interaction.member.displayHexColor,
                         footer: {
-                            text: `${results[0].devise}`
+                            text: `${Pays.devise}`
                         },
                     };
 
-                    const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-
-                    salon_annonce.send({ embeds: [embed] })
-                    const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
-
+                    SalonAnnonce.send({ embeds: [embed] })
+                    const reponse = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
                     await interaction.reply({ content: reponse });
                 });
             }

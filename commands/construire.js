@@ -7,7 +7,7 @@ module.exports = {
         .setName('construire')
         .setDescription(`Construire un bâtiment`)
         .addStringOption(ressource =>
-            ressource.setName('bâtiment')
+            ressource.setName('batiment')
                 .setDescription(`Le type de bâtiment que vous voulez construire`)
                 .addChoice(`Briqueterie`, 'Briqueterie')
                 .addChoice(`Champ`, 'Champ')
@@ -27,10 +27,20 @@ module.exports = {
 
     async execute(interaction) {
         const { connection } = require('../index.js');
+        const BatimentChoisi = interaction.options.getString('batiment');
+        const nombre = interaction.options.getInteger('nombre');
+        const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
+        const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 
-        const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
-        connection.query(sql, async(err, results) => {
+        const sql = `
+            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+            SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
+        `;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Pays = results[0][0];
+            const Ressources = results[1][0];
+            const Territoire = results[2][0];
             let manque_metaux;
             let const_metaux;
             let manque_brique;
@@ -39,13 +49,6 @@ module.exports = {
             let const_bois;
             let manque_T_libre;
             let const_T_libre;
-            if (err) {throw err;}
-
-            const batiment = interaction.options.getString('bâtiment');
-            const nombre = interaction.options.getInteger('nombre');
-            const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
-            const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
-
             let const_batiment = true;
             let need_bois = false;
             let need_brique = false;
@@ -55,32 +58,32 @@ module.exports = {
                 const reponse = codeBlock('diff', `- Veuillez indiquer un nombre de bâtiment positif`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             } else {
-                switch (batiment) {
+                switch (BatimentChoisi) {
                     case 'Briqueterie':
                         need_bois = true;
                         need_brique = true;
                         need_metaux = true;
 
                         const_T_libre = batimentObject.briqueterie.SURFACE_BRIQUETERIE * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.briqueterie.CONST_BRIQUETERIE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.briqueterie.CONST_BRIQUETERIE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.briqueterie.CONST_BRIQUETERIE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.briqueterie.CONST_BRIQUETERIE_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.briqueterie.CONST_BRIQUETERIE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.briqueterie.CONST_BRIQUETERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -92,25 +95,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.champ.SURFACE_CHAMP * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.champ.CONST_CHAMP_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.champ.CONST_CHAMP_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.champ.CONST_CHAMP_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.champ.CONST_CHAMP_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.champ.CONST_CHAMP_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.champ.CONST_CHAMP_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -122,25 +125,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.centrale_fioul.SURFACE_CENTRALE_FIOUL * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -152,13 +155,13 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.eolienne.CONST_EOLIENNE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.eolienne.CONST_EOLIENNE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -170,25 +173,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.mine.SURFACE_MINE * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.mine.CONST_MINE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.mine.CONST_MINE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.mine.CONST_MINE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.mine.CONST_MINE_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.mine.CONST_MINE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.mine.CONST_MINE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -200,25 +203,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.pompe_a_eau.SURFACE_POMPE_A_EAU * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.pompe_a_eau.CONST_POMPE_A_EAU_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.pompe_a_eau.CONST_POMPE_A_EAU_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.pompe_a_eau.CONST_POMPE_A_EAU_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.pompe_a_eau.CONST_POMPE_A_EAU_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.pompe_a_eau.CONST_POMPE_A_EAU_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.pompe_a_eau.CONST_POMPE_A_EAU_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -230,25 +233,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.pumpjack.SURFACE_PUMPJACK * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.pumpjack.CONST_PUMPJACK_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.pumpjack.CONST_PUMPJACK_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.pumpjack.CONST_PUMPJACK_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.pumpjack.CONST_PUMPJACK_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.pumpjack.CONST_PUMPJACK_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.pumpjack.CONST_PUMPJACK_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -260,25 +263,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.quartier.SURFACE_QUARTIER * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.quartier.CONST_QUARTIER_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.quartier.CONST_QUARTIER_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.quartier.CONST_QUARTIER_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.quartier.CONST_QUARTIER_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.quartier.CONST_QUARTIER_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.quartier.CONST_QUARTIER_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -290,25 +293,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.scierie.SURFACE_SCIERIE * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.scierie.CONST_SCIERIE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.scierie.CONST_SCIERIE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.scierie.CONST_SCIERIE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.scierie.CONST_SCIERIE_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.scierie.CONST_SCIERIE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.scierie.CONST_SCIERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -320,25 +323,25 @@ module.exports = {
                         need_metaux = true;
 
                         const_T_libre = batimentObject.usine_civile.SURFACE_USINE_CIVILE * nombre;
-                        if (const_T_libre > results[0].T_libre) {
+                        if (const_T_libre > Territoire.T_libre) {
                             const_batiment = false;
                             manque_T_libre = true;
                         }
 
-                        const_bois = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_BOIS * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_bois > results[0].bois) {
+                        const_bois = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_bois > Ressources.bois) {
                             const_batiment = false;
                             manque_bois = true;
                         }
 
-                        const_brique = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_BRIQUE * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_brique > results[0].brique) {
+                        const_brique = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_BRIQUE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_brique > Ressources.brique) {
                             const_batiment = false;
                             manque_brique = true;
                         }
 
-                        const_metaux = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_METAUX * nombre * eval(`gouvernementObject.${results[0].ideologie}.construction`));
-                        if (const_metaux > results[0].metaux) {
+                        const_metaux = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                        if (const_metaux > Ressources.metaux) {
                             const_batiment = false;
                             manque_metaux = true;
                         }
@@ -350,7 +353,7 @@ module.exports = {
             if (manque_T_libre === true) {
                 fields.push({
                     name: `> ⛔ Manque de terrain libre ⛔ :`,
-                    value: codeBlock(`• Terrain : ${results[0].T_libre.toLocaleString('en-US')}/${const_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
+                    value: codeBlock(`• Terrain : ${Territoire.T_libre.toLocaleString('en-US')}/${const_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
                 })
             } else {
                 fields.push({
@@ -364,7 +367,7 @@ module.exports = {
                     if (manque_bois === true) {
                         fields.push({
                             name: `> ⛔ Manque de bois ⛔ :`,
-                            value: codeBlock(`• Bois : ${results[0].bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
+                            value: codeBlock(`• Bois : ${Ressources.bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     } else {
                         fields.push({
@@ -376,7 +379,7 @@ module.exports = {
                     if (manque_brique === true) {
                         fields.push({
                             name: `> ⛔ Manque de brique ⛔ :`,
-                            value: codeBlock(`• Brique : ${results[0].brique.toLocaleString('en-US')}/${const_brique.toLocaleString('en-US')}\n`) + `\u200B`
+                            value: codeBlock(`• Brique : ${Ressources.brique.toLocaleString('en-US')}/${const_brique.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     } else {
                         fields.push({
@@ -388,7 +391,7 @@ module.exports = {
                     if (manque_metaux === true) {
                         fields.push({
                             name: `> ⛔ Manque de métaux ⛔ :`,
-                            value: codeBlock(`• Métaux : ${results[0].metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
+                            value: codeBlock(`• Métaux : ${Ressources.metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
                         })
                     } else {
                         fields.push({
@@ -400,18 +403,18 @@ module.exports = {
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${results[0].drapeau}`
+                    url: `${Pays.drapeau}`
                 },
-                title: `\`Construction : ${nombre} ${batiment}\``,
+                title: `\`Construction : ${nombre} ${BatimentChoisi}\``,
                 fields: fields,
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
-                    text: `${results[0].devise}`
+                    text: `${Pays.devise}`
                 },
             };
 
@@ -434,7 +437,6 @@ module.exports = {
 
                 await interaction.reply({ embeds: [embed], components: [row] });
             } else {
-
                 const row = new MessageActionRow()
                     .addComponents(
                         new MessageButton()

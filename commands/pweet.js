@@ -17,9 +17,9 @@ module.exports = {
         let sql;
         let reponse;
         const { connection } = require('../index.js');
-
         const pweet = interaction.options.getString('pweet');
         const image = interaction.options.getString('url');
+        const salon_pweeter = interaction.client.channels.cache.get(process.env.SALON_PWEETER);
 
         if (pweet.length >= 280) {
             reponse = codeBlock('diff', `- Votre pweet doit faire au maximum : 280 caractères`);
@@ -29,25 +29,24 @@ module.exports = {
                 if (await isImageURL(image) === true) {
                     sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                     connection.query(sql, async(err, results) => {if (err) {throw err;}
+                        const Pays = results[0];
 
                         const annonce = {
                             author: {
-                                name: `${results[0].rang} de ${results[0].nom}`,
+                                name: `${Pays.rang} de ${Pays.nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
                             },
                             image: {
                                 url: image,
                             },
                             timestamp: new Date(),
-                            description: `**${interaction.user.username} <:Certif:981918077027504159> (${results[0].pweeter})\n\u200B**` + pweet,
+                            description: `**${interaction.user.username} <:Certif:981918077027504159> (${Pays.pweeter})\n\u200B**` + pweet,
                             footer: {
                                 text: "Pweeter",
                                 icon_url: "https://cdn.discordapp.com/attachments/939251032297463879/981915716821319680/Pweeter.png"
                             },
                             color: '#1bc7df',
                         };
-
-                        const salon_pweeter = interaction.client.channels.cache.get(process.env.SALON_PWEETER);
 
                         salon_pweeter.send({ embeds: [annonce] }).then(sentMessage => {
                             sentMessage.react('<:Pike:981918620282134579>');
@@ -64,22 +63,21 @@ module.exports = {
             } else {
                 sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Pays = results[0];
 
                     const annonce = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         timestamp: new Date(),
-                        description: `**${interaction.user.username} <:Certif:981918077027504159> (${results[0].pweeter})\n\u200B**` + pweet,
+                        description: `**${interaction.user.username} <:Certif:981918077027504159> (${Pays.pweeter})\n\u200B**` + pweet,
                         footer: {
                             text: "Pweeter",
                             icon_url: "https://cdn.discordapp.com/attachments/939251032297463879/981915716821319680/Pweeter.png"
                         },
                         color: '#1DA1F2',
                     };
-
-                    const salon_pweeter = interaction.client.channels.cache.get(process.env.SALON_PWEETER);
 
                     salon_pweeter.send({ embeds: [annonce] }).then(sentMessage => {
                         sentMessage.react('<:Pike:981918620282134579>');

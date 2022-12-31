@@ -1,13 +1,10 @@
 const fs = require('fs');
-const { Client, Collection, Guild } = require('discord.js');
+const { Client, Collection } = require('discord.js');
 //
 const dotenv = require('dotenv');
 dotenv.config();
 //
 const mysql = require('mysql');
-//
-const { globalBox } = require('global-box');
-const box = globalBox();
 //
 const connection = new mysql.createConnection({
     host: 'eu01-sql.pebblehost.com',
@@ -17,7 +14,8 @@ const connection = new mysql.createConnection({
     multipleStatements: true
 })
 
-module.exports = { connection };
+const client = new Client({ intents: 1 });
+module.exports = { connection, client };
 connection.connect(function(err) {
     if (err) {
         console.error('Il y a eu une erreur en se connectant à la base de données ' + err.stack);
@@ -27,7 +25,6 @@ connection.connect(function(err) {
     console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
 });
 
-const client = new Client({ intents: 1 });
 
 client.commands = new Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));

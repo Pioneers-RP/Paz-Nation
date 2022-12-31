@@ -8,19 +8,19 @@ module.exports = {
 
     async execute(interaction) {
         const { connection } = require('../index.js');
+        const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
         const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
-
-            const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
+            const Pays = results[0];
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: results[0].drapeau,
+                    url: Pays.drapeau,
                 },
                 title: `Quick Market (QM) :`,
                 fields: [{
@@ -46,6 +46,10 @@ module.exports = {
                     value: codeBlock(`• Vente : ${(jsonPrix.petrole * 0.7).toFixed(2)} | Prix moyen : ${jsonPrix.petrole} | Achat : ${(jsonPrix.petrole * 1.3).toFixed(2)}`) + `\u200B`
                 }, ],
                 color: interaction.member.displayHexColor,
+                timestamp: new Date(),
+                footer: {
+                    text: `${Pays.devise}`
+                },
             };
 
             await interaction.reply({ embeds: [embed] });

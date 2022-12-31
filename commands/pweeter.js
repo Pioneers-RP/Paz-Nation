@@ -15,10 +15,9 @@ module.exports = {
     async execute(interaction) {
         let reponse;
         const { connection } = require('../index.js');
-
         const compte = interaction.options.getString('compte');
-
         const userCooldowned = await pweeterCommandCooldown.getUser(interaction.member.id);
+
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             reponse = codeBlock('diff', `- Vous avez déjà changé le nom de votre compte récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
@@ -36,16 +35,16 @@ module.exports = {
                 connection.query(sql, async(err) => {if (err) {throw err;}});
 
                 sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Pays = results[0];
 
                     const embed = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: `${results[0].drapeau}`,
+                            url: `${Pays.drapeau}`,
                         },
                         title: `\`Votre compte Pweeter s'appelle désormais :\``,
                         description: newcompte,

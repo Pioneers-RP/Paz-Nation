@@ -20,11 +20,11 @@ module.exports = {
     async execute(interaction) {
         let reponse;
         const { connection } = require('../index.js');
-
         const drapeau = interaction.options.getString('url');
         const discours = interaction.options.getString('discours');
-
         const userCooldowned = await drapeauCommandCooldown.getUser(interaction.member.id);
+        const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             reponse = codeBlock('diff', `- Vous avez déjà changé votre drapeau récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir le changer à nouveau.`);
@@ -43,25 +43,24 @@ module.exports = {
 
                 sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Pays = results[0];
 
-                    var annonce = {
+                    const annonce = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         image: {
-                            url: results[0].drapeau,
+                            url: Pays.drapeau,
                         },
                         title: `\`Un nouveau drapeau a été adopté :\``,
                         timestamp: new Date(),
                         description: discours,
                         color: interaction.member.displayHexColor,
                         footer: {
-                            text: `${results[0].devise}`
+                            text: `${Pays.devise}`
                         },
                     };
-
-                    const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
 
                     salon_annonce.send({ embeds: [annonce] });
                     const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;
@@ -73,7 +72,6 @@ module.exports = {
                 reponse = codeBlock('diff', `- Vous n'avez pas fourni une URL valide`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             }
-
         }
     }
 };

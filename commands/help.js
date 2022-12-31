@@ -10,20 +10,21 @@ module.exports = {
 
         const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Pays = results[0];
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${results[0].drapeau}`,
+                    url: `${Pays.drapeau}`,
                 },
                 timestamp: new Date(),
                 description: `[Toutes les informations sont présentes sur notre site internet](https://paznation.gitbook.io/wiki/)`,
                 color: interaction.member.displayHexColor,
                 footer: {
-                    text: `${results[0].devise}`
+                    text: `${Pays.devise}`
                 },
             };
 

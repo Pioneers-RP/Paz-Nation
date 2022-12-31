@@ -19,11 +19,11 @@ module.exports = {
     async execute(interaction) {
         let reponse;
         const { connection } = require('../index.js');
-
         const devise = interaction.options.getString('définir');
         const discours = interaction.options.getString('discours');
-
         const userCooldowned = await deviseCommandCooldown.getUser(interaction.member.id);
+        const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
             reponse = codeBlock('diff', `- Vous avez déjà changé votre devise récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
@@ -36,7 +36,6 @@ module.exports = {
             await interaction.reply({ content: reponse, ephemeral: true });
         } else {
             if (devise.length <= 60) {
-
                 let newdevise = "";
 
                 for (let i = 0; i < devise.length; i++)
@@ -48,14 +47,15 @@ module.exports = {
 
                 sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Pays = results[0];
 
                     const annonce = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: results[0].drapeau,
+                            url: Pays.drapeau,
                         },
                         title: `\`Une nouvelle devise a été adopté :\``,
                         description: discours,
@@ -66,8 +66,6 @@ module.exports = {
                         timestamp: new Date(),
                         color: interaction.member.displayHexColor
                     };
-
-                    const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
 
                     salon_annonce.send({ embeds: [annonce] });
                     const reponse = `__**Votre annonce a été publié dans ${salon_annonce}**__`;

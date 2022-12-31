@@ -28,6 +28,7 @@ module.exports = {
         const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
 
         connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Pays = results[0];
 
             const ressource = interaction.options.getString('ressource');
             const quantite = interaction.options.getInteger('quantité');
@@ -44,11 +45,11 @@ module.exports = {
 
                     const embed = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: results[0].drapeau
+                            url: Pays.drapeau
                         },
                         title: `\`Acheter au marché rapide :\``,
                         fields: [{
@@ -68,13 +69,13 @@ module.exports = {
                             },
                             {
                                 name: `Votre argent :`,
-                                value: codeBlock(`• ${results[0].cash.toLocaleString('en-US')}`) + `\u200B`
+                                value: codeBlock(`• ${Pays.cash.toLocaleString('en-US')}`) + `\u200B`
                             }
                         ],
                         color: interaction.member.displayHexColor,
                         timestamp: new Date(),
                         footer: {
-                            text: `${results[0].devise}`
+                            text: `${Pays.devise}`
                         },
                     };
 

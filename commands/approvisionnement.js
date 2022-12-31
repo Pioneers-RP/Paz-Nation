@@ -22,36 +22,36 @@ module.exports = {
                 .setRequired(true))),
 
     async execute(interaction) {
+        let Donnee;
         const { connection } = require('../index');
-        
-        const quantite = interaction.options.getInteger('quantité');
+        const Quantite = interaction.options.getInteger('quantité');
 
         switch (interaction.options.getSubcommand()) {
             case 'eau':
-                var donnee = 'eau_appro'
+                Donnee = 'eau_appro';
                 break;
             case 'nourriture':
-                var donnee = 'nourriture_appro'
-                donnee 
+                Donnee = 'nourriture_appro'
                 break;
         }
 
-        let sql = `UPDATE pays SET ${donnee}='${quantite}' WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
+        let sql = `UPDATE population SET ${Donnee}='${Quantite}' WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
         connection.query(sql, async(err) => { if (err) { throw err; } });
 
         sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Pays = results[0];
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${results[0].drapeau}`,
+                    url: `${Pays.drapeau}`,
                 },
                 title: `\`Votre population a désomais accès à :\``,
-                description: `${quantite.toLocaleString('en-US')} ${interaction.options.getSubcommand()}`,
+                description: `${Quantite.toLocaleString('en-US')} ${interaction.options.getSubcommand()}`,
                 color: interaction.member.displayHexColor
             };
 

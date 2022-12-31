@@ -8,44 +8,49 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        const sql = `
+            SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
+            SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
+        `;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Pays = results[0][0];
+            const Ressources = results[1][0];
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${results[0].drapeau}`
+                    url: `${Pays.drapeau}`
                 },
                 title: `\`Réserve :\``,
                 fields: [{
                     name: `> \uD83D\uDCBB Biens de consommation : `,
-                    value: codeBlock(`• ${results[0].bc.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.bc.toLocaleString('en-US')}`) + `\u200B`
                 }, {
                     name: `> 🪵 Bois : `,
-                    value: codeBlock(`• ${results[0].bois.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.bois.toLocaleString('en-US')}`) + `\u200B`
                 }, {
                     name: `> 🧱 Brique : `,
-                    value: codeBlock(`• ${results[0].brique.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.brique.toLocaleString('en-US')}`) + `\u200B`
                 }, {
                     name: `> 💧 Eau : `,
-                    value: codeBlock(`• ${results[0].eau.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.eau.toLocaleString('en-US')}`) + `\u200B`
                 }, {
                     name: `> 🪨 Métaux : `,
-                    value: codeBlock(`• ${results[0].metaux.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.metaux.toLocaleString('en-US')}`) + `\u200B`
                 }, {
                     name: `> 🌽 Nourriture : `,
-                    value: codeBlock(`• ${results[0].nourriture.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.nourriture.toLocaleString('en-US')}`) + `\u200B`
                 }, {
                     name: `> 🛢️ Pétrole : `,
-                    value: codeBlock(`• ${results[0].petrole.toLocaleString('en-US')}`) + `\u200B`
+                    value: codeBlock(`• ${Ressources.petrole.toLocaleString('en-US')}`) + `\u200B`
                 }, ],
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
-                    text: `${results[0].devise}`
+                    text: `${Pays.devise}`
                 },
             };
 

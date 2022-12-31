@@ -1,5 +1,6 @@
 const { MessageActionRow, MessageButton } = require('discord.js');
-const { SlashCommandBuilder } = require('@discordjs/builders');
+const { SlashCommandBuilder, codeBlock} = require('@discordjs/builders');
+const {readFileSync} = require("fs");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -9,56 +10,64 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+        const sql = `
+                    SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
+        `;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Diplomatie = results[0][0];
+            const Pays = results[1][0];
+            const Territoire = results[2][0];
+
+            const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
+            const region = eval(`regionObject.${Territoire.region}.nom`);
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
-                title: `\`Expansion territoriale\``,
                 thumbnail: {
-                    url: 'https://cdn.discordapp.com/attachments/939251032297463879/940642380640583770/paz_v3.png',
+                    url: Pays.drapeau
                 },
-                description: `Vous souhaitez vous étendre, pour cela vous disposez de trois solutions :\n` +
-                    `\n🤝 **__Choix pacifique :__** ${results[0].reputation}%\n` +
-                    `\n> Négociation avec la peuple adversaire afin de partagez le territoire \n` +
-                    `\n🪖 **__Choix dissuasif :__** 0%\n` +
-                    `\n> Dissuader l\'ennemi à l\'aide de votre artillerie sans pour autant l\'utiliser\n` +
-                    `\n⚔ **__Choix force :__** 0%\n` +
-                    `\n> Utilisation de votre armée afin d\'écraser le peuple et de conquérir son territoire` +
-                    `\n\n **Vous disposez de ${results[0].action_diplo} Points d'action diplomatique.**`,
+                title: `\`Expansion territoriale\``,
+                fields: [
+                    {
+                        name: `> 🌄 Territoire :`,
+                        value: codeBlock(
+                            `• ${region}\n` +
+                            `• ${Territoire.T_total.toLocaleString('en-US')} km² total\n` +
+                            `• ${Territoire.T_national.toLocaleString('en-US')} km² national\n` +
+                            `• ${Territoire.T_controle.toLocaleString('en-US')} km² contrôlé`) + `\u200B`
+                    },
+                    {
+                        name: `> 🏗️ Construction :`,
+                        value: codeBlock(
+                            `• ${Territoire.T_libre.toLocaleString('en-US')} km² libres\n` +
+                            `• ${Territoire.T_occ.toLocaleString('en-US')} km² construits`) + `\u200B`
+                    },
+                    {
+                        name: `> ☎ Diplomatie :`,
+                        value: codeBlock(
+                            `• ${Diplomatie.influence} influences\n` +
+                            `• ${(Territoire.cg * 1000)}km² de capacité de gouvernance\n`) + `\u200B`
+                    },
+                ],
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
-                    text: `${results[0].devise}`
+                    text: `${Pays.devise}`
                 },
             };
 
             const row = new MessageActionRow()
                 .addComponents(
                     new MessageButton()
-                    .setLabel(`Choix pacifique`)
-                    .setEmoji(`🤝`)
-                    .setCustomId('choix_pacifique')
-                    .setStyle('PRIMARY')
-                )
-                .addComponents(
-                    new MessageButton()
-                    .setLabel(`Choix dissuasif`)
-                    .setEmoji(`🪖`)
-                    .setCustomId('choix_dissuasif')
-                    .setStyle('PRIMARY')
-                    .setDisabled(true)
-                )
-                .addComponents(
-                    new MessageButton()
-                    .setLabel(`Envoyer l\'armée`)
-                    .setEmoji(`⚔`)
-                    .setCustomId('choix_armée')
-                    .setStyle('PRIMARY')
-                    .setDisabled(true),
+                    .setLabel(`Envoyer un explorateur`)
+                    .setEmoji(`🧭`)
+                    .setCustomId('explorateur-' + interaction.member.id)
+                    .setStyle('SUCCESS')
                 );
 
             await interaction.reply({ embeds: [embed], components: [row] });

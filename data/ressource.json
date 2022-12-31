@@ -1,0 +1,93 @@
+{
+    "bois": {
+        "ville": 0,
+        "foret": 1.75,
+        "prairie": 0,
+        "desert": 0,
+        "toundra": 0,
+        "taiga": 2,
+        "savane": 0,
+        "rocheuses": 1.3,
+        "volcan": 0,
+        "mangrove": 0,
+        "steppe": 0
+    },
+    "brique": {
+        "ville": 0,
+        "foret": 1.3,
+        "prairie": 1.1,
+        "desert": 0,
+        "toundra": 0.5,
+        "taiga": 0.7,
+        "savane": 2,
+        "rocheuses": 0.6,
+        "volcan": 0,
+        "mangrove": 0,
+        "steppe": 0.6
+    },
+    "eau": {
+        "ville": 0,
+        "foret": 1,
+        "prairie": 0.7,
+        "desert": 0,
+        "toundra": 0.7,
+        "taiga": 0.5,
+        "savane": 0.7,
+        "rocheuses": 1.8,
+        "volcan": 0,
+        "mangrove": 2,
+        "steppe": 0.6
+    },
+    "electricite": {
+        "ville": 0,
+        "foret": 0,
+        "prairie": 1.5,
+        "desert": 1.3,
+        "toundra": 2,
+        "taiga": 0,
+        "savane": 1.2,
+        "rocheuses": 0,
+        "volcan": 0,
+        "mangrove": 0,
+        "steppe": 1.3
+    },
+    "metaux": {
+        "ville": 0,
+        "foret": 1,
+        "prairie": 0.6,
+        "desert": 1.6,
+        "toundra": 1.2,
+        "taiga": 1.4,
+        "savane": 0.9,
+        "rocheuses": 2,
+        "volcan": 0,
+        "mangrove": 0,
+        "steppe": 1.1
+    },
+    "nourriture": {
+        "ville": 0,
+        "foret": 0,
+        "prairie": 2,
+        "desert": 0,
+        "toundra": 0,
+        "taiga": 0,
+        "savane": 0.8,
+        "rocheuses": 0,
+        "volcan": 0,
+        "mangrove": 1.5,
+        "steppe": 1.6
+    },
+    "petrole": {
+        "ville": 0,
+        "foret": 1,
+        "prairie": 0.8,
+        "desert": 2,
+        "toundra": 1.2,
+        "taiga": 1.1,
+        "savane": 0.8,
+        "rocheuses": 0,
+        "volcan": 0,
+        "mangrove": 1.5,
+        "steppe": 1
+    }
+}

@@ -131,16 +131,77 @@ module.exports = {
                         },
                         title: `\`Commencer à jouer \``,
                         color: '#3BA55C',
-                        description: codeBlock(`Cliquez sur le bouton ci dessous pour commencer votre aventure.`),
+                        description: codeBlock(`Choisissez une cité dans une région pour commencer votre aventure !`) + `\n Pour cela, aidez-vous de la [carte](https://cdn.discordapp.com/attachments/983319236942368818/987077067227152444/unknown.png).`,
                     };
 
-                    let row = new MessageActionRow()
+                    const row = new MessageActionRow()
                         .addComponents(
-                            new MessageButton()
-                                .setLabel(`Créer votre Cité`)
-                                .setEmoji(`📯`)
-                                .setCustomId('start')
-                                .setStyle('SUCCESS'),
+                            new MessageSelectMenu()
+                                .setCustomId('menu_start')
+                                .setPlaceholder(`La région de votre futur cité`)
+                                .addOptions([
+                                    {
+                                        label: `Afrique australe`,
+                                        emoji: `🇿🇦`,
+                                        value: 'afrique_australe',
+                                    },
+                                    {
+                                        label: `Afrique équatoriale`,
+                                        emoji: `🇨🇩`,
+                                        value: 'afrique_equatoriale',
+                                    },
+                                    {
+                                        label: `Afrique du nord`,
+                                        emoji: `🇩🇿`,
+                                        value: 'afrique_du_nord',
+                                    },
+                                    {
+                                        label: `Amérique du nord`,
+                                        emoji: `🇺🇸`,
+                                        value: 'amerique_du_nord',
+                                    },
+                                    {
+                                        label: `Amérique latine du nord`,
+                                        emoji: `🇧🇷`,
+                                        value: 'nord_amerique_latine',
+                                    },
+                                    {
+                                        label: `Amérique latine du sud`,
+                                        emoji: `🇦🇷`,
+                                        value: 'sud_amerique_latine',
+                                    },
+                                    {
+                                        label: `Asie du nord`,
+                                        emoji: `🇯🇵`,
+                                        value: 'asie_du_nord',
+                                    },
+                                    {
+                                        label: `Asie du sud`,
+                                        emoji: `🇮🇳`,
+                                        value: 'asie_du_sud',
+                                    },
+                                    {
+                                        label: `Europe`,
+                                        emoji: `🇪🇺`,
+                                        value: 'europe',
+                                    },
+                                    {
+                                        label: `Moyen orient`,
+                                        emoji: `🇸🇦`,
+                                        value: 'moyen_orient',
+                                    },
+                                    {
+                                        label: `Océanie`,
+                                        emoji: `🇦🇺`,
+                                        value: 'oceanie',
+                                    },
+                                    {
+                                        label: `Pays du nord`,
+                                        emoji: `🇨🇦`,
+                                        value: 'pays_du_nord',
+                                    },
+                                ]
+                            ),
                         );
 
                     await interaction.reply({ embeds: [embed], components: [row] });

@@ -11,91 +11,96 @@ module.exports = {
         const { connection } = require('../index.js');
         const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 
-        const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
+        const sql = `
+            SELECT * FROM batiments WHERE id_joueur=${interaction.member.id};
+            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}
+        `;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
+            const Batiment = results[0][0];
+            const Pays = results[1][0];
 
-            let surface_T_briqueterie = batimentObject.briqueterie.SURFACE_BRIQUETERIE * results[0].briqueterie;
-            let surface_T_champ = batimentObject.champ.SURFACE_CHAMP * results[0].champ;
-            let surface_T_centrale_fioul = batimentObject.centrale_fioul.SURFACE_CENTRALE_FIOUL * results[0].centrale_fioul;
-            let surface_T_eolienne = batimentObject.eolienne.SURFACE_EOLIENNE * results[0].eolienne;
-            let surface_T_mine = batimentObject.mine.SURFACE_MINE * results[0].mine;
-            let surface_T_pompe_a_eau = batimentObject.pompe_a_eau.SURFACE_POMPE_A_EAU * results[0].pompe_a_eau;
-            let surface_T_pumpjack = batimentObject.pumpjack.SURFACE_PUMPJACK * results[0].pumpjack;
-            let surface_T_scierie = batimentObject.scierie.SURFACE_SCIERIE * results[0].scierie;
-            let surface_T_usine_civile = batimentObject.usine_civile.SURFACE_USINE_CIVILE * results[0].usine_civile;
+            let surface_T_briqueterie = batimentObject.briqueterie.SURFACE_BRIQUETERIE * Batiment.briqueterie;
+            let surface_T_champ = batimentObject.champ.SURFACE_CHAMP * Batiment.champ;
+            let surface_T_centrale_fioul = batimentObject.centrale_fioul.SURFACE_CENTRALE_FIOUL * Batiment.centrale_fioul;
+            let surface_T_eolienne = batimentObject.eolienne.SURFACE_EOLIENNE * Batiment.eolienne;
+            let surface_T_mine = batimentObject.mine.SURFACE_MINE * Batiment.mine;
+            let surface_T_pompe_a_eau = batimentObject.pompe_a_eau.SURFACE_POMPE_A_EAU * Batiment.pompe_a_eau;
+            let surface_T_pumpjack = batimentObject.pumpjack.SURFACE_PUMPJACK * Batiment.pumpjack;
+            let surface_T_scierie = batimentObject.scierie.SURFACE_SCIERIE * Batiment.scierie;
+            let surface_T_usine_civile = batimentObject.usine_civile.SURFACE_USINE_CIVILE * Batiment.usine_civile;
             let surface_T = surface_T_briqueterie + surface_T_champ + surface_T_centrale_fioul + surface_T_eolienne + surface_T_pompe_a_eau + surface_T_pumpjack + surface_T_mine + surface_T_scierie + surface_T_usine_civile;
 
             const embed = {
                 author: {
-                    name: `${results[0].rang} de ${results[0].nom}`,
+                    name: `${Pays.rang} de ${Pays.nom}`,
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${results[0].drapeau}`
+                    url: `${Pays.drapeau}`
                 },
                 title: `\`Menu des usines\``,
                 description: codeBlock(
-                    `• Nombre d'usines totale : ${results[0].usine_total.toLocaleString('en-US')}\n` +
+                    `• Nombre d'usines totale : ${Batiment.usine_total.toLocaleString('en-US')}\n` +
                     `• Surface totale : ${surface_T.toLocaleString('en-US')}`) + `\u200B`,
                 fields: [{
                     name: `> 🧱 Briqueterie :`,
                     value: codeBlock(
-                        `• Nombre d'usine : ${results[0].briqueterie.toLocaleString('en-US')}\n` +
+                        `• Nombre d'usine : ${Batiment.briqueterie.toLocaleString('en-US')}\n` +
                         `• Surface totale : ${surface_T_briqueterie.toLocaleString('en-US')} km²`) + `\u200B`
                 },
                     {
                         name: `> 🌽 Champ :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].champ.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.champ.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_champ.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> ⚡ Centrale au fioul :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].centrale_fioul.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.centrale_fioul.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_centrale_fioul.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> ⚡ Eolienne :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].eolienne.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.eolienne.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_eolienne.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> 🪨 Mine :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].mine.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.mine.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_mine.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> 💧 Pompe à eau :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].pompe_a_eau.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.pompe_a_eau.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_pompe_a_eau.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> 🛢️ Pumpjack :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].pumpjack.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.pumpjack.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_pumpjack.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> 🪵 Scierie :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].scierie.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.scierie.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_scierie.toLocaleString('en-US')} km²`) + `\u200B`
                     },
                     {
                         name: `> 💻 Usine civile :`,
                         value: codeBlock(
-                            `• Nombre d'usine : ${results[0].usine_civile.toLocaleString('en-US')}\n` +
+                            `• Nombre d'usine : ${Batiment.usine_civile.toLocaleString('en-US')}\n` +
                             `• Surface totale : ${surface_T_usine_civile.toLocaleString('en-US')} km²`) + `\u200B`
                     }
                 ],
                 color: interaction.member.displayHexColor,
                 timestamp: new Date(),
                 footer: {
-                    text: `${results[0].devise}`
+                    text: `${Pays.devise}`
                 },
             };
 
@@ -104,12 +109,13 @@ module.exports = {
                     new MessageSelectMenu()
                         .setCustomId('usine')
                         .setPlaceholder(`Le type d\'usine`)
-                        .addOptions([{
-                            label: `Briqueterie`,
-                            emoji: `🧱`,
-                            description: `Produit de la brique`,
-                            value: 'briqueterie',
-                        },
+                        .addOptions([
+                            {
+                                label: `Briqueterie`,
+                                emoji: `🧱`,
+                                description: `Produit de la brique`,
+                                value: 'briqueterie',
+                            },
                             {
                                 label: `Champ`,
                                 emoji: `🌽`,

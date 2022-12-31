@@ -19,29 +19,38 @@ module.exports = {
         }
 
         function pays(joueur) {
-            const sql = `SELECT * FROM pays WHERE id_joueur='${joueur.id}'`;
+            const sql = `
+                    SELECT * FROM diplomatie WHERE id_joueur='${joueur.id}';
+                    SELECT * FROM pays WHERE id_joueur='${joueur.id}';
+                    SELECT * FROM population WHERE id_joueur='${joueur.id}';
+                    SELECT * FROM territoire WHERE id_joueur='${joueur.id}'
+            `;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
+                const Diplomatie = results[0][0];
+                const Pays = results[1][0];
+                const Population = results[2][0];
+                const Territoire = results[3][0];
 
-                if (!results[0]) {
+                if (!results[0][0]) {
                     const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 } else {
                     const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
-                    const region = eval(`regionObject.${results[0].region}.nom`);
-                    const habitants = results[0].enfant + results[0].jeune + results[0].adulte + results[0].vieux;
+                    const region = eval(`regionObject.${Territoire.region}.nom`);
+                    const habitants = Population.enfant + Population.jeune + Population.adulte + Population.vieux;
 
                     const embed = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: joueur.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: `${results[0].drapeau}`
+                            url: Pays.drapeau
                         },
                         title: `\`Vue globale du pays\``,
                         fields: [{
                             name: `> 💵 Argent :`,
-                            value: codeBlock(`• ${results[0].cash.toLocaleString('en-US')} $`) + `\u200B`
+                            value: codeBlock(`• ${Pays.cash.toLocaleString('en-US')} $`) + `\u200B`
                         },
                             {
                                 name: `> 👪 Population :`,
@@ -51,23 +60,23 @@ module.exports = {
                                 name: `> 🌄 Territoire :`,
                                 value: codeBlock(
                                     `• ${region}\n` +
-                                    `• ${results[0].T_total.toLocaleString('en-US')} km² total\n` +
-                                    `• ${results[0].T_libre.toLocaleString('en-US')} km² libre\n` +
-                                    `• ${results[0].hexagone.toLocaleString('en-US')} cases`) + `\u200B`
+                                    `• ${Territoire.T_total.toLocaleString('en-US')} km² total\n` +
+                                    `• ${Territoire.T_libre.toLocaleString('en-US')} km² libre\n` +
+                                    `• ${Territoire.hexagone.toLocaleString('en-US')} cases`) + `\u200B`
 
                             },
                             {
-                                name: `> ☎️ Diplomatie :`,
+                                name: `> ☎ Diplomatie :`,
                                 value: codeBlock(
-                                    `• ${results[0].action_diplo.toLocaleString('en-US')} points d'action diplomatique\n\u200B` +
-                                    `• ${results[0].influence} influences\n` +
-                                    `• ${results[0].reputation}% réputation\n`) + `\u200B`
+                                    `• ${Pays.action_diplo.toLocaleString('en-US')} points d'action diplomatique\n\u200B` +
+                                    `• ${Diplomatie.influence} influences\n` +
+                                    `• ${Pays.reputation}% réputation\n`) + `\u200B`
                             },
                         ],
                         color: joueur.displayHexColor,
                         timestamp: new Date(),
                         footer: {
-                            text: `${results[0].devise}`
+                            text: `${Pays.devise}`
                         },
                     };
 

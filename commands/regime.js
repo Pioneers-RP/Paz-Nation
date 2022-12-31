@@ -49,14 +49,15 @@ module.exports = {
 
             sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
+                const Pays = results[0];
 
                 const annonce = {
                     author: {
-                        name: `${results[0].rang} de ${results[0].nom}`,
+                        name: `${Pays.rang} de ${Pays.nom}`,
                         icon_url: interaction.member.displayAvatarURL()
                     },
                     thumbnail: {
-                        url: `${results[0].drapeau}`,
+                        url: `${Pays.drapeau}`,
                     },
                     title: `Une nouveau gouvernement a été mis en place :`,
                     description: discours,
@@ -67,7 +68,7 @@ module.exports = {
                     color: interaction.member.displayHexColor,
                     timestamp: new Date(),
                     footer: {
-                        text: `${results[0].devise}`
+                        text: `${Pays.devise}`
                     },
                 };
 

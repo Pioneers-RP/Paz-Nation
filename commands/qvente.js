@@ -25,12 +25,15 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../index.js');
 
-        const sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-
-        connection.query(sql, async(err, results) => {
+        const sql = `
+            SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
+            SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
+        `;
+        connection.query(sql, async(err, results) => {if (err) {throw err;}
             let reponse;
-            if (err) {throw err;}
 
+            const Pays = results[0][0];
+            const Ressources = results[1][0];
             const ressource = interaction.options.getString('ressource');
             const quantite = interaction.options.getInteger('quantité');
             const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
@@ -45,11 +48,11 @@ module.exports = {
 
                     const embed = {
                         author: {
-                            name: `${results[0].rang} de ${results[0].nom}`,
+                            name: `${Pays.rang} de ${Pays.nom}`,
                             icon_url: interaction.member.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: results[0].drapeau
+                            url: Pays.drapeau
                         },
                         title: `\`Vendre au marché rapide :\``,
                         fields: [{
@@ -72,7 +75,7 @@ module.exports = {
                         color: interaction.member.displayHexColor,
                         timestamp: new Date(),
                         footer: {
-                            text: `${results[0].devise}`
+                            text: `${Pays.devise}`
                         },
                     };
 
@@ -97,8 +100,8 @@ module.exports = {
 
                 switch (ressource) {
                     case 'Biens de consommation':
-                        if (quantite > results[0].bc) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez de biens de consommation : ${results[0].bc.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.bc) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez de biens de consommation : ${Ressources.bc.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
@@ -106,8 +109,8 @@ module.exports = {
                             break;
                         }
                     case 'Bois':
-                        if (quantite > results[0].bois) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez de bois : ${results[0].bois.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.bois) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez de bois : ${Ressources.bois.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
@@ -115,8 +118,8 @@ module.exports = {
                             break;
                         }
                     case 'Brique':
-                        if (quantite > results[0].brique) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez de brique : ${results[0].brique.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.brique) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez de brique : ${Ressources.brique.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
@@ -124,8 +127,8 @@ module.exports = {
                             break;
                         }
                     case 'Eau':
-                        if (quantite > results[0].eau) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez d'eau : ${results[0].eau.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.eau) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez d'eau : ${Ressources.eau.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
@@ -133,8 +136,8 @@ module.exports = {
                             break;
                         }
                     case 'Metaux':
-                        if (quantite > results[0].metaux) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez de métaux : ${results[0].metaux.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.metaux) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez de métaux : ${Ressources.metaux.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
@@ -142,8 +145,8 @@ module.exports = {
                             break;
                         }
                     case 'Nourriture':
-                        if (quantite > results[0].nourriture) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez de nourriture : ${results[0].nourriture.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.nourriture) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez de nourriture : ${Ressources.nourriture.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
@@ -151,8 +154,8 @@ module.exports = {
                             break;
                         }
                     case 'Petrole':
-                        if (quantite > results[0].petrole) {
-                            reponse = codeBlock('diff', `- Vous n'avez pas assez de pétrole : ${results[0].petrole.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
+                        if (quantite > Ressources.petrole) {
+                            reponse = codeBlock('diff', `- Vous n'avez pas assez de pétrole : ${Ressources.petrole.toLocaleString('en-US')}/${quantite.toLocaleString('en-US')}`);
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
