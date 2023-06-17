@@ -14,7 +14,7 @@
     "Communisme": {
         "bonheur": -13,
         "conso_bc": 0.8,
-        "production": 0.8,
+        "production": 1.25,
         "consommation": 1.2,
         "construction": 0.7,
         "entretien": 0.8,
@@ -57,7 +57,7 @@
         "salaire": 0.7,
         "gouvernance": 1.2,
         "assimilation": 0.9,
-        "commerce": 0
+        "commerce": 1
     },
     "Conservatisme": {
         "bonheur": -10,
