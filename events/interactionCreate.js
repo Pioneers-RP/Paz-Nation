@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, ModalBuilder, AttachmentBuilder, PermissionFlagsBits, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, codeBlock} = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, ModalBuilder, AttachmentBuilder, PermissionFlagsBits, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ThreadAutoArchiveDuration, codeBlock} = require('discord.js');
 const { connection, client } = require('../index.js');
 const { globalBox } = require('global-box');
 const box = globalBox();
@@ -15,17 +15,18 @@ const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
 const deviseCommandCooldown = new CommandCooldown('devise', ms('7d'));
 const drapeauCommandCooldown = new CommandCooldown('drapeau', ms('7d'));
-const genDrapeauCommandCooldown = new CommandCooldown('gendrapeau', ms('7sec'));
 const pweeterCommandCooldown = new CommandCooldown('pweeter', ms('7d'));
 const organisationCommandCooldown = new CommandCooldown('organisation', ms('7d'));
+const strategieCommandCooldown = new CommandCooldown('strategie', ms('7d'));
 
+const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 const assemblageObject = JSON.parse(readFileSync('data/assemblage.json', 'utf-8'));
 const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 const biomeObject = JSON.parse(readFileSync('data/biome.json', 'utf-8'));
 const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 const populationObject = JSON.parse(readFileSync('data/population.json', 'utf-8'));
 const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
-const ressourceObject = JSON.parse(readFileSync('data/ressource.json', 'utf-8'));
+const strategieObject = JSON.parse(readFileSync('data/strategie.json', 'utf-8'));
 
     
 module.exports = {
@@ -46,7 +47,191 @@ module.exports = {
         let log;
         //region Commande
         if (interaction.isChatInputCommand()) {
+            sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+            connection.query(sql, async (err, results) => {if (err) {throw err;}
+                const Pays = results[0];
 
+                if (Pays.daily === 0) {
+                    let salon;
+                    let sql = `UPDATE pays SET daily=1, jour=jour+1 WHERE id_joueur="${interaction.member.id}"`;
+                    connection.query(sql, async (err) => {if (err) {throw err;}})
+
+                    switch (Pays.jour) {
+                        case 1:
+                            sql = `UPDATE pays SET rang='Cité-Etat' WHERE id_joueur="${interaction.member.id}"`;
+                            connection.query(sql, async (err) => {if (err) {throw err;}})
+
+                            if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
+                            } else {
+                                let roleMaire = interaction.guild.roles.cache.find(r => r.name === "👤 » Maire");
+                                interaction.member.roles.add(roleMaire);
+                                let roleBourgmestre = interaction.guild.roles.cache.find(r => r.name === "👤 » Bourgmestre");
+                                interaction.member.roles.remove(roleBourgmestre);
+                            }
+
+                            embed = {
+                                author: {
+                                    name: `Cité-Etat de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                title: `\`Devenir une Cité-Etat :\``,
+                                description: `
+                                    Vous êtes devenus une Cité-Etat grâce à votre activité de jeu. Vous êtes sur la voie de devenir une puissance internationale mais il reste du chemin à faire.
+                                    Ce passage au Rang de Cité-Etat débloque de nouveaux éléments de jeu tels que l'armée et les raids, ainsi que les ambassades et la création d\'organisations.\n
+                                `,
+                                fields: [
+                                    {
+                                        name: `> 🆕 Débloque :`,
+                                        value: codeBlock(
+                                            `• /armee\n` +
+                                            `• /assembler\n` +
+                                            `• /former\n` +
+                                            `• /ideologie\n` +
+                                            `• /raid\n` +
+                                            `• Création d'organisation`) + `\u200B`
+                                    },
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+                            salon = interaction.client.channels.cache.get(Pays.id_salon);
+                            salon.send({ embeds: [embed] });
+
+                            embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: `${Pays.drapeau}`,
+                                },
+                                title: `\`Breaking news :\``,
+                                fields: [{
+                                    name: `> :white_square_button: Nouveau rang :`,
+                                    value: `*Cité-Etat*` + `\u200B`
+                                }],
+                                color: 0x42E2B8,
+                                timestamp: new Date(),
+                                footer: {text: `${Pays.devise}`},
+                            };
+
+                            salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+                            salon.send({ embeds: [embed] });
+                            break;
+                        case 32:
+                            sql = `UPDATE pays SET rang='Etat' WHERE id_joueur="${interaction.member.id}"`;
+                            connection.query(sql, async (err) => {if (err) {throw err;}})
+
+                            if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
+                            } else {
+                                let roleDirigent = interaction.guild.roles.cache.find(r => r.name === "👤 » Dirigent");
+                                interaction.member.roles.add(roleDirigent);
+                                let roleMaire = interaction.guild.roles.cache.find(r => r.name === "👤 » Maire");
+                                interaction.member.roles.remove(roleMaire);
+                            }
+
+                            embed = {
+                                author: {
+                                    name: `Etat de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                title: `\`Devenir un Etat :\``,
+                                description: `
+                                    Vous êtes devenus un Etat grâce à votre activité de jeu. Merci beaucoup pour votre implication dans Paz Nation.
+                                    Ce passage au Rang d'Etat débloque de nouveaux éléments de jeu et donne la possibilité de changer de nom par rapport au territoire sur lequel vous vous êtes étendus.
+                                    Choisissez un nom de région comme \`\`\`Alsace\`\`\` ou \`\`\`Prusse\`\`\`\n
+                                `,
+                                fields: [
+                                    {
+                                        name: `> 🆕 Débloque :`,
+                                        value: codeBlock(
+                                            `• Changement de forme de gouvernement`) + `\u200B`
+                                    },
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+                            salon = interaction.client.channels.cache.get(Pays.id_salon);
+                            salon.send({ embeds: [embed] });
+
+                            embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: `${Pays.drapeau}`,
+                                },
+                                title: `\`Breaking news :\``,
+                                fields: [{
+                                    name: `> :white_square_button: Nouveau rang :`,
+                                    value: `*Etat*` + `\u200B`
+                                }],
+                                color: 0x42E2B8,
+                                timestamp: new Date(),
+                                footer: {text: `${Pays.devise}`},
+                            };
+
+                            salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+                            salon.send({ embeds: [embed] });
+                            break;
+                        case 122:
+                            sql = `UPDATE pays SET rang='Pays' WHERE id_joueur="${interaction.member.id}"`;
+                            connection.query(sql, async (err) => {if (err) {throw err;}})
+
+                            if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
+                            } else {
+                                let roleChef = interaction.guild.roles.cache.find(r => r.name === "👤 » Chef d'état");
+                                interaction.member.roles.add(roleChef);
+                                let roleDirigent = interaction.guild.roles.cache.find(r => r.name === "👤 » Dirigent");
+                                interaction.member.roles.remove(roleDirigent);
+                            }
+
+                            embed = {
+                                author: {
+                                    name: `Pays de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                title: `\`Devenir une Päys :\``,
+                                description: `
+                                    Vous êtes devenus une Pays grâce à votre activité de jeu. Vous êtes devenus une puissance internationale !
+                                    Ce passage au Rang de Pays débloque de nouveaux éléments de jeuet donne la possibilité de changer de nom par rapport au territoire sur lequel vous vous êtes étendus.
+                                    Choisissez un nom de pays comme \`\`\`France\`\`\` ou \`\`\`Allemagne\`\`\`\n
+                                `,
+                                fields: [
+                                    {
+                                        name: `> 🆕 Débloque :`,
+                                        value: codeBlock(
+                                            `• `) + `\u200B`
+                                    },
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+                            salon = interaction.client.channels.cache.get(Pays.id_salon);
+                            salon.send({ embeds: [embed] });
+                            break;
+                    }
+                }
+            });
             const command = interaction.client.commands.get(interaction.commandName);
 
             if (!command) {
@@ -320,6 +505,32 @@ module.exports = {
                                 //endregion
                                 break;
 
+                            case 'Champ d\'eoliennes':
+                                //region Champ d'eoliennes
+                                nom = 'eolienne';
+                                need_beton = true;
+                                need_eolienne = true;
+
+                                const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
+                                if (const_T_libre > Territoire.T_libre) {
+                                    const_batiment = false;
+                                    manque_T_libre = true;
+                                }
+
+                                const_beton = Math.round(batimentObject.eolienne.CONST_EOLIENNE_BETON * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_beton > Ressources.beton) {
+                                    const_batiment = false;
+                                    manque_beton = true;
+                                }
+
+                                const_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
+                                if (const_eolienne > Ressources.eolienne) {
+                                    const_batiment = false;
+                                    manque_eolienne = true;
+                                }
+                                //endregion
+                                break;
+
                             case 'Cimenterie':
                                 //region Cimenterie
                                 nom = 'cimenterie';
@@ -368,32 +579,6 @@ module.exports = {
                                 if (const_beton > Ressources.beton) {
                                     const_batiment = false;
                                     manque_beton = true;
-                                }
-                                //endregion
-                                break;
-
-                            case 'Eolienne':
-                                //region Eolienne
-                                nom = 'eolienne';
-                                need_beton = true;
-                                need_eolienne = true;
-
-                                const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                                if (const_T_libre > Territoire.T_libre) {
-                                    const_batiment = false;
-                                    manque_T_libre = true;
-                                }
-
-                                const_beton = Math.round(batimentObject.eolienne.CONST_EOLIENNE_BETON * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
-                                if (const_beton > Ressources.beton) {
-                                    const_batiment = false;
-                                    manque_beton = true;
-                                }
-
-                                const_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
-                                if (const_eolienne > Ressources.eolienne) {
-                                    const_batiment = false;
-                                    manque_eolienne = true;
                                 }
                                 //endregion
                                 break;
@@ -754,23 +939,21 @@ module.exports = {
                     interaction.reply({content: reponse, ephemeral: true});
                 }
                 //endregion
-            } if (interaction.customId.includes('assemblage') === true) {
+            } else if (interaction.customId.includes('assemblage') === true) {
                 //region Assemblage
 
                 id_joueur = interaction.customId.slice(11);
                 if (id_joueur === interaction.member.id) {
 
                     sql = `
-                        SELECT * FROM batiments WHERE id_joueur=${interaction.member.id};
+                        SELECT * FROM armee WHERE id_joueur=${interaction.member.id};
                         SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
-                        SELECT * FROM ressources WHERE id_joueur=${interaction.member.id};
-                        SELECT * FROM territoire WHERE id_joueur=${interaction.member.id}
+                        SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
                     `;
                     connection.query(sql, async (err, results) => {if (err) {throw err;}
-                        const Batiment = results[0][0];
+                        const Armee = results[0][0];
                         const Pays = results[1][0];
                         const Ressources = results[2][0];
-                        const Territoire = results[3][0];
 
                         let manque_acier;
                         let const_acier;
@@ -778,16 +961,18 @@ module.exports = {
                         let const_beton;
                         let manque_bois;
                         let const_bois;
+                        let manque_metaux;
+                        let const_metaux;
                         let manque_verre;
                         let const_verre;
-                        let manque_T_libre;
-                        let const_T_libre;
 
                         let nom;
+                        let table;
                         let const_batiment = true;
                         let need_acier = false;
                         let need_beton = false;
                         let need_bois = false;
+                        let need_metaux = false;
                         let need_verre = false;
 
                         let title = interaction.message.embeds[0].title;
@@ -798,15 +983,97 @@ module.exports = {
                         const ressource = title.slice(espace + 1);
 
                         switch (ressource) {
+                            case 'Avion':
+                                //region Avion
+                                nom = 'avion';
+                                table = 'armee';
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
+                                break;
                             case 'Eolienne':
                                 //region Eolienne
-                                nom = 'eolienne'
+                                nom = 'eolienne';
+                                table = 'ressources';
                                 need_acier = true;
 
                                 const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
+                                }
+                                const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_verre > Ressources.verre) {
+                                    const_batiment = false;
+                                    manque_verre = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Equipement de support':
+                                //region Equipement de support
+                                nom = 'equipement_support';
+                                table = 'armee';
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Matériel d\'infanterie':
+                                //region Matériel d'infanterie
+                                nom = 'materiel_infanterie';
+                                table = 'armee';
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Véhicule':
+                                //region Véhicule
+                                nom = 'vehicule';
+                                table = 'armee';
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
                                 }
                                 //endregion
                                 break;
@@ -818,12 +1085,12 @@ module.exports = {
                         if (const_batiment === true) {
                             fields.push({
                                 name: `> 🪛 Vous avez désormais :`,
-                                value: codeBlock(`• ${(parseInt(eval(`Ressources.${nom}`)) + parseInt(nombre)).toLocaleString('en-US')} ${nom}`) + `\u200B`,
+                                value: codeBlock(`• ${(parseInt(eval(`${chance.capitalize(table)}.${nom}`)) + parseInt(nombre)).toLocaleString('en-US')} ${ressource}`) + `\u200B`,
                             })
                             const embed = EmbedBuilder.from(receivedEmbed).setFields(fields);
                             interaction.message.edit({embeds: [embed], components: []})
 
-                            sql = `UPDATE ressources SET ${nom}=${nom}+${nombre} WHERE id_joueur='${interaction.member.id}'`;
+                            sql = `UPDATE ${table} SET ${nom}=${nom}+${nombre} WHERE id_joueur='${interaction.member.id}'`;
                             if (need_acier === true) {
                                 sql = sql + `;UPDATE ressources SET acier=acier-${const_acier} WHERE id_joueur='${interaction.member.id}'`
                             }
@@ -836,23 +1103,16 @@ module.exports = {
                                 sql = sql + `;UPDATE ressources SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}'`
                             }
 
+                            if (need_metaux === true) {
+                                sql = sql + `;UPDATE ressources SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`
+                            }
+
                             if (need_verre === true) {
                                 sql = sql + `;UPDATE ressources SET verre=verre-${const_verre} WHERE id_joueur='${interaction.member.id}'`
                             }
 
                             connection.query(sql, async (err) => {if (err) {throw err;}})
                         } else {
-                            if (manque_T_libre === true) {
-                                fields.push({
-                                    name: `> ⛔ Manque de terrain libre ⛔ :`,
-                                    value: codeBlock(`• Terrain : ${Territoire.T_libre.toLocaleString('en-US')}/${const_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
-                                })
-                            } else {
-                                fields.push({
-                                    name: `> ✅ Terrain libre suffisant ✅ :`,
-                                    value: codeBlock(`• Terrain : ${const_T_libre.toLocaleString('en-US')}/${const_T_libre.toLocaleString('en-US')}\n`) + `\u200B`
-                                })
-                            }
 
                             if (need_acier === true) {
                                 if (manque_acier === true) {
@@ -892,6 +1152,20 @@ module.exports = {
                                     fields.push({
                                         name: `> ✅ Bois suffisant ✅ :`,
                                         value: codeBlock(`• Bois : ${const_bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                }
+                            }
+
+                            if (need_metaux === true) {
+                                if (manque_metaux === true) {
+                                    fields.push({
+                                        name: `> ⛔ Manque de métaux ⛔ :`,
+                                        value: codeBlock(`• Métaux : ${Ressources.metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                } else {
+                                    fields.push({
+                                        name: `> ✅ Métaux suffisant ✅ :`,
+                                        value: codeBlock(`• Métaux : ${const_metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
                                     })
                                 }
                             }
@@ -1103,6 +1377,23 @@ module.exports = {
                                 //endregion
                                 break;
 
+                            case 'Champ d\'eoliennes':
+                                //region Champ d'éoliennes
+                                need_eolienne = true;
+
+                                if (nombre > Batiment.eolienne) {
+                                    demo_batiment = false;
+                                    reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.eolienne}/${nombre} champs d'éoliennes`);
+                                    await interaction.reply({ content: reponse, ephemeral: true });
+                                }
+                                nom = 'eolienne';
+                                demo_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
+                                demo_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
+                                avant = Batiment.eolienne;
+                                apres = Batiment.eolienne - nombre;
+                                //endregion
+                                break;
+
                             case 'Cimenterie':
                                 //region Cimenterie
                                 need_acier = true;
@@ -1134,23 +1425,6 @@ module.exports = {
                                 demo_acier = Math.round(batimentObject.derrick.CONST_DERRICK_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                                 avant = Batiment.derrick;
                                 apres = Batiment.derrick - nombre;
-                                //endregion
-                                break;
-
-                            case 'Eolienne':
-                                //region Eolienne
-                                need_eolienne = true;
-
-                                if (nombre > Batiment.eolienne) {
-                                    demo_batiment = false;
-                                    reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.eolienne}/${nombre} éoliennes`);
-                                    await interaction.reply({ content: reponse, ephemeral: true });
-                                }
-                                nom = 'eolienne';
-                                demo_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                                demo_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
-                                avant = Batiment.eolienne;
-                                apres = Batiment.eolienne - nombre;
                                 //endregion
                                 break;
 
@@ -1199,7 +1473,7 @@ module.exports = {
                                 }
                                 nom = 'station_pompage';
                                 demo_T_libre = batimentObject.station_pompage.SURFACE_STATION_POMPAGE * nombre;
-                                demo_bois = Math.round(batimentObject.station_pompage.CONST_STATION_POMPAGE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                                demo_acier = Math.round(batimentObject.station_pompage.CONST_STATION_POMPAGE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                                 avant = Batiment.station_pompage;
                                 apres = Batiment.station_pompage - nombre;
                                 //endregion
@@ -1324,6 +1598,319 @@ module.exports = {
                         }
                     });
 
+                } else {
+                    reponse = codeBlock('diff', `- Vous n'êtes pas l'auteur de cette commande`);
+                    interaction.reply({content: reponse, ephemeral: true});
+                }
+                //endregion
+            } else if (interaction.customId.includes('former') === true) {
+                //region Former
+                id_joueur = interaction.customId.slice(7);
+                if (id_joueur === interaction.member.id) {
+
+                    sql = `
+                        SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                        SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                        SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
+                    `;
+                    connection.query(sql, async (err, results) => {if (err) {throw err;}
+                        const Armee = results[0][0];
+                        const Pays = results[1][0];
+                        const Population = results[2][0];
+                        const hommeArmee =
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                            (Armee.aviation * armeeObject.aviation.homme) +
+                            (Armee.infanterie * armeeObject.infanterie.homme) +
+                            (Armee.mecanise * armeeObject.mecanise.homme) +
+                            (Armee.support * armeeObject.support.homme);
+
+                        let manque_homme;
+                        let const_homme;
+                        let manque_avion;
+                        let const_avion;
+                        let manque_equipement_support;
+                        let const_equipement_support;
+                        let manque_materiel_infanterie;
+                        let const_materiel_infanterie;
+                        let manque_vehicule;
+                        let const_vehicule;
+
+                        let nom;
+                        let const_unite = true;
+                        let need_homme = false;
+                        let need_avion = false;
+                        let need_equipement_support = false;
+                        let need_materiel_infanterie = false;
+                        let need_vehicule = false;
+
+                        let title = interaction.message.embeds[0].title;
+                        title = title.substring(10, title.length - 1);
+                        const espace = title.indexOf(" ");
+                        let nombre = title.slice(0, espace);
+                        nombre = nombre.replace(/,/g, "");
+                        const ressource = title.slice(espace + 1);
+
+                        switch (ressource) {
+                            case 'Aviation':
+                                //region Aviation
+                                nom = 'aviation';
+                                need_homme = true;
+                                need_avion = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.aviation.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_avion = armeeObject.aviation.avion * nombre;
+                                if (const_avion > Armee.avion) {
+                                    const_unite = false;
+                                    manque_avion = true;
+                                }
+                                const_equipement_support = armeeObject.aviation.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.aviation.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.aviation.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Infanterie':
+                                //region Infanterie
+                                nom = 'infanterie';
+                                need_homme = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.infanterie.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_equipement_support = armeeObject.infanterie.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.infanterie.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.infanterie.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Mécanisé':
+                                //region Mecanisé
+                                nom = 'mecanise';
+                                need_homme = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.mecanise.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_equipement_support = armeeObject.mecanise.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.mecanise.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.mecanise.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Support':
+                                //region Support
+                                nom = 'support';
+                                need_homme = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.support.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_equipement_support = armeeObject.support.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.support.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.support.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                        }
+
+                        interaction.deferUpdate()
+                        const fields = [];
+                        const receivedEmbed = interaction.message.embeds[0];
+                        if (const_unite === true) {
+                            fields.push({
+                                name: `> 🪖 Vous avez désormais :`,
+                                value: codeBlock(`• ${(parseInt(eval(`Armee.${nom}`)) + parseInt(nombre)).toLocaleString('en-US')} ${ressource}`) + `\u200B`,
+                            })
+                            const embed = EmbedBuilder.from(receivedEmbed).setFields(fields);
+                            interaction.message.edit({embeds: [embed], components: []})
+
+                            sql = `UPDATE armee SET ${nom}=${nom}+${nombre} WHERE id_joueur='${interaction.member.id}'`;
+
+                            if (need_avion === true) {
+                                sql = sql + `;UPDATE armee SET avion=avion-${const_avion} WHERE id_joueur='${interaction.member.id}'`
+                            }
+
+                            if (need_equipement_support === true) {
+                                sql = sql + `;UPDATE armee SET equipement_support=equipement_support-${const_equipement_support} WHERE id_joueur='${interaction.member.id}'`
+                            }
+
+                            if (need_materiel_infanterie === true) {
+                                sql = sql + `;UPDATE armee SET materiel_infanterie=materiel_infanterie-${const_materiel_infanterie} WHERE id_joueur='${interaction.member.id}'`
+                            }
+
+                            if (need_vehicule === true) {
+                                sql = sql + `;UPDATE armee SET vehicule=vehicule-${const_vehicule} WHERE id_joueur='${interaction.member.id}'`
+                            }
+
+                            connection.query(sql, async (err) => {if (err) {throw err;}})
+                        } else {
+                            if (need_homme === true) {
+                                if (manque_homme === true) {
+                                    fields.push({
+                                        name: `> ⛔ Manque d'hommes ⛔ :`,
+                                        value: codeBlock(`• Homme : ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${const_homme.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                } else {
+                                    fields.push({
+                                        name: `> ✅ Hommes suffisant ✅ :`,
+                                        value: codeBlock(`• Homme : ${const_homme.toLocaleString('en-US')}/${const_homme.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                }
+                            }
+
+                            if (need_avion === true) {
+                                if (manque_avion === true) {
+                                    fields.push({
+                                        name: `> ⛔ Manque d'avion ⛔ :`,
+                                        value: codeBlock(`• Avion : ${Armee.avion.toLocaleString('en-US')}/${const_avion.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                } else {
+                                    fields.push({
+                                        name: `> ✅ Avion suffisant ✅ :`,
+                                        value: codeBlock(`• Avion : ${const_avion.toLocaleString('en-US')}/${const_avion.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                }
+                            }
+
+                            if (need_equipement_support === true) {
+                                if (manque_equipement_support === true) {
+                                    fields.push({
+                                        name: `> ⛔ Manque d'équipement de support ⛔ :`,
+                                        value: codeBlock(`• Equipement de support : ${Armee.equipement_support.toLocaleString('en-US')}/${const_equipement_support.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                } else {
+                                    fields.push({
+                                        name: `> ✅ Equipement de support suffisant ✅ :`,
+                                        value: codeBlock(`• Equipement de support : ${const_equipement_support.toLocaleString('en-US')}/${const_equipement_support.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                }
+                            }
+
+                            if (need_materiel_infanterie === true) {
+                                if (manque_materiel_infanterie === true) {
+                                    fields.push({
+                                        name: `> ⛔ Manque de materiel d'infanterie ⛔ :`,
+                                        value: codeBlock(`• Materiel d'infanterie : ${Armee.materiel_infanterie.toLocaleString('en-US')}/${const_materiel_infanterie.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                } else {
+                                    fields.push({
+                                        name: `> ✅ Materiel d'infanterie suffisant ✅ :`,
+                                        value: codeBlock(`• Materiel d'infanterie : ${const_materiel_infanterie.toLocaleString('en-US')}/${const_materiel_infanterie.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                }
+                            }
+
+                            if (need_vehicule === true) {
+                                if (manque_vehicule === true) {
+                                    fields.push({
+                                        name: `> ⛔ Manque de véhicule ⛔ :`,
+                                        value: codeBlock(`• Véhicule : ${Armee.vehicule.toLocaleString('en-US')}/${const_vehicule.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                } else {
+                                    fields.push({
+                                        name: `> ✅ Véhicule suffisant ✅ :`,
+                                        value: codeBlock(`• Véhicule : ${const_vehicule.toLocaleString('en-US')}/${const_vehicule.toLocaleString('en-US')}\n`) + `\u200B`
+                                    })
+                                }
+                            }
+
+                            const embed = EmbedBuilder.from(receivedEmbed).setFields(fields);
+
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Former`)
+                                        .setEmoji(`🪖`)
+                                        .setCustomId(`former-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Danger)
+                                        .setDisabled(true)
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Refuser`)
+                                        .setEmoji(`✋`)
+                                        .setCustomId(`refuser-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Danger),
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Actualiser`)
+                                        .setEmoji(`🔁`)
+                                        .setCustomId(`train-reload-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Primary),
+                                )
+                            interaction.message.edit({embeds: [embed], components: [row]})
+                        }
+                    });
                 } else {
                     reponse = codeBlock('diff', `- Vous n'êtes pas l'auteur de cette commande`);
                     interaction.reply({content: reponse, ephemeral: true});
@@ -1539,6 +2126,29 @@ module.exports = {
                                 }
                                 break;
 
+                            case 'Champ d\'eoliennes':
+                                need_beton = true;
+                                need_eolienne = true;
+
+                                const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
+                                if (const_T_libre > Territoire.T_libre) {
+                                    const_batiment = false;
+                                    manque_T_libre = true;
+                                }
+
+                                const_beton = Math.round(batimentObject.eolienne.CONST_EOLIENNE_BETON * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_beton > Ressources.beton) {
+                                    const_batiment = false;
+                                    manque_beton = true;
+                                }
+
+                                const_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
+                                if (const_eolienne > Ressources.eolienne) {
+                                    const_batiment = false;
+                                    manque_eolienne = true;
+                                }
+                                break;
+
                             case 'Cimenterie':
                                 need_acier = true;
                                 need_beton = true;
@@ -1582,29 +2192,6 @@ module.exports = {
                                 if (const_beton > Ressources.beton) {
                                     const_batiment = false;
                                     manque_beton = true;
-                                }
-                                break;
-
-                            case 'Eolienne':
-                                need_beton = true;
-                                need_eolienne = true;
-
-                                const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                                if (const_T_libre > Territoire.T_libre) {
-                                    const_batiment = false;
-                                    manque_T_libre = true;
-                                }
-
-                                const_beton = Math.round(batimentObject.eolienne.CONST_EOLIENNE_BETON * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
-                                if (const_beton > Ressources.beton) {
-                                    const_batiment = false;
-                                    manque_beton = true;
-                                }
-
-                                const_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
-                                if (const_eolienne > Ressources.eolienne) {
-                                    const_batiment = false;
-                                    manque_eolienne = true;
                                 }
                                 break;
 
@@ -1944,8 +2531,7 @@ module.exports = {
 
                     sql = `
                         SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
-                        SELECT * FROM ressources WHERE id_joueur=${interaction.member.id};
-                        SELECT * FROM territoire WHERE id_joueur=${interaction.member.id}
+                        SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
                     `;
                     connection.query(sql, async (err, results) => {if (err) {throw err;}
                         const Pays = results[0][0];
@@ -1962,8 +2548,8 @@ module.exports = {
                         let const_beton;
                         let manque_bois;
                         let const_bois;
-                        let manque_eolienne;
-                        let const_eolienne;
+                        let manque_metaux;
+                        let const_metaux;
                         let manque_verre;
                         let const_verre;
 
@@ -1971,19 +2557,95 @@ module.exports = {
                         let need_acier = false;
                         let need_beton = false;
                         let need_bois = false;
-                        let need_eolienne = false;
+                        let need_metaux = false;
                         let need_verre = false;
 
 
                         switch (batiment) {
-                            case 'Eolienne':
+                            case 'Avion':
+                                //region Avion
                                 need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Eolienne':
+                                //region Eolienne
+                                need_acier = true;
+                                need_verre = true;
 
                                 const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
+                                const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_verre > Ressources.verre) {
+                                    const_batiment = false;
+                                    manque_verre = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Equipement de support':
+                                //region Equipement de support
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Matériel d\'infanterie':
+                                //region Matériel d'infanterie
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Véhicule':
+                                //region Véhicule
+                                need_acier = true;
+                                need_metaux = true;
+
+                                const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_acier > Ressources.acier) {
+                                    const_batiment = false;
+                                    manque_acier = true;
+                                }
+                                const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                if (const_metaux > Ressources.metaux) {
+                                    const_batiment = false;
+                                    manque_metaux = true;
+                                }
+                                //endregion
                                 break;
                         }
 
@@ -2030,16 +2692,16 @@ module.exports = {
                             }
                         }
 
-                        if (need_eolienne === true) {
-                            if (manque_eolienne === true) {
+                        if (need_metaux === true) {
+                            if (manque_metaux === true) {
                                 fields.push({
-                                    name: `> ⛔ Manque d'éolienne' ⛔ :`,
-                                    value: codeBlock(`• Eolienne : ${Ressources.eolienne.toLocaleString('en-US')}/${const_eolienne.toLocaleString('en-US')}\n`) + `\u200B`
+                                    name: `> ⛔ Manque de métaux ⛔ :`,
+                                    value: codeBlock(`• Métaux : ${Ressources.metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
                                 })
                             } else {
                                 fields.push({
-                                    name: `> ✅ Eolienne suffisant ✅ :`,
-                                    value: codeBlock(`• Eolienne : ${const_eolienne.toLocaleString('en-US')}/${const_eolienne.toLocaleString('en-US')}\n`) + `\u200B`
+                                    name: `> ✅ Métaux suffisant ✅ :`,
+                                    value: codeBlock(`• Métaux : ${const_metaux.toLocaleString('en-US')}/${const_metaux.toLocaleString('en-US')}\n`) + `\u200B`
                                 })
                             }
                         }
@@ -2121,6 +2783,319 @@ module.exports = {
                     interaction.reply({content: reponse, ephemeral: true});
                 }
                 //endregion
+            } else if (interaction.customId.includes('train-reload') === true) {
+                //region Actualiser formation
+                id_joueur = interaction.customId.slice(13);
+                if (id_joueur === interaction.member.id) {
+
+                    sql = `
+                        SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                        SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                        SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
+                    `;
+                    connection.query(sql, async (err, results) => {if (err) {throw err;}
+                        const Armee = results[0][0];
+                        const Pays = results[1][0];
+                        const Population = results[2][0];
+                        const hommeArmee =
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                            Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                            (Armee.aviation * armeeObject.aviation.homme) +
+                            (Armee.infanterie * armeeObject.infanterie.homme) +
+                            (Armee.mecanise * armeeObject.mecanise.homme) +
+                            (Armee.support * armeeObject.support.homme);
+
+                        let manque_homme;
+                        let const_homme;
+                        let manque_avion;
+                        let const_avion;
+                        let manque_equipement_support;
+                        let const_equipement_support;
+                        let manque_materiel_infanterie;
+                        let const_materiel_infanterie;
+                        let manque_vehicule;
+                        let const_vehicule;
+
+                        let nom;
+                        let const_unite = true;
+                        let need_homme = false;
+                        let need_avion = false;
+                        let need_equipement_support = false;
+                        let need_materiel_infanterie = false;
+                        let need_vehicule = false;
+
+                        let title = interaction.message.embeds[0].title;
+                        title = title.substring(10, title.length - 1);
+                        const espace = title.indexOf(" ");
+                        let nombre = title.slice(0, espace);
+                        nombre = nombre.replace(/,/g, "");
+                        const ressource = title.slice(espace + 1);
+
+                        switch (ressource) {
+                            case 'Aviation':
+                                //region Aviation
+                                nom = 'aviation';
+                                need_homme = true;
+                                need_avion = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.aviation.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_avion = armeeObject.aviation.avion * nombre;
+                                if (const_avion > Armee.avion) {
+                                    const_unite = false;
+                                    manque_avion = true;
+                                }
+                                const_equipement_support = armeeObject.aviation.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.aviation.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.aviation.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Infanterie':
+                                //region Infanterie
+                                nom = 'infanterie';
+                                need_homme = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.infanterie.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_equipement_support = armeeObject.infanterie.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.infanterie.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.infanterie.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Mécanisé':
+                                //region Mecanisé
+                                nom = 'mecanise';
+                                need_homme = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.mecanise.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_equipement_support = armeeObject.mecanise.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.mecanise.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.mecanise.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                            case 'Support':
+                                //region Support
+                                nom = 'support';
+                                need_homme = true;
+                                need_equipement_support = true;
+                                need_materiel_infanterie = true;
+                                need_vehicule = true;
+
+                                const_homme = armeeObject.support.homme * nombre;
+                                if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
+                                    const_unite = false;
+                                    manque_homme = true;
+                                }
+                                const_equipement_support = armeeObject.support.equipement_support * nombre;
+                                if (const_equipement_support > Armee.equipement_support) {
+                                    const_unite = false;
+                                    manque_equipement_support = true;
+                                }
+                                const_materiel_infanterie = armeeObject.support.materiel_infanterie * nombre;
+                                if (const_materiel_infanterie > Armee.materiel_infanterie) {
+                                    const_unite = false;
+                                    manque_materiel_infanterie = true;
+                                }
+                                const_vehicule = armeeObject.support.vehicule * nombre;
+                                if (const_vehicule > Armee.vehicule) {
+                                    const_unite = false;
+                                    manque_vehicule = true;
+                                }
+                                //endregion
+                                break;
+                        }
+
+                        const fields = [];
+                        if (need_homme === true) {
+                            if (manque_homme === true) {
+                                fields.push({
+                                    name: `> ⛔ Manque d'hommes ⛔ :`,
+                                    value: codeBlock(`• Homme : ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${const_homme.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            } else {
+                                fields.push({
+                                    name: `> ✅ Hommes suffisant ✅ :`,
+                                    value: codeBlock(`• Homme : ${const_homme.toLocaleString('en-US')}/${const_homme.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            }
+                        }
+
+                        if (need_avion === true) {
+                            if (manque_avion === true) {
+                                fields.push({
+                                    name: `> ⛔ Manque d'avion ⛔ :`,
+                                    value: codeBlock(`• Avion : ${Armee.avion.toLocaleString('en-US')}/${const_avion.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            } else {
+                                fields.push({
+                                    name: `> ✅ Avion suffisant ✅ :`,
+                                    value: codeBlock(`• Avion : ${const_avion.toLocaleString('en-US')}/${const_avion.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            }
+                        }
+
+                        if (need_equipement_support === true) {
+                            if (manque_equipement_support === true) {
+                                fields.push({
+                                    name: `> ⛔ Manque d'équipement de support ⛔ :`,
+                                    value: codeBlock(`• Equipement de support : ${Armee.equipement_support.toLocaleString('en-US')}/${const_equipement_support.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            } else {
+                                fields.push({
+                                    name: `> ✅ Equipement de support suffisant ✅ :`,
+                                    value: codeBlock(`• Equipement de support : ${const_equipement_support.toLocaleString('en-US')}/${const_equipement_support.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            }
+                        }
+
+                        if (need_materiel_infanterie === true) {
+                            if (manque_materiel_infanterie === true) {
+                                fields.push({
+                                    name: `> ⛔ Manque de materiel d'infanterie ⛔ :`,
+                                    value: codeBlock(`• Materiel d'infanterie : ${Armee.materiel_infanterie.toLocaleString('en-US')}/${const_materiel_infanterie.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            } else {
+                                fields.push({
+                                    name: `> ✅ Materiel d'infanterie suffisant ✅ :`,
+                                    value: codeBlock(`• Materiel d'infanterie : ${const_materiel_infanterie.toLocaleString('en-US')}/${const_materiel_infanterie.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            }
+                        }
+
+                        if (need_vehicule === true) {
+                            if (manque_vehicule === true) {
+                                fields.push({
+                                    name: `> ⛔ Manque de véhicule ⛔ :`,
+                                    value: codeBlock(`• Véhicule : ${Armee.vehicule.toLocaleString('en-US')}/${const_vehicule.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            } else {
+                                fields.push({
+                                    name: `> ✅ Véhicule suffisant ✅ :`,
+                                    value: codeBlock(`• Véhicule : ${const_vehicule.toLocaleString('en-US')}/${const_vehicule.toLocaleString('en-US')}\n`) + `\u200B`
+                                })
+                            }
+                        }
+
+                        const embed = EmbedBuilder.from(interaction.message.embeds[0]).setFields(fields);
+
+                        if (const_unite === true) {
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Former`)
+                                        .setEmoji(`🪖`)
+                                        .setCustomId(`former-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Success),
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Refuser`)
+                                        .setEmoji(`✋`)
+                                        .setCustomId(`refuser-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Danger),
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Actualiser`)
+                                        .setEmoji(`🔁`)
+                                        .setCustomId(`train-reload-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Primary),
+                                )
+
+                            interaction.deferUpdate()
+                            interaction.message.edit({embeds: [embed], components: [row]})
+                        } else {
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Former`)
+                                        .setEmoji(`🪖`)
+                                        .setCustomId(`former-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Danger)
+                                        .setDisabled(true)
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Refuser`)
+                                        .setEmoji(`✋`)
+                                        .setCustomId(`refuser-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Danger),
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Actualiser`)
+                                        .setEmoji(`🔁`)
+                                        .setCustomId(`train-reload-${interaction.user.id}`)
+                                        .setStyle(ButtonStyle.Primary),
+                                )
+
+                            interaction.deferUpdate()
+                            interaction.message.edit({embeds: [embed], components: [row]})
+                        }
+                    });
+
+                } else {
+                    reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'êtes pas l'auteur de cette commande`);
+                    interaction.reply({content: reponse, ephemeral: true});
+                }
+                //endregion
             } else if (interaction.customId.includes('acheter') === true) {
                 //region Acheter
 
@@ -2150,47 +3125,61 @@ module.exports = {
                             throw err;
                         }
                         let res;
+                        let emoji = ''
                         const pourcentage = fields[2].value.slice(fields[2].value.indexOf("(") - 1, fields[2].value.indexOf(")") + 1);
 
                         switch (ressource) {
                             case 'Acier':
                                 res = `acier`;
+                                emoji = '<:acier:1075776411329122304>';
                                 break;
                             case 'Béton':
                                 res = `beton`;
+                                emoji = '<:beton:1075776342227943526>';
                                 break;
                             case 'Biens de consommation':
                                 res = `bc`;
+                                emoji = '💻';
                                 break;
                             case 'Bois':
                                 res = `bois`;
+                                emoji = '🪵';
                                 break;
                             case 'Carburant':
                                 res = `carburant`;
+                                emoji = '⛽';
                                 break;
                             case 'Charbon':
                                 res = `charbon`;
+                                emoji = '<:charbon:1075776385517375638>';
                                 break;
                             case 'Eau':
                                 res = `eau`;
+                                emoji = '💧';
                                 break;
                             case 'Eolienne':
                                 res = `eolienne`;
+                                emoji = '<:windmill:1108767955442991225>';
                                 break;
                             case 'Métaux':
                                 res = `metaux`;
+                                emoji = '🪨';
                                 break;
                             case 'Nourriture':
                                 res = `nourriture`;
+                                emoji = '🌽';
                                 break;
                             case 'Pétrole':
                                 res = `petrole`;
+                                emoji = '🛢️';
                                 break;
                             case 'Sable':
                                 res = `sable`;
+                                emoji = '<:sable:1075776363782479873>';
                                 break;
                             case 'Verre':
                                 res = `verre`;
+                                emoji = '🪟';
                                 break;
                         }
 
@@ -2209,23 +3198,24 @@ module.exports = {
                                         url: Pays.drapeau,
                                     },
                                     title: `\`Achat validé :\``,
-                                    fields: [{
-                                        name: `Vendeur :`,
-                                        value: `<@${id_joueur}>`
-                                    },
+                                    fields: [
                                         {
-                                            name: `Ressource :`,
+                                            name: `> 📥 Vendeur :`,
+                                            value: `<@${id_joueur}>`
+                                        },
+                                        {
+                                            name: `> ${emoji} Ressource :`,
                                             value: codeBlock(`• ${ressource}`)
                                         },
                                         {
-                                            name: `Quantité :`,
+                                            name: `> 📦 Quantité :`,
                                             value: codeBlock(`• ${quantite.toLocaleString('en-US')}`)
                                         },
                                         {
-                                            name: `Prix :`,
+                                            name: `> <:PAZ:1108440620101546105> Prix :`,
                                             value: codeBlock(
                                                 `• A l'unité : ${prix_u}${pourcentage}\n` +
-                                                `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                                `• Au total : ${prix.toLocaleString('en-US')}`)
                                         }
                                     ],
                                     color: interaction.member.displayColor,
@@ -2244,23 +3234,24 @@ module.exports = {
                                         url: Pays.drapeau,
                                     },
                                     title: `\`Marché conclu :\``,
-                                    fields: [{
-                                        name: `Acheteur :`,
-                                        value: `<@${interaction.user.id}>`
-                                    },
+                                    fields: [
                                         {
-                                            name: `Ressource :`,
+                                            name: `> 📤 Acheteur :`,
+                                            value: `<@${interaction.user.id}>`
+                                        },
+                                        {
+                                            name: `> ${emoji} Ressource :`,
                                             value: codeBlock(`• ${ressource}`)
                                         },
                                         {
-                                            name: `Quantité :`,
+                                            name: `> 📦 Quantité :`,
                                             value: codeBlock(`• ${quantite.toLocaleString('en-US')}`)
                                         },
                                         {
-                                            name: `Prix :`,
+                                            name: `> <:PAZ:1108440620101546105> Prix :`,
                                             value: codeBlock(
                                                 `• A l'unité : ${prix_u}${pourcentage}\n` +
-                                                `• Au total : ${prix.toLocaleString('en-US')} $`)
+                                                `• Au total : ${prix.toLocaleString('en-US')}`)
                                         }
                                     ],
                                     color: interaction.member.displayColor,
@@ -2316,7 +3307,8 @@ module.exports = {
                                         ressource="${ressource}",
                                         quantite='${quantite}',
                                         prix='${prix}',
-                                        prix_u='${prix_u}'`;
+                                        prix_u='${prix_u}'
+                                `;
                                 connection.query(sql, async (err) => {
                                     if (err) {
                                         throw err;
@@ -2792,8 +3784,105 @@ module.exports = {
             } else if (interaction.customId.includes('ambassade-oui') === true) {
                 //region Ambassade oui
                 id_joueur = interaction.customId.slice(14);
-                reponse = codeBlock('diff', `- Pas encore dev, désolé`);
-                interaction.reply({content: reponse, ephemeral: true});
+                sql = `
+                    SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Diplomatie = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Invitation acceptée !\``,
+                        description: `Vous avez acceptés une demande d'ambassade de <@${id_joueur}>.`,
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+
+                    interaction.reply({embeds: [embed]})
+                    interaction.message.edit({components: []})
+
+                    sql = `
+                        SELECT * FROM diplomatie WHERE id_joueur='${id_joueur}';
+                        SELECT * FROM pays WHERE id_joueur='${id_joueur}'
+                    `;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
+                        const Diplomatie2 = results[0][0];
+                        const Pays2 = results[1][0];
+
+                        let ambassades = JSON.parse(Diplomatie.ambassade.replace(/\s/g, ''));
+                        ambassades.push(Pays2.id_joueur);
+                        ambassades = JSON.stringify(ambassades);
+                        ambassades = ambassades.replace(/"/g, '');
+
+                        sql = `UPDATE diplomatie SET ambassade="${ambassades}" WHERE id_joueur="${interaction.member.id}"`;
+                        connection.query(sql, async(err) => { if (err) { throw err; }})
+
+                        let ambassades2 = JSON.parse(Diplomatie2.ambassade.replace(/\s/g, ''));
+                        ambassades2.push(interaction.member.id);
+                        ambassades2 = JSON.stringify(ambassades2);
+                        ambassades2 = ambassades2.replace(/"/g, '');
+
+                        sql = `UPDATE diplomatie SET ambassade="${ambassades2}" WHERE id_joueur="${Pays2.id_joueur}"`;
+                        connection.query(sql, async(err) => { if (err) { throw err; }})
+
+                        const refus = {
+                            author: {
+                                name: `${Pays.rang} de ${Pays.nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: Pays.drapeau
+                            },
+                            title: `\`Invitation acceptée !\``,
+                            description: `${interaction.member} a accepté votre demande d'ambassade.`,
+                            color: interaction.member.displayColor,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${Pays.devise}`
+                            },
+                        };
+                        function bouton(message) {
+                            return new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Lien vers le message`)
+                                        .setEmoji(`🏛️`)
+                                        .setURL(message.url)
+                                        .setStyle(ButtonStyle.Link),
+                                )
+                        }
+                        const joueur = interaction.client.users.cache.get(id_joueur)
+                        interaction.client.channels.cache.get(Pays2.id_salon)
+                            .send({embeds: [refus]})
+                            .then(message => joueur.send({
+                                embeds: [refus],
+                                components: [bouton(message)]
+                            }));
+
+                        const channel = client.channels.cache.get(process.env.SALON_AMBASSADE);
+                        channel.threads
+                            .create({
+                                name: `${Pays.nom} - ${Pays2.nom}`,
+                                autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+                                type: ChannelType.PrivateThread,
+                                reason: 'Nouvelle ambassade',
+                            })
+                            .then(thread => {thread.send(`${interaction.member} <@${Pays2.id_joueur}>`)})
+                            .catch(console.error);
+                    })
+
+                })
                 //endregion
             } else if (interaction.customId.includes('ambassade-non') === true) {
                 //region Ambassade non
@@ -2867,134 +3956,6 @@ module.exports = {
 
                 })
                 //endregion
-            } else if ((interaction.customId.includes('eau-') || interaction.customId.includes('eau+')) === true) {
-                //region Définir Approvisionnement Eau
-                quantite = interaction.customId.slice(3);
-                let sql = `UPDATE population SET eau_appro=eau_appro+${quantite} WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
-                connection.query(sql, async(err) => { if (err) { throw err; } });
-
-                sql = `
-                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
-                    `;
-                connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const Pays = results[0][0];
-                    const Population = results[1][0];
-                    let Eau;
-                    let Nourriture;
-
-                    const conso_eau = Math.round((Population.habitant * parseFloat(populationObject.EAU_CONSO)))
-                    if (Population.eau_appro / conso_eau > 1.1) {
-                        Eau = codeBlock('md', `> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                    } else if (Population.eau_appro / conso_eau >= 1) {
-                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                    } else {
-                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                    }
-
-                    const conso_nourriture = Math.round((Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)))
-                    if (Population.nourriture_appro / conso_nourriture > 1.1) {
-                        Nourriture = codeBlock('md', `> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                    } else if (Population.nourriture_appro / conso_nourriture >= 1) {
-                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                    } else {
-                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                    }
-
-                    const embed = {
-                        author: {
-                            name: `${Pays.rang} de ${Pays.nom}`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: Pays.drapeau
-                        },
-                        title: `\`Menu de l'approvisionnement\``,
-                        fields: [
-                            {
-                                name: `> 💧 Approvisionnement en eau :`,
-                                value: Eau + `\u200B`
-                            },
-                            {
-                                name: `> 🌽 Approvisionnement en nourriture :`,
-                                value: Nourriture + `\u200B`
-                            }
-                        ],
-                        color: interaction.member.displayColor,
-                        timestamp: new Date(),
-                        footer: {
-                            text: `${Pays.devise}`
-                        },
-                    };
-
-                    interaction.deferUpdate()
-                    interaction.message.edit({embeds: [embed]})
-                });
-                //endregion
-            } else if ((interaction.customId.includes('nourriture-') || interaction.customId.includes('nourriture+')) === true) {
-                //region Définir Approvisionnement Nourriture
-                quantite = interaction.customId.slice(10);
-                let sql = `UPDATE population SET nourriture_appro=nourriture_appro+${quantite} WHERE id_joueur='${interaction.member.id}' LIMIT 1`;
-                connection.query(sql, async(err) => { if (err) { throw err; } });
-
-                sql = `
-                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
-                `;
-                connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const Pays = results[0][0];
-                    const Population = results[1][0];
-                    let Eau;
-                    let Nourriture;
-
-                    const conso_eau = Math.round((Population.habitant * parseFloat(populationObject.EAU_CONSO)))
-                    if (Population.eau_appro / conso_eau > 1.1) {
-                        Eau = codeBlock('md', `> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                    } else if (Population.eau_appro / conso_eau >= 1) {
-                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                    } else {
-                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                    }
-
-                    const conso_nourriture = Math.round((Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)))
-                    if (Population.nourriture_appro / conso_nourriture > 1.1) {
-                        Nourriture = codeBlock('md', `> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                    } else if (Population.nourriture_appro / conso_nourriture >= 1) {
-                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                    } else {
-                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                    }
-
-                    const embed = {
-                        author: {
-                            name: `${Pays.rang} de ${Pays.nom}`,
-                            icon_url: interaction.member.displayAvatarURL()
-                        },
-                        thumbnail: {
-                            url: Pays.drapeau
-                        },
-                        title: `\`Menu de l'approvisionnement\``,
-                        fields: [
-                            {
-                                name: `> 💧 Approvisionnement en eau :`,
-                                value: Eau + `\u200B`
-                            },
-                            {
-                                name: `> 🌽 Approvisionnement en nourriture :`,
-                                value: Nourriture + `\u200B`
-                            }
-                        ],
-                        color: interaction.member.displayColor,
-                        timestamp: new Date(),
-                        footer: {
-                            text: `${Pays.devise}`
-                        },
-                    };
-
-                    interaction.deferUpdate()
-                    interaction.message.edit({embeds: [embed]})
-                });
-                //endregion
             } else if (interaction.customId.includes('drapeau_aleatoire') === true) {
                 //region Drapeau aléatoire
                 const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
@@ -3005,339 +3966,329 @@ module.exports = {
                         const reponse = codeBlock('diff', `- Vous ne jouez pas.`);
                         await interaction.reply({ content: reponse, ephemeral: true });
                     } else {
-                        interaction.deferReply()
-                        const userCooldowned = await genDrapeauCommandCooldown.getUser(interaction.member.id);
-                        if (userCooldowned) {
-                            const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-                            reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mIl reste ${timeLeft.seconds}sec avant de pouvoir générer un nouveau drapeau.`);
-                            await interaction.reply({ content: reponse, ephemeral: true });
-                        } else {
-                            await genDrapeauCommandCooldown.addUser(interaction.member.id);
-                            const canvas = createCanvas(600, 400)
-                            const ctx = canvas.getContext('2d')
+                        const canvas = createCanvas(600, 400)
+                        const ctx = canvas.getContext('2d')
 
-                            function print_flag() {
-                                const out = fs.createWriteStream('flags/output.png')
-                                const stream = canvas.createPNGStream()
+                        function print_flag() {
+                            const out = fs.createWriteStream('flags/output.png')
+                            const stream = canvas.createPNGStream()
 
-                                return new Promise((resolve, reject) => {
-                                    stream.on('data', (chunk) => {
-                                        out.write(chunk);
-                                    });
-
-                                    stream.on('end', () => {
-                                        out.end();
-                                        resolve();
-
-                                        const attachment = new AttachmentBuilder('flags/output.png', {name: 'drapeau.png'});
-                                        const salon_drapeau = interaction.client.channels.cache.get("942796854389784628");
-
-                                        function drapeau(lien_drapeau) {
-                                            const embed = {
-                                                author: {
-                                                    name: `${Pays.rang} de ${Pays.nom}`,
-                                                    icon_url: interaction.member.displayAvatarURL()
-                                                },
-                                                title: `\`Menu d'édition de drapeau\``,
-                                                description: `Voici une proposition de nouveau drapeau :`,
-                                                color: interaction.member.displayColor,
-                                                image: {
-                                                    url: 'attachment://drapeau.png',
-                                                },
-                                                timestamp: new Date(),
-                                                footer: {text: `${Pays.devise}`}
-                                            };
-
-                                            const row = new ActionRowBuilder()
-                                                .addComponents(
-                                                    new ButtonBuilder()
-                                                        .setLabel(`Générer un drapeau aléatoire`)
-                                                        .setEmoji(`🔀`)
-                                                        .setCustomId('drapeau_aleatoire')
-                                                        .setStyle(ButtonStyle.Primary),
-                                                )
-                                                .addComponents(
-                                                    new ButtonBuilder()
-                                                        .setLabel(`Choisir un drapeau custom`)
-                                                        .setEmoji(`⏭`)
-                                                        .setCustomId('drapeau_custom')
-                                                        .setStyle(ButtonStyle.Success),
-                                                )
-                                            interaction.editReply({
-                                                embeds: [embed],
-                                                components: [row],
-                                                files: [attachment]
-                                            });
-                                        }
-
-                                        salon_drapeau.send({files: [attachment]})
-                                            .then(message => drapeau(message.attachments.first().url))
-                                    });
-
-                                    stream.on('error', (error) => {
-                                        reject(error);
-                                    });
+                            return new Promise((resolve, reject) => {
+                                stream.on('data', (chunk) => {
+                                    out.write(chunk);
                                 });
-                            }
 
-                            const figures = chance.pickone([
-                                "fond",
-                                "bandes",
-                                "lignes",
-                                "anglais",
-                                "suisse",
-                            ])
+                                stream.on('end', () => {
+                                    out.end();
+                                    resolve();
 
-                            function couleurs(nombre) {
-                                return chance.pickset([
-                                    "#ffffff",
-                                    "#000000",
-                                    "#012269",
-                                    "#0018a8",
-                                    "#003593",
-                                    "#0153a5",
-                                    "#428fdf",
-                                    "#3a7dce",
-                                    "#74acdf",
-                                    "#0080ff",
-                                    "#00778b",
-                                    "#009e61",
-                                    "#41b226",
-                                    "#3f9c34",
-                                    "#007848",
-                                    "#006233",
-                                    "#fec400",
-                                    "#ffdd00",
-                                    "#d57800",
-                                    "#f67f00",
-                                    "#fe4e12",
-                                    "#eb2839",
-                                    "#fe0000",
-                                    "#c9072a",
-                                    "#8d1b3d",
-                                ], nombre)
-                            }
+                                    const attachment = new AttachmentBuilder('flags/output.png', {name: 'drapeau.png'});
 
-                            let logo;
-                            switch (figures) {
-                                case "fond":
-                                    ctx.fillStyle = couleurs(1)[0]
-                                    ctx.fillRect(0, 0, 600, 400)
+                                    interaction.channel.send({files: [attachment]});
+                                    interaction.deferUpdate()
+                                });
 
-                                    logo = chance.pickone([
-                                        'full_avec_logo',
-                                        'full_sans_logo',
-                                        'simple_logo'
-                                    ])
+                                stream.on('error', (error) => {
+                                    reject(error);
+                                });
+                            });
+                        }
 
-                                    switch (logo) {
-                                        case 'full_avec_logo':
-                                            loadImage('flags/full_avec_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_FULL_AVEC_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    loadImage('flags/simple_logo' + chance.integer({
-                                                        min: 1,
-                                                        max: process.env.NBR_SIMPLE_LOGO
-                                                    }) + '.png')
-                                                        .then((image) => {
-                                                            const position = chance.pickone(['full', 'haut_droite', 'haut_gauche', 'bas_droite', 'bas_gauche'])
-                                                            switch (position) {
-                                                                case 'full':
-                                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                                    break;
-                                                                case 'haut_droite':
-                                                                    ctx.drawImage(image, canvas.width / 2, 0, canvas.width / 2, canvas.height / 2);
-                                                                    break;
-                                                                case 'haut_gauche':
-                                                                    ctx.drawImage(image, 0, 0, canvas.width / 2, canvas.height / 2);
-                                                                    break;
-                                                                case 'bas_droite':
-                                                                    ctx.drawImage(image, canvas.width / 2, canvas.height / 2, canvas.width / 2, canvas.height / 2);
-                                                                    break;
-                                                                case 'bas_gauche':
-                                                                    ctx.drawImage(image, 0, canvas.height / 2, canvas.width / 2, canvas.height / 2);
-                                                                    break;
-                                                            }
-                                                            print_flag()
-                                                        })
-                                                })
-                                            break;
-                                        case 'full_sans_logo':
-                                            loadImage('flags/full_sans_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_FULL_SANS_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                        case 'simple_logo':
-                                            loadImage('flags/simple_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_SIMPLE_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                    }
-                                    break;
-                                case "bandes":
-                                    for (let i = 0; i < 3; i++) {
-                                        ctx.fillStyle = couleurs(3)[i]
-                                        ctx.fillRect(i * (canvas.width / 3), 0, canvas.width / 3, canvas.height);
-                                    }
-                                    logo = chance.pickone([
-                                        'rien',
-                                        'rien',
-                                        'full_avec_logo',
-                                        'full_sans_logo',
-                                        'simple_logo'
-                                    ])
+                        const figures = chance.pickone([
+                            "fond",
+                            "bandes",
+                            "lignes",
+                            "anglais",
+                            "suisse",
+                            "scandinave",
+                        ])
 
-                                    switch (logo) {
-                                        case 'rien':
-                                            print_flag()
-                                            break;
-                                        case 'full_avec_logo':
-                                            loadImage('flags/full_avec_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_FULL_AVEC_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                        case 'full_sans_logo':
-                                            loadImage('flags/full_sans_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_FULL_SANS_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                        case 'simple_logo':
-                                            loadImage('flags/simple_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_SIMPLE_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                    }
-                                    break;
-                                case "lignes":
-                                    for (let i = 0; i < 3; i++) {
-                                        ctx.fillStyle = couleurs(3)[i]
-                                        ctx.fillRect(0, i * (canvas.height / 3), canvas.width, canvas.height / 3);
-                                    }
+                        function couleurs(nombre) {
+                            return chance.pickset([
+                                "#ffffff",
+                                "#000000",
+                                "#012269",
+                                "#0018a8",
+                                "#003593",
+                                "#0153a5",
+                                "#428fdf",
+                                "#3a7dce",
+                                "#74acdf",
+                                "#0080ff",
+                                "#00778b",
+                                "#009e61",
+                                "#41b226",
+                                "#3f9c34",
+                                "#007848",
+                                "#006233",
+                                "#fec400",
+                                "#ffdd00",
+                                "#d57800",
+                                "#f67f00",
+                                "#fe4e12",
+                                "#eb2839",
+                                "#fe0000",
+                                "#c9072a",
+                                "#8d1b3d",
+                            ], nombre)
+                        }
 
-                                    logo = chance.pickone([
-                                        'rien',
-                                        'rien',
-                                        'full_avec_logo',
-                                        'full_sans_logo',
-                                        'simple_logo'
-                                    ])
+                        let logo;
+                        const width = 600;   // Largeur du canevas
+                        const height = 400;
+                        const couleur = couleurs(1)[0];
+                        let crossThickness = 72; // Épaisseur de la croix
+                        switch (figures) {
+                            case "fond":
+                                ctx.fillStyle = couleurs(1)[0]
+                                ctx.fillRect(0, 0, 600, 400)
 
-                                    switch (logo) {
-                                        case 'rien':
-                                            print_flag()
-                                            break;
-                                        case 'full_avec_logo':
-                                            loadImage('flags/full_avec_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_FULL_AVEC_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                        case 'full_sans_logo':
-                                            loadImage('flags/full_sans_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_FULL_SANS_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                        case 'simple_logo':
-                                            loadImage('flags/simple_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_SIMPLE_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                    }
-                                    break;
-                                case "anglais":
-                                    const width = 600;   // Largeur du canevas
-                                    const height = 400;
-                                    const couleur = couleurs(1)[0]
-                                    ctx.fillStyle = couleurs(1)[0];
-                                    ctx.fillRect(0, 0, 600, 400);
+                                logo = chance.pickone([
+                                    'full_avec_logo',
+                                    'full_sans_logo',
+                                    'simple_logo'
+                                ])
 
-                                    const crossThickness = 72;  // Épaisseur de la croix en pixels
+                                switch (logo) {
+                                    case 'full_avec_logo':
+                                        loadImage('flags/full_avec_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_FULL_AVEC_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                loadImage('flags/simple_logo' + chance.integer({
+                                                    min: 1,
+                                                    max: process.env.NBR_SIMPLE_LOGO
+                                                }) + '.png')
+                                                    .then((image) => {
+                                                        const position = chance.pickone(['full', 'haut_droite', 'haut_gauche', 'bas_droite', 'bas_gauche'])
+                                                        switch (position) {
+                                                            case 'full':
+                                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                                break;
+                                                            case 'haut_droite':
+                                                                ctx.drawImage(image, canvas.width / 2, 0, canvas.width / 2, canvas.height / 2);
+                                                                break;
+                                                            case 'haut_gauche':
+                                                                ctx.drawImage(image, 0, 0, canvas.width / 2, canvas.height / 2);
+                                                                break;
+                                                            case 'bas_droite':
+                                                                ctx.drawImage(image, canvas.width / 2, canvas.height / 2, canvas.width / 2, canvas.height / 2);
+                                                                break;
+                                                            case 'bas_gauche':
+                                                                ctx.drawImage(image, 0, canvas.height / 2, canvas.width / 2, canvas.height / 2);
+                                                                break;
+                                                        }
+                                                        print_flag()
+                                                    })
+                                            })
+                                        break;
+                                    case 'full_sans_logo':
+                                        loadImage('flags/full_sans_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_FULL_SANS_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                    case 'simple_logo':
+                                        loadImage('flags/simple_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_SIMPLE_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                }
+                                break;
+                            case "bandes":
+                                for (let i = 0; i < 3; i++) {
+                                    ctx.fillStyle = couleurs(3)[i]
+                                    ctx.fillRect(i * (canvas.width / 3), 0, canvas.width / 3, canvas.height);
+                                }
+                                logo = chance.pickone([
+                                    'rien',
+                                    'rien',
+                                    'full_avec_logo',
+                                    'full_sans_logo',
+                                    'simple_logo'
+                                ])
 
-// Dessin de la croix horizontale
-                                    ctx.fillStyle = couleur;
-                                    ctx.fillRect(0, (height - crossThickness) / 2, width, crossThickness);
+                                switch (logo) {
+                                    case 'rien':
+                                        print_flag()
+                                        break;
+                                    case 'full_avec_logo':
+                                        loadImage('flags/full_avec_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_FULL_AVEC_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                    case 'full_sans_logo':
+                                        loadImage('flags/full_sans_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_FULL_SANS_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                    case 'simple_logo':
+                                        loadImage('flags/simple_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_SIMPLE_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                }
+                                break;
+                            case "lignes":
+                                for (let i = 0; i < 3; i++) {
+                                    ctx.fillStyle = couleurs(3)[i]
+                                    ctx.fillRect(0, i * (canvas.height / 3), canvas.width, canvas.height / 3);
+                                }
 
-// Dessin de la croix verticale
-                                    ctx.fillRect((width - crossThickness) / 2, 0, crossThickness, height);
+                                logo = chance.pickone([
+                                    'rien',
+                                    'rien',
+                                    'full_avec_logo',
+                                    'full_sans_logo',
+                                    'simple_logo'
+                                ])
+
+                                switch (logo) {
+                                    case 'rien':
+                                        print_flag()
+                                        break;
+                                    case 'full_avec_logo':
+                                        loadImage('flags/full_avec_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_FULL_AVEC_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                    case 'full_sans_logo':
+                                        loadImage('flags/full_sans_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_FULL_SANS_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                    case 'simple_logo':
+                                        loadImage('flags/simple_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_SIMPLE_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                }
+                                break;
+                            case "anglais":
+                                ctx.fillStyle = couleurs(1)[0];
+                                ctx.fillRect(0, 0, 600, 400);
+
+                                crossThickness = 72;  // Épaisseur de la croix en pixels
+
+                                // Dessin de la croix horizontale
+                                ctx.fillStyle = couleur;
+                                ctx.fillRect(0, (height - crossThickness) / 2, width, crossThickness);
+
+                                // Dessin de la croix verticale
+                                ctx.fillRect((width - crossThickness) / 2, 0, crossThickness, height);
 
 
-                                    logo = chance.pickone([
-                                        'rien',
-                                        'rien',
-                                        'simple_logo'
-                                    ])
+                                logo = chance.pickone([
+                                    'rien',
+                                    'rien',
+                                    'simple_logo'
+                                ])
 
-                                    switch (logo) {
-                                        case 'rien':
-                                            print_flag()
-                                            break;
-                                        case 'simple_logo':
-                                            loadImage('flags/simple_logo' + chance.integer({
-                                                min: 1,
-                                                max: process.env.NBR_SIMPLE_LOGO
-                                            }) + '.png')
-                                                .then((image) => {
-                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                                    print_flag()
-                                                })
-                                            break;
-                                    }
-                                    break;
-                                case "suisse":
-                                    ctx.fillStyle = couleurs(1)[0]
-                                    ctx.fillRect(0, 0, 600, 400);
+                                switch (logo) {
+                                    case 'rien':
+                                        print_flag()
+                                        break;
+                                    case 'simple_logo':
+                                        loadImage('flags/simple_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_SIMPLE_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                }
+                                break;
+                            case "suisse":
+                                ctx.fillStyle = couleurs(1)[0]
+                                ctx.fillRect(0, 0, 600, 400);
 
-                                    // Dessin des bras verticaux de la croix
-                                    ctx.fillStyle = couleurs(1)[0]
-                                    ctx.fillRect((600 - 40) / 2, (400 - 240) / 2, 40, 240);
+                                // Dessin des bras verticaux de la croix
+                                ctx.fillStyle = couleurs(1)[0]
+                                ctx.fillRect((600 - 40) / 2, (400 - 240) / 2, 40, 240);
 
-                                    // Dessin des bras horizontaux de la croix
-                                    ctx.fillRect((600 - 240) / 2, (400 - 40) / 2, 240, 40);
+                                // Dessin des bras horizontaux de la croix
+                                ctx.fillRect((600 - 240) / 2, (400 - 40) / 2, 240, 40);
 
-                                    print_flag()
-                            }
+                                print_flag()
+                                break;
+                            case "scandinave":
+                                ctx.fillStyle = couleurs(1)[0];
+                                ctx.fillRect(0, 0, 600, 400);
+
+                                crossThickness = 75;  // Épaisseur de la croix en pixels
+
+                                // Dessin de la croix horizontale
+                                ctx.fillStyle = couleur;
+                                ctx.fillRect(0, (height - crossThickness) / 2, width, crossThickness);
+
+                                // Dessin de la croix verticale
+                                ctx.fillRect(187.5, 0, crossThickness, height);
+
+                                logo = chance.pickone([
+                                    'rien',
+                                    'rien',
+                                    'simple_logo'
+                                ])
+
+                                switch (logo) {
+                                    case 'rien':
+                                        print_flag()
+                                        break;
+                                    case 'simple_logo':
+                                        loadImage('flags/simple_logo' + chance.integer({
+                                            min: 1,
+                                            max: process.env.NBR_SIMPLE_LOGO
+                                        }) + '.png')
+                                            .then((image) => {
+                                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                print_flag()
+                                            })
+                                        break;
+                                }
+                                break;
                         }
                     }
                 });
@@ -3442,16 +4393,13 @@ module.exports = {
                 //region Explorateur
                 id_joueur = interaction.customId.slice(12);
                 if (id_joueur === interaction.member.id) {
-                    const sql = `
+                    let sql = `
                         SELECT * FROM diplomatie WHERE id_joueur='${id_joueur}';
                         SELECT * FROM pays WHERE id_joueur='${id_joueur}';
                         SELECT * FROM population WHERE id_joueur='${id_joueur}';
                         SELECT * FROM territoire WHERE id_joueur='${id_joueur}'
                     `;
-                    connection.query(sql, async (err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    connection.query(sql, async (err, results) => {if (err) {throw err;}
                         const Diplomatie = results[0][0];
                         const Pays = results[1][0];
                         const Population = results[2][0];
@@ -3492,83 +4440,24 @@ module.exports = {
                             };
                             await interaction.reply({embeds: [embedSuccess]});
                             await explorateurCooldown.addUser(interaction.member.id);
-                            await wait(ms(`${eval(`biomeObject.${Territoire.region}.cooldown`)}min`))
 
-                            const arrayBiome = Object.keys(eval(`biomeObject.${Territoire.region}.biome`));
-                            const arrayChance = Object.values(eval(`biomeObject.${Territoire.region}.biome`)).map(item => item.chance);
-                            const biomeChoisi = chance.weighted(arrayBiome, arrayChance)
-                            const tailleChoisi = chance.integer({
-                                min: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.min`)),
-                                max: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.max`))
-                            })
-                            const enfant = chance.integer({min: 100, max: 200});
-                            const jeune = chance.integer({min: 500, max: 1500});
-                            const adulte = chance.integer({min: 1000, max: 2000});
-                            const vieux = chance.integer({min: 200, max: 500});
-
-                            const embedRevenu = {
-                                author: {
-                                    name: `${Pays.rang} de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: Pays.drapeau
-                                },
-                                title: `\`L'explorateur est revenu de mission\``,
-                                fields: [
-                                    {
-                                        name: `> 🌄 Territoire :`,
-                                        value: codeBlock(
-                                            `• Il a trouvé ${eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.nom`)} de ${tailleChoisi} km²`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 👪 Population :`,
-                                        value: codeBlock(
-                                            `• ${enfant.toLocaleString('en-US')} enfants\n` +
-                                            `• ${jeune.toLocaleString('en-US')} jeunes\n` +
-                                            `• ${adulte.toLocaleString('en-US')} adultes\n` +
-                                            `• ${vieux.toLocaleString('en-US')} personnes agées`) + `\u200B`
-                                    },
-                                ],
-                                color: interaction.member.displayColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${Pays.devise}`
-                                },
-                            };
-
-                            const row1 = new ActionRowBuilder()
-                                .addComponents(
-                                    new ButtonBuilder()
-                                        .setLabel(`Intégrer`)
-                                        .setEmoji(`✔`)
-                                        .setCustomId('integrer-' + interaction.member.id)
-                                        .setStyle(ButtonStyle.Success),
-                                )
-                                .addComponents(
-                                    new ButtonBuilder()
-                                        .setLabel(`Refuser`)
-                                        .setEmoji(`✖`)
-                                        .setCustomId('refuser-' + interaction.member.id)
-                                        .setStyle(ButtonStyle.Danger),
-                                )
-
-                            function bouton(message) {
-                                return new ActionRowBuilder()
-                                    .addComponents(
-                                        new ButtonBuilder()
-                                            .setLabel(`Lien vers le message`)
-                                            .setEmoji(`🗺️`)
-                                            .setURL(message.url)
-                                            .setStyle(ButtonStyle.Link),
-                                    )
-                            }
-
-                            client.channels.cache.get(Pays.id_salon).send({embeds: [embedRevenu], components: [row1]})
-                                .then(message => interaction.user.send({
-                                    embeds: [embedRevenu],
-                                    components: [bouton(message)]
-                                }))
+                            const maintenant = new Date();
+                            const tempsActuel = maintenant.getTime();
+                            const tempsCooldwon = new Date(tempsActuel + ms(`${eval(`biomeObject.${Territoire.region}.cooldown`)}min`))
+                            const annee = tempsCooldwon.getFullYear();
+                            const mois = String(tempsCooldwon.getMonth() + 1).padStart(2, '0'); // Les mois sont indexés à partir de 0 (0 = janvier)
+                            const jour = String(tempsCooldwon.getDate()).padStart(2, '0');
+                            const heure = String(tempsCooldwon.getHours()).padStart(2, '0');
+                            const minute = String(tempsCooldwon.getMinutes()).padStart(2, '0');
+                            const seconde = String(tempsCooldwon.getSeconds()).padStart(2, '0');
+                            const dateFormatee = `${annee}-${mois}-${jour} ${heure}:${minute}:${seconde}`;
+                            sql = `
+                                    INSERT INTO processus 
+                                    SET id_joueur="${interaction.user.id}",
+                                        date="${dateFormatee}",
+                                        type='exploration'
+                                `;
+                            connection.query(sql, async (err) => {if (err) {throw err;}})
                         }
                     })
                 } else {
@@ -3593,35 +4482,32 @@ module.exports = {
                     }
                     const biome = description.value.slice(spaceIndices[5] + 1, de - 1);
 
-                    const regex = /(\d+(?:,\d+)?)\s+(\w+)/g;
-                    let match;
-                    const tranchesAge = {};
-                    while ((match = regex.exec(interaction.message.embeds[0].fields[1].value)) !== null) {
-                        const nombre = parseFloat(match[1].replace(',', ''));
-                        const tranche = match[2].toLowerCase();
-                        tranchesAge[tranche] = nombre;
-                    }
+                    //const regex = /(\d+(?:,\d+)?)\s+(\w+)/g;
+                    //let match;
+                    //const tranchesAge = {};
+                    //while ((match = regex.exec(interaction.message.embeds[0].fields[1].value)) !== null) {
+                    //    const nombre = parseFloat(match[1].replace(',', ''));
+                    //    const tranche = match[2].toLowerCase();
+                    //    tranchesAge[tranche] = nombre;
+                    //}
 
                     let sql = `UPDATE territoire
                                SET T_total=T_total + ${taille},
                                    T_controle=T_controle + ${taille},
                                    ${biome.toLowerCase()}=${biome.toLowerCase()} + ${taille}
-                               WHERE id_joueur = '${interaction.member.id}';
-                               UPDATE population SET habitant=habitant+${tranchesAge.enfants + tranchesAge.jeunes + tranchesAge.adultes + tranchesAge.personnes},
-                                                     enfant=enfant+${tranchesAge.enfants},
-                                                     jeune=jeune+${tranchesAge.jeunes},
-                                                     adulte=adulte+${tranchesAge.adultes},
-                                                     vieux=vieux+${tranchesAge.personnes} WHERE id_joueur='${interaction.member.id}'`;
+                               WHERE id_joueur = '${interaction.member.id}'`;
+                               //UPDATE population SET habitant=habitant+${tranchesAge.enfants + tranchesAge.jeunes + tranchesAge.adultes + tranchesAge.personnes},
+                               //                      enfant=enfant+${tranchesAge.enfants},
+                               //                      jeune=jeune+${tranchesAge.jeunes},
+                               //                      adulte=adulte+${tranchesAge.adultes},
+                               //                      vieux=vieux+${tranchesAge.personnes} WHERE id_joueur='${interaction.member.id}';
                     connection.query(sql, async (err) => {if (err) {throw err;}});
 
                     sql = `
                         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                         SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
                     `;
-                    connection.query(sql, async (err, results) => {
-                        if (err) {
-                            throw err;
-                        }
+                    connection.query(sql, async (err, results) => {if (err) {throw err;}
                         const Pays = results[0][0];
                         const Territoire = results[1][0];
 
@@ -3637,11 +4523,20 @@ module.exports = {
                         const embed = EmbedBuilder.from(receivedEmbed).setFields([{
                             name: `‎`,
                             value: codeBlock(
-                                `• Vous avez intégré${description.value.slice(spaceIndices[3], de - 1)} de ${taille} km² à votre territoire contôlé ainsi que de nouveaux habitants.\n` +
+                                `• Vous avez intégré${description.value.slice(spaceIndices[3], de - 1)} de ${taille} km² à votre territoire contôlé.\n` +
                                 `• Celui-ci deviendra national dans ${convertMillisecondsToTime(ms(`2d`) * eval(`gouvernementObject.${Pays.ideologie}.assimilation`))}.`) + `\u200B`
                         }]);
 
-                        interaction.message.edit({embeds: [embed], components: []});
+                        const row2 = new ActionRowBuilder()
+                            .addComponents(
+                                new ButtonBuilder()
+                                    .setLabel(`Renvoyer un explorateur`)
+                                    .setEmoji(`🧭`)
+                                    .setCustomId('explorateur-' + interaction.member.id)
+                                    .setStyle(ButtonStyle.Success)
+                            );
+
+                        interaction.message.edit({embeds: [embed], components: [row2]});
                         interaction.deferUpdate()
 
                         if (Math.floor(Territoire.T_total / 15000) !== Territoire.hexagone) {
@@ -3668,7 +4563,7 @@ module.exports = {
                                 footer: {
                                     text: `${Pays.devise}`
                                 },
-                                color: interaction.member.displayColor
+                                color: 0x57F287
                             };
                             client.channels.cache.get(process.env.SALON_CARTE).send({embeds: [annonce]})
 
@@ -3683,14 +4578,24 @@ module.exports = {
                             interaction.message.edit({ components: [row]});
                         }
 
-                        await wait(ms(`2d`) * eval(`gouvernementObject.${Pays.ideologie}.assimilation`))
-
-                        sql = `UPDATE territoire
-                               SET T_national=T_national + ${taille},
-                                   T_libre=T_libre + ${taille},
-                                   T_controle=T_controle - ${taille}
-                               WHERE id_joueur = '${interaction.member.id}'`;
-                        connection.query(sql, async (err) => {if (err) {throw err;}});
+                        const maintenant = new Date();
+                        const tempsActuel = maintenant.getTime();
+                        const tempsCooldwon = new Date(tempsActuel + ms(`2d`) * eval(`gouvernementObject.${Pays.ideologie}.assimilation`))
+                        const annee = tempsCooldwon.getFullYear();
+                        const mois = String(tempsCooldwon.getMonth() + 1).padStart(2, '0'); // Les mois sont indexés à partir de 0 (0 = janvier)
+                        const jour = String(tempsCooldwon.getDate()).padStart(2, '0');
+                        const heure = String(tempsCooldwon.getHours()).padStart(2, '0');
+                        const minute = String(tempsCooldwon.getMinutes()).padStart(2, '0');
+                        const seconde = String(tempsCooldwon.getSeconds()).padStart(2, '0');
+                        const dateFormatee = `${annee}-${mois}-${jour} ${heure}:${minute}:${seconde}`;
+                        sql = `
+                                    INSERT INTO processus 
+                                    SET id_joueur="${interaction.user.id}",
+                                        date="${dateFormatee}",
+                                        type='integration',
+                                        option2='${taille}'
+                                `;
+                        connection.query(sql, async (err) => {if (err) {throw err;}})
                     })
                 } else {
                     reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'êtes pas l'auteur de cette commande`);
@@ -3700,6 +4605,7 @@ module.exports = {
             }  else if (interaction.customId.includes('matiere_premiere') === true) {
                 //region Matières premières
                 const sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
                     SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
                     SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                     SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
@@ -3707,11 +4613,81 @@ module.exports = {
                     SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
                 `;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const Batiment = results[0][0];
-                    const Pays = results[1][0];
-                    const Population = results[2][0];
-                    const Ressources = results[3][0];
-                    const Territoire = results[4][0];
+                    const Armee = results[0][0];
+                    const Batiment = results[1][0];
+                    const Pays = results[2][0];
+                    const Population = results[3][0];
+                    const Ressources = results[4][0];
+                    const Territoire = results[5][0];
+
+                    const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
+
+                    //region Production d'électricité
+                    //region Production d'électricté des centrales biomasse
+                    const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
+                    let prod_centrale_biomasse = true;
+                    if (conso_T_centrale_biomasse_bois > Ressources.bois && conso_T_centrale_biomasse_bois !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse
+                    if (conso_T_centrale_biomasse_eau > Ressources.eau && conso_T_centrale_biomasse_eau !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    //endregion
+                    //region Production d'électricté des centrales au charbon
+                    const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
+                    let prod_centrale_charbon = true;
+                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_charbon !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
+                    if (conso_T_centrale_charbon_eau > Ressources.eau && conso_T_centrale_charbon_eau !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des centrales au fioul
+                    const conso_T_centrale_fioul_carburant = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_CARBURANT * Batiment.centrale_fioul
+                    let prod_centrale_fioul = true;
+                    if (conso_T_centrale_fioul_carburant > Ressources.carburant && conso_T_centrale_fioul_carburant !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
+                    if (conso_T_centrale_fioul_eau > Ressources.eau && conso_T_centrale_fioul_eau !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des éoliennes
+                    let prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
+
+                    let prod_elec = prod_eolienne;
+                    if (prod_centrale_biomasse === true) {
+                        prod_elec += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
+                    }
+                    if (prod_centrale_charbon === true) {
+                        prod_elec += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
+                    }
+                    if (prod_centrale_fioul === true) {
+                        prod_elec += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
+                    }
+                    //endregion
+                    //region Consommation totale d'électricté
+                    const conso_elec = Math.round(
+                        batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
+                        batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
+                        batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
+                        batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
+                        batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
+                        batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
+                        batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
+                        batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
+                        batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
+                        batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
+                        batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
+                        batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
+                        batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
+                    );
+                    //endregion
+                    //endregion
 
                     //region Calcul du taux d'emploies
                     const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
@@ -3736,85 +4712,126 @@ module.exports = {
                         emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                         emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                         emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                    let emplois = Population.habitant/emploies_total
-                    if (Population.habitant/emploies_total > 1) {
+                    const hommeArmee =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                        (Armee.aviation * armeeObject.aviation.homme) +
+                        (Armee.infanterie * armeeObject.infanterie.homme) +
+                        (Armee.mecanise * armeeObject.mecanise.homme) +
+                        (Armee.support * armeeObject.support.homme);
+
+                    let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                    if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                         emplois = 1
                     }
                     //endregion
 
-                    let Prod;
-                    let Conso;
-                    let Diff;
-
                     //region Calcul des coefficients de production des ressources
-                    let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses + Territoire.mangrove + Territoire.jungle);
-                    if (T_bois === 0) {
-                        T_bois = 1;
-                    }
-                    let T_eau = (Territoire.foret + Territoire.prairie + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.mangrove + Territoire.steppe + Territoire.jungle + Territoire.lac);
-                    if (T_eau === 0) {
-                        T_eau = 1;
-                    }
-                    let T_nourriture = (Territoire.prairie + Territoire.desert + Territoire.savane + Territoire.steppe + Territoire.jungle)
-                    if (T_nourriture === 0) {
-                        T_nourriture = 1;
-                    }
-                    const coef_bois = parseFloat(((Territoire.foret/T_bois) * ressourceObject.bois.foret + (Territoire.taiga/T_bois) * ressourceObject.bois.taiga + (Territoire.rocheuses/T_bois) * ressourceObject.bois.rocheuses + (Territoire.mangrove/T_bois) * ressourceObject.bois.mangrove + (Territoire.jungle/T_bois) * ressourceObject.bois.jungle).toFixed(2))
+                    const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
                     const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
-                    const coef_eau = parseFloat(((Territoire.foret/T_eau) * ressourceObject.eau.foret + (Territoire.prairie/T_eau) * ressourceObject.eau.prairie + (Territoire.toundra/T_eau) * ressourceObject.eau.toundra + (Territoire.taiga/T_eau) * ressourceObject.eau.taiga + (Territoire.savane/T_eau) * ressourceObject.eau.savane + (Territoire.rocheuses/T_eau) * ressourceObject.eau.rocheuses + (Territoire.mangrove/T_eau) * ressourceObject.eau.mangrove + (Territoire.steppe/T_eau) * ressourceObject.eau.steppe  + (Territoire.jungle/T_eau) * ressourceObject.eau.jungle  + (Territoire.lac/T_eau) * ressourceObject.eau.lac).toFixed(2))
+                    const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
                     const coef_metaux = eval(`regionObject.${Territoire.region}.metaux`)
-                    const coef_nourriture = parseFloat(((Territoire.prairie/T_nourriture) * ressourceObject.nourriture.prairie + (Territoire.savane/T_nourriture) * ressourceObject.nourriture.savane + (Territoire.mangrove/T_nourriture) * ressourceObject.nourriture.mangrove + (Territoire.steppe/T_nourriture) * ressourceObject.nourriture.steppe + (Territoire.jungle/T_nourriture) * ressourceObject.nourriture.jungle).toFixed(2))
+                    const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
                     const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
                     const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
                     //endregion
+                    function convertMillisecondsToTime(milliseconds) {
+                        const seconds = Math.floor(milliseconds / 1000);
+                        const hours = Math.floor(seconds / 3600);
+                        return `${hours}h`;
+                    }
 
+                    let Prod;
+                    let Conso;
+                    let Diff;
+                    let boisName;
+                    const conso_T_scierie_carburant = Math.round(batimentObject.scierie.CONSO_SCIERIE_CARBURANT * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_scierie_carburant > Ressources.carburant) {
+                        boisName = `> ⚠️ Bois : ⛏️ x${coef_bois} ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        boisName = `> 🪫 Bois : ⛏️ x${coef_bois} 🪫`;
+                    } else if (emplois < 0.5) {
+                        boisName = `> 🚷 Bois : ⛏️ x${coef_bois} 🚷`;
+                    } else {
+                        boisName = `> 🪵 Bois : ⛏️ x${coef_bois}`;
+                    }
                     let Bois;
                     Prod = Math.round(batimentObject.scierie.PROD_SCIERIE * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_bois * emplois);
-                    const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
                     const conso_T_usine_civile_bois = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_BOIS * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                     Conso = conso_T_usine_civile_bois + conso_T_centrale_biomasse_bois;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Bois = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                        Bois = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bois.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                        Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                        Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.bois / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let charbonName;
+                    const conso_T_mine_charbon_carburant = Math.round(batimentObject.mine_charbon.CONSO_MINE_CHARBON_CARBURANT * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_mine_charbon_carburant > Ressources.carburant) {
+                        charbonName = `> ⚠️ Charbon : ⛏️ x${coef_charbon} ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        charbonName = `> 🪫 Charbon : ⛏️ x${coef_charbon} 🪫`;
+                    } else if (emplois < 0.5) {
+                        charbonName = `> 🚷 Charbon : ⛏️ x${coef_charbon} 🚷`;
+                    } else {
+                        charbonName = `> <:charbon:1075776385517375638> Charbon : ⛏️ x${coef_charbon}`;
+                    }
                     let Charbon;
                     Prod = Math.round(batimentObject.mine_charbon.PROD_MINE_CHARBON * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_charbon * emplois);
                     const conso_T_acierie_charbon = Math.round(batimentObject.acierie.CONSO_ACIERIE_CHARBON * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
-                    const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon;
                     Conso = conso_T_acierie_charbon + conso_T_centrale_charbon_charbon;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Charbon = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                        Charbon = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.charbon.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                        Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                        Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.charbon / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let eauName;
+                    const conso_T_station_pompage_carburant = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_CARBURANT * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_station_pompage_carburant > Ressources.carburant) {
+                        eauName = `> ⚠️ Eau : ⛏️ x${coef_eau} ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        eauName = `> 🪫 Eau : ⛏️ x${coef_eau} 🪫`;
+                    } else if (emplois < 0.5) {
+                        eauName = `> 🚷 Eau : ⛏️ x${coef_eau} 🚷`;
+                    } else {
+                        eauName = `> 💧 Eau : ⛏️ x${coef_eau}`;
+                    }
                     let Eau;
                     Prod = Math.round(batimentObject.station_pompage.PROD_STATION_POMPAGE * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_eau * emplois);
                     const conso_T_atelier_verre_eau = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_EAU * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                     const conso_T_champ_eau = Math.round(batimentObject.champ.CONSO_CHAMP_EAU * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                     const conso_T_cimenterie_eau = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_EAU * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
-                    const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse;
-                    const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon;
-                    const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul;
-                    const conso_pop = Math.round((Population.habitant * populationObject.EAU_CONSO) / 48 * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
+                    const conso_pop = Math.round((Population.habitant * populationObject.EAU_CONSO) / 48);
                     Conso = conso_T_atelier_verre_eau + conso_T_champ_eau + conso_T_cimenterie_eau + conso_T_centrale_biomasse_eau + conso_T_centrale_charbon_eau + conso_T_centrale_fioul_eau + conso_pop;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Eau = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                        Eau = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                        Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.eau / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let metauxName;
+                    const conso_T_mine_metaux_carburant = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_CARBURANT * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_mine_metaux_carburant > Ressources.carburant) {
+                        metauxName = `> ⚠️ Metaux : ⛏️ x${coef_metaux} ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        metauxName = `> 🪫 Metaux : ⛏️ x${coef_metaux} 🪫`;
+                    } else if (emplois < 0.5) {
+                        metauxName = `> 🚷 Metaux : ⛏️ x${coef_metaux} 🚷`;
+                    } else {
+                        metauxName = `> 🪨 Metaux : ⛏️ x${coef_metaux}`;
+                    }
                     let Metaux;
                     Prod = Math.round(batimentObject.mine_metaux.PROD_MINE_METAUX * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_metaux * emplois);
                     const conso_T_acierie_metaux = Math.round(batimentObject.acierie.CONSO_ACIERIE_METAUX * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -3823,25 +4840,48 @@ module.exports = {
                     Conso = conso_T_acierie_metaux + conso_T_derrick_metaux + conso_T_usine_civile_metaux;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Metaux = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                        Metaux = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.metaux.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                        Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                        Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.metaux / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let nourritureName;
+                    const conso_T_champ_carburant = Math.round(batimentObject.champ.CONSO_CHAMP_CARBURANT * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_champ_carburant > Ressources.carburant) {
+                        nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                    } else if (conso_T_champ_eau > Ressources.eau) {
+                        nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        nourritureName = `> 🪫 Nourriture : ⛏️ x${coef_nourriture} 🪫`;
+                    } else if (emplois < 0.5) {
+                        nourritureName = `> 🚷 Nourriture : ⛏️ x${coef_nourriture} 🚷`;
+                    } else {
+                        nourritureName = `> 🌽 Nourriture : ⛏️ x${coef_nourriture}`;
+                    }
                     let Nourriture;
                     Prod = Math.round(batimentObject.champ.PROD_CHAMP * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture * emplois);
-                    Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO) / 48 * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
+                    Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO) / 48);
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Nourriture = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                        Nourriture = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                        Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.nourriture / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let petroleName;
+                    if (conso_T_derrick_metaux > Ressources.metaux) {
+                        petroleName = `> ⚠️ Pétrole : ⛏️ x${coef_petrole} ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        petroleName = `> 🪫 Pétrole : ⛏️ x${coef_petrole} 🪫`;
+                    } else if (emplois < 0.5) {
+                        petroleName = `> 🚷 Pétrole : ⛏️ x${coef_petrole} 🚷`;
+                    } else {
+                        petroleName = `> 🛢️ Pétrole : ⛏️ x${coef_petrole}`;
+                    }
                     let Petrole;
                     Prod = Math.round(batimentObject.derrick.PROD_DERRICK * Batiment.derrick * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_petrole * emplois);
                     const conso_T_cimenterie_petrole = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_PETROLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -3850,13 +4890,24 @@ module.exports = {
                     Conso = conso_T_cimenterie_petrole + conso_T_raffinerie_petrole + conso_T_usine_civile_petrole;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Petrole = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                        Petrole = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.petrole.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                        Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                        Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.petrole / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let sableName;
+                    const conso_T_carriere_sable_carburant = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_CARBURANT * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_carriere_sable_carburant > Ressources.carburant) {
+                        sableName = `> ⚠️ Sable : ⛏️ x${coef_sable} ⚠️️`;
+                    } else if (prod_elec < conso_elec) {
+                        sableName = `> 🪫 Sable : ⛏️ x${coef_sable} 🪫`;
+                    } else if (emplois < 0.5) {
+                        sableName = `> 🚷 Sable : ⛏️ x${coef_sable} 🚷`;
+                    } else {
+                        sableName = `> <:sable:1075776363782479873> Sable : ⛏️ x${coef_sable}`;
+                    }
                     let Sable;
                     Prod = Math.round(batimentObject.carriere_sable.PROD_CARRIERE_SABLE * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_sable * emplois);
                     const conso_T_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -3864,11 +4915,11 @@ module.exports = {
                     Conso = conso_T_atelier_verre_sable + conso_T_cimenterie_sable;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Sable = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                        Sable = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.sable.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                        Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                        Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.sable / Diff) * 10 * 60 * 1000)}`);
                     }
 
                     const embed = {
@@ -3882,31 +4933,31 @@ module.exports = {
                         title: `\`Consommation en : Matières premières\``,
                         fields: [
                             {
-                                name: `> 🪵 Bois : ⚙ x${coef_bois}`,
+                                name: boisName,
                                 value: Bois,
                             },
                             {
-                                name: `> <:charbon:1075776385517375638> Charbon : ⚙ x${coef_charbon}`,
+                                name: charbonName,
                                 value: Charbon,
                             },
                             {
-                                name: `> 💧 Eau : ⚙ x${coef_eau}`,
+                                name: eauName,
                                 value: Eau,
                             },
                             {
-                                name: `> 🪨 Metaux : ⚙ x${coef_metaux}`,
+                                name: metauxName,
                                 value: Metaux,
                             },
                             {
-                                name: `> 🌽 Nourriture : ⚙ x${coef_nourriture}`,
+                                name: nourritureName,
                                 value: Nourriture,
                             },
                             {
-                                name: `> 🛢️ Pétrole : ⚙ x${coef_petrole}`,
+                                name: petroleName,
                                 value: Petrole,
                             },
                             {
-                                name: `> <:sable:1075776363782479873> Sable : ⚙ x${coef_sable}`,
+                                name: sableName,
                                 value: Sable,
                             },
                         ],
@@ -3915,25 +4966,126 @@ module.exports = {
                         footer: { text: Pays.devise }
                     };
 
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Matières premières`)
+                                .setCustomId('matiere_premiere')
+                                .setEmoji('<:charbon:1075776385517375638>')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        ).addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Ressources manufacturés`)
+                                .setCustomId('ressource_manufacture')
+                                .setEmoji('<:acier:1075776411329122304>')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Produits manufacturés`)
+                                .setCustomId('produit_manufacture')
+                                .setEmoji('💻')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Autre`)
+                                .setCustomId('autre')
+                                .setEmoji('⚡')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+
                     interaction.deferUpdate()
-                    interaction.message.edit({embeds: [embed]})
+                    interaction.message.edit({embeds: [embed], components: [row] })
                 });
                 //endregion
             } else if (interaction.customId.includes('ressource_manufacture') === true) {
                 //region Ressources manufacturées
                 const sql = `
-            SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
-        `;
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
+                `;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const Batiment = results[0][0];
-                    const Pays = results[1][0];
-                    const Population = results[2][0];
-                    const Ressources = results[3][0];
-                    const Territoire = results[4][0];
+                    const Armee = results[0][0];
+                    const Batiment = results[1][0];
+                    const Pays = results[2][0];
+                    const Population = results[3][0];
+                    const Ressources = results[4][0];
+                    const Territoire = results[5][0];
+
+                    const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
+
+                    //region Production d'électricité
+                    //region Production d'électricté des centrales biomasse
+                    const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
+                    let prod_centrale_biomasse = true;
+                    if (conso_T_centrale_biomasse_bois > Ressources.bois && conso_T_centrale_biomasse_bois !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse
+                    if (conso_T_centrale_biomasse_eau > Ressources.eau && conso_T_centrale_biomasse_eau !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    //endregion
+                    //region Production d'électricté des centrales au charbon
+                    const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
+                    let prod_centrale_charbon = true;
+                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_charbon !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
+                    if (conso_T_centrale_charbon_eau > Ressources.eau && conso_T_centrale_charbon_eau !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des centrales au fioul
+                    const conso_T_centrale_fioul_carburant = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_CARBURANT * Batiment.centrale_fioul
+                    let prod_centrale_fioul = true;
+                    if (conso_T_centrale_fioul_carburant > Ressources.carburant && conso_T_centrale_fioul_carburant !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
+                    if (conso_T_centrale_fioul_eau > Ressources.eau && conso_T_centrale_fioul_eau !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des éoliennes
+                    let prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
+
+                    let prod_elec = prod_eolienne;
+                    if (prod_centrale_biomasse === true) {
+                        prod_elec += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
+                    }
+                    if (prod_centrale_charbon === true) {
+                        prod_elec += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
+                    }
+                    if (prod_centrale_fioul === true) {
+                        prod_elec += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
+                    }
+                    //endregion
+                    //region Consommation totale d'électricté
+                    const conso_elec = Math.round(
+                        batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
+                        batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
+                        batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
+                        batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
+                        batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
+                        batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
+                        batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
+                        batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
+                        batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
+                        batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
+                        batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
+                        batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
+                        batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
+                    );
+                    //endregion
+                    //endregion
 
                     //region Calcul du taux d'emploie
                     const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
@@ -3958,40 +5110,96 @@ module.exports = {
                         emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                         emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                         emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                    let emplois = Population.habitant/emploies_total
-                    if (Population.habitant/emploies_total > 1) {
+                    const hommeArmee =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                        (Armee.aviation * armeeObject.aviation.homme) +
+                        (Armee.infanterie * armeeObject.infanterie.homme) +
+                        (Armee.mecanise * armeeObject.mecanise.homme) +
+                        (Armee.support * armeeObject.support.homme);
+
+                    let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                    if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                         emplois = 1
                     }
                     //endregion
-
+                    function convertMillisecondsToTime(milliseconds) {
+                        const seconds = Math.floor(milliseconds / 1000);
+                        const hours = Math.floor(seconds / 3600);
+                        return `${hours}h`;
+                    }
                     let Prod;
                     let Conso;
                     let Diff;
 
+                    let acierName;
+                    const conso_T_acierie_charbon = Math.round(batimentObject.acierie.CONSO_ACIERIE_CHARBON * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_acierie_metaux = Math.round(batimentObject.acierie.CONSO_ACIERIE_METAUX * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_acierie_charbon > Ressources.charbon) {
+                        acierName = `> ⚠️ Acier : ⚠️`;
+                    } else if (conso_T_acierie_metaux > Ressources.metaux) {
+                        acierName = `> ⚠️ Acier : ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        acierName = `> 🪫 Acier : 🪫`;
+                    } else if (emplois < 0.5) {
+                        acierName = `> 🚷 Acier : 🚷`;
+                    } else {
+                        acierName = `> <:acier:1075776411329122304> Acier :`;
+                    }
                     let Acier;
                     Prod = Math.round(batimentObject.acierie.PROD_ACIERIE * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
                     Conso = 0
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Acier = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.acier.toLocaleString('en-US')}`);
+                        Acier = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.acier.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Acier = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.acier.toLocaleString('en-US')}`);
+                        Acier = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.acier.toLocaleString('en-US')} | 🟩 ∞`);
                     } else {
-                        Acier = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.acier.toLocaleString('en-US')}`);
+                        Acier = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.acier.toLocaleString('en-US')} | 🟩 ∞`);
                     }
 
+                    let betonName;
+                    const conso_T_cimenterie_eau = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_EAU * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_cimenterie_petrole = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_PETROLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_cimenterie_sable = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_SABLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_cimenterie_eau > Ressources.eau) {
+                        betonName = `> ⚠️ Béton : ⚠️`;
+                    } else if (conso_T_cimenterie_petrole > Ressources.petrole) {
+                        betonName = `> ⚠️ Béton : ⚠️`;
+                    } else if (conso_T_cimenterie_sable > Ressources.sable) {
+                        betonName = `> ⚠️ Béton : ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        betonName = `> 🪫 Béton : 🪫`;
+                    } else if (emplois < 0.5) {
+                        betonName = `> 🚷 Béton : 🚷`;
+                    } else {
+                        betonName = `> <:beton:1075776342227943526> Béton :`;
+                    }
                     let Beton;
                     Prod = Math.round(batimentObject.cimenterie.PROD_CIMENTERIE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
                     Conso = 0
                     Diff = Prod - Conso;
-                    if (Diff / Prod > 0.1) {
-                        Beton = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.beton.toLocaleString('en-US')}`);
-                    } else if (Diff / Prod >= 0) {
-                        Beton = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.beton.toLocaleString('en-US')}`);
+                    if (Prod / Conso > 1.1) {
+                        Beton = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.beton.toLocaleString('en-US')} | 🟩 ∞`);
+                    } else if (Prod / Conso >= 1) {
+                        Beton = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.beton.toLocaleString('en-US')} | 🟩 ∞`);
                     } else {
-                        Beton = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.beton.toLocaleString('en-US')}`);
+                        Beton = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.beton.toLocaleString('en-US')} | 🟩 ∞`);
                     }
 
+                    let carburantName;
+                    const conso_T_raffinerie_petrole = Math.round(batimentObject.raffinerie.CONSO_RAFFINERIE_PETROLE * Batiment.raffinerie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_raffinerie_petrole > Ressources.petrole) {
+                        carburantName = `> ⚠️ Carburant : ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        carburantName = `> 🪫 Carburant : 🪫`;
+                    } else if (emplois < 0.5) {
+                        carburantName = `> 🚷 Carburant : 🚷`;
+                    } else {
+                        carburantName = `> ⛽ Carburant :`;
+                    }
                     let Carburant;
                     Prod = Math.round(batimentObject.raffinerie.PROD_RAFFINERIE * Batiment.raffinerie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
                     const conso_T_carriere_sable_carburant = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_CARBURANT * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -4000,27 +5208,41 @@ module.exports = {
                     const conso_T_mine_metaux_carburant = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_CARBURANT * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                     const conso_T_station_pompage_carburant = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_CARBURANT * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                     const conso_T_scierie_carburant = Math.round(batimentObject.scierie.CONSO_SCIERIE_CARBURANT * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
-                    Conso = conso_T_carriere_sable_carburant + conso_T_champ_carburant + conso_T_mine_charbon_carburant + conso_T_mine_metaux_carburant + conso_T_station_pompage_carburant + conso_T_scierie_carburant;
+                    Conso = conso_T_carriere_sable_carburant + conso_T_centrale_fioul_carburant + conso_T_champ_carburant + conso_T_mine_charbon_carburant + conso_T_mine_metaux_carburant + conso_T_station_pompage_carburant + conso_T_scierie_carburant;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Carburant = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.carburant.toLocaleString('en-US')}`);
+                        Carburant = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.carburant.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Carburant = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.carburant.toLocaleString('en-US')}`);
+                        Carburant = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.carburant.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Carburant = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.carburant.toLocaleString('en-US')}`);
+                        Carburant = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.carburant.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.carburant / Diff) * 10 * 60 * 1000)}`);
                     }
 
+                    let verreName;
+                    const conso_T_atelier_verre_eau = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_EAU * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_atelier_verre_eau > Ressources.eau) {
+                        verreName = `> ⚠️ Verre : ⚠️`;
+                    } else if (conso_T_atelier_verre_sable > Ressources.sable) {
+                        verreName = `> ⚠️ Verre : ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        verreName = `> 🪫 Verre : 🪫`;
+                    } else if (emplois < 0.5) {
+                        verreName = `> 🚷 Verre : 🚷`;
+                    } else {
+                        verreName = `> 🪟 Verre :`;
+                    }
                     let Verre;
                     Prod = Math.round(batimentObject.atelier_verre.PROD_ATELIER_VERRE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
                     const conso_T_usine_civile_verre = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_VERRE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                     Conso = conso_T_usine_civile_verre;
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Verre = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.verre.toLocaleString('en-US')}`);
+                        Verre = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.verre.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Verre = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.verre.toLocaleString('en-US')}`);
+                        Verre = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.verre.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Verre = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.verre.toLocaleString('en-US')}`);
+                        Verre = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.verre.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.verre / Diff) * 10 * 60 * 1000)}`);
                     }
 
                     const embed = {
@@ -4034,19 +5256,19 @@ module.exports = {
                         title: `\`Consommation en : Ressources manufacturées\``,
                         fields: [
                             {
-                                name: `> <:acier:1075776411329122304> Acier :`,
+                                name: acierName,
                                 value: Acier,
                             },
                             {
-                                name: `> <:beton:1075776342227943526> Béton :`,
+                                name: betonName,
                                 value: Beton,
                             },
                             {
-                                name: `> ⛽ Carburant :`,
+                                name: carburantName,
                                 value: Carburant,
                             },
                             {
-                                name: `> 🪟 Verre :`,
+                                name: verreName,
                                 value: Verre,
                             }
                         ],
@@ -4055,13 +5277,44 @@ module.exports = {
                         footer: { text: Pays.devise }
                     };
 
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Matières premières`)
+                                .setCustomId('matiere_premiere')
+                                .setEmoji('<:charbon:1075776385517375638>')
+                                .setStyle(ButtonStyle.Primary)
+                        ).addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Ressources manufacturés`)
+                                .setCustomId('ressource_manufacture')
+                                .setEmoji('<:acier:1075776411329122304>')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Produits manufacturés`)
+                                .setCustomId('produit_manufacture')
+                                .setEmoji('💻')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Autre`)
+                                .setCustomId('autre')
+                                .setEmoji('⚡')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+
                     interaction.deferUpdate()
-                    interaction.message.edit({embeds: [embed]})
+                    interaction.message.edit({embeds: [embed], components: [row] })
                 });
                 //endregion
             } else if (interaction.customId.includes('produit_manufacture') === true) {
                 //region Produits manufacturés
                 const sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
                     SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
                     SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                     SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
@@ -4069,11 +5322,81 @@ module.exports = {
                     SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
                 `;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const Batiment = results[0][0];
-                    const Pays = results[1][0];
-                    const Population = results[2][0];
-                    const Ressources = results[3][0];
-                    const Territoire = results[4][0];
+                    const Armee = results[0][0];
+                    const Batiment = results[1][0];
+                    const Pays = results[2][0];
+                    const Population = results[3][0];
+                    const Ressources = results[4][0];
+                    const Territoire = results[5][0];
+
+                    const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
+
+                    //region Production d'électricité
+                    //region Production d'électricté des centrales biomasse
+                    const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
+                    let prod_centrale_biomasse = true;
+                    if (conso_T_centrale_biomasse_bois > Ressources.bois && conso_T_centrale_biomasse_bois !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse
+                    if (conso_T_centrale_biomasse_eau > Ressources.eau && conso_T_centrale_biomasse_eau !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    //endregion
+                    //region Production d'électricté des centrales au charbon
+                    const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
+                    let prod_centrale_charbon = true;
+                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_charbon !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
+                    if (conso_T_centrale_charbon_eau > Ressources.eau && conso_T_centrale_charbon_eau !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des centrales au fioul
+                    const conso_T_centrale_fioul_carburant = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_CARBURANT * Batiment.centrale_fioul
+                    let prod_centrale_fioul = true;
+                    if (conso_T_centrale_fioul_carburant > Ressources.carburant && conso_T_centrale_fioul_carburant !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
+                    if (conso_T_centrale_fioul_eau > Ressources.eau && conso_T_centrale_fioul_eau !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des éoliennes
+                    let prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
+
+                    let prod_elec = prod_eolienne;
+                    if (prod_centrale_biomasse === true) {
+                        prod_elec += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
+                    }
+                    if (prod_centrale_charbon === true) {
+                        prod_elec += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
+                    }
+                    if (prod_centrale_fioul === true) {
+                        prod_elec += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
+                    }
+                    //endregion
+                    //region Consommation totale d'électricté
+                    const conso_elec = Math.round(
+                        batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
+                        batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
+                        batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
+                        batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
+                        batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
+                        batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
+                        batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
+                        batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
+                        batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
+                        batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
+                        batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
+                        batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
+                        batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
+                    );
+                    //endregion
+                    //endregion
 
                     //region Calcul du taux d'emploie
                     const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
@@ -4098,25 +5421,60 @@ module.exports = {
                         emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                         emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                         emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                    let emplois = Population.habitant/emploies_total
-                    if (Population.habitant/emploies_total > 1) {
+                    const hommeArmee =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                        (Armee.aviation * armeeObject.aviation.homme) +
+                        (Armee.infanterie * armeeObject.infanterie.homme) +
+                        (Armee.mecanise * armeeObject.mecanise.homme) +
+                        (Armee.support * armeeObject.support.homme);
+
+                    let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                    if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                         emplois = 1
                     }
                     //endregion
-
+                    function convertMillisecondsToTime(milliseconds) {
+                        const seconds = Math.floor(milliseconds / 1000);
+                        const hours = Math.floor(seconds / 3600);
+                        return `${hours}h`;
+                    }
                     let Prod;
                     let Conso;
                     let Diff;
 
+                    let bcName;
+                    const conso_T_usine_civile_bois = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_BOIS * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_usine_civile_metaux = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_METAUX * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_usine_civile_petrole = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_PETROLE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    const conso_T_usine_civile_verre = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_VERRE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                    if (conso_T_usine_civile_bois > Ressources.bois) {
+                        bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                    } else if (conso_T_usine_civile_metaux > Ressources.metaux) {
+                        bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                    } else if (conso_T_usine_civile_petrole > Ressources.petrole) {
+                        bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                    } else if (conso_T_usine_civile_verre > Ressources.verre) {
+                        bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                    } else if (prod_elec < conso_elec) {
+                        bcName = `> 🪫 Biens de consommation : 🪫`;
+                    } else if (emplois < 0.5) {
+                        bcName = `> 🚷 Biens de consommation : 🚷`;
+                    } else {
+                        bcName = `> 💻 Biens de consommation :`;
+                    }
+                    let Bc;
                     Prod = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
                     Conso = Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant / 48 * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`));
                     Diff = Prod - Conso;
                     if (Diff > 0) {
-                        Bc = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bc.toLocaleString('en-US')}`);
+                        Bc = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟩 ∞`);
                     } else if (Diff === 0) {
-                        Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bc.toLocaleString('en-US')}`);
+                        Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bc.toLocaleString('en-US')}`);
+                        Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.bc / Diff) * 10 * 60 * 1000)}`);
                     }
 
                     const embed = {
@@ -4130,7 +5488,7 @@ module.exports = {
                         title: `\`Consommation en : Produits manufacturées\``,
                         fields: [
                             {
-                                name: `> 💻 Biens de consommation :`,
+                                name: bcName,
                                 value: Bc,
                             },
                         ],
@@ -4139,25 +5497,57 @@ module.exports = {
                         footer: { text: Pays.devise }
                     };
 
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Matières premières`)
+                                .setCustomId('matiere_premiere')
+                                .setEmoji('<:charbon:1075776385517375638>')
+                                .setStyle(ButtonStyle.Primary)
+                        ).addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Ressources manufacturés`)
+                                .setCustomId('ressource_manufacture')
+                                .setEmoji('<:acier:1075776411329122304>')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Produits manufacturés`)
+                                .setCustomId('produit_manufacture')
+                                .setEmoji('💻')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Autre`)
+                                .setCustomId('autre')
+                                .setEmoji('⚡')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+
                     interaction.deferUpdate()
-                    interaction.message.edit({embeds: [embed]})
+                    interaction.message.edit({embeds: [embed], components: [row] })
                 });
                 //endregion
-            }else if (interaction.customId.includes('autre') === true) {
+            } else if (interaction.customId.includes('autre') === true) {
                 //region Autres
                 const sql = `
-            SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
-        `;
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
+                `;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const Batiment = results[0][0];
-                    const Pays = results[1][0];
-                    const Population = results[2][0];
-                    const Ressources = results[3][0];
-                    const Territoire = results[4][0];
+                    const Armee = results[0][0];
+                    const Batiment = results[1][0];
+                    const Pays = results[2][0];
+                    const Population = results[3][0];
+                    const Ressources = results[4][0];
+                    const Territoire = results[5][0];
 
                     //region Calcul du taux d'emploie
                     const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
@@ -4182,8 +5572,18 @@ module.exports = {
                         emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                         emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                         emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                    let emplois = Population.habitant/emploies_total
-                    if (Population.habitant/emploies_total > 1) {
+                    const hommeArmee =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                        (Armee.aviation * armeeObject.aviation.homme) +
+                        (Armee.infanterie * armeeObject.infanterie.homme) +
+                        (Armee.mecanise * armeeObject.mecanise.homme) +
+                        (Armee.support * armeeObject.support.homme);
+
+                    let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                    if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                         emplois = 1
                     }
                     //endregion
@@ -4193,7 +5593,46 @@ module.exports = {
                     let Prod;
                     let Conso;
                     let Diff;
+                    //region Production d'électricté des centrales biomasse
+                    const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
+                    let prod_centrale = true;
+                    if (conso_T_centrale_biomasse_bois > Ressources.bois && conso_T_centrale_biomasse_bois !== 0) {
+                        prod_centrale = false;
+                    }
+                    const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse
+                    if (conso_T_centrale_biomasse_eau > Ressources.eau && conso_T_centrale_biomasse_eau !== 0) {
+                        prod_centrale = false;
+                    }
+                    //endregion
+                    //region Production d'électricté des centrales au charbon
+                    const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
+                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_charbon !== 0) {
+                        prod_centrale = false;
+                    }
+                    const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
+                    if (conso_T_centrale_charbon_eau > Ressources.eau && conso_T_centrale_charbon_eau !== 0) {
+                        prod_centrale = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des centrales au fioul
+                    const conso_T_centrale_fioul_carburant = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_CARBURANT * Batiment.centrale_fioul
+                    if (conso_T_centrale_fioul_carburant > Ressources.carburant && conso_T_centrale_fioul_carburant !== 0) {
+                        prod_centrale = false;
+                    }
+                    const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
+                    if (conso_T_centrale_fioul_eau > Ressources.eau && conso_T_centrale_fioul_eau !== 0) {
+                        prod_centrale = false;
+                    }
+                    //endregion
 
+                    let elecName;
+                    if (prod_centrale === false) {
+                        elecName = `> ⚠️ Electricité : ⚠️`;
+                    } else if (emplois < 0.5) {
+                        elecName = `> 🚷 Electricité : 🚷`;
+                    } else {
+                        elecName = `> ⚡ Electricité :`;
+                    }
                     let Electricite;
                     Prod = batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse + batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon + batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul + Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
                     Conso = Math.round(
@@ -4213,11 +5652,11 @@ module.exports = {
                     );
                     Diff = Prod - Conso;
                     if (Diff / Prod > 0.1) {
-                        Electricite = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}"`);
+                        Electricite = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}" | 🟩 ∞`);
                     } else if (Diff / Prod >= 0) {
-                        Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}`);
+                        Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')} | 🟨 ∞`);
                     } else {
-                        Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}`);
+                        Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')} | 🟥`);
                     }
 
                     const embed = {
@@ -4231,8 +5670,137 @@ module.exports = {
                         title: `\`Consommation en : Autre\``,
                         fields: [
                             {
-                                name: `> ⚡ Electricité :`,
+                                name: elecName,
                                 value: Electricite,
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: { text: Pays.devise }
+                    };
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Matières premières`)
+                                .setCustomId('matiere_premiere')
+                                .setEmoji('<:charbon:1075776385517375638>')
+                                .setStyle(ButtonStyle.Primary)
+                        ).addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Ressources manufacturés`)
+                                .setCustomId('ressource_manufacture')
+                                .setEmoji('<:acier:1075776411329122304>')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Produits manufacturés`)
+                                .setCustomId('produit_manufacture')
+                                .setEmoji('💻')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Autre`)
+                                .setCustomId('autre')
+                                .setEmoji('⚡')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+
+                    interaction.deferUpdate()
+                    interaction.message.edit({embeds: [embed], components: [row] })
+                });
+                //endregion
+            } else if (interaction.customId === 'ressources') {
+                //region Ressources
+                const sql = `
+                    SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Pays = results[1][0];
+                    const Ressources = results[2][0];
+                    const Territoire = results[3][0];
+
+                    //region Calcul des coefficients de production des ressources
+                    const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
+                    const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
+                    const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
+                    const coef_metaux = eval(`regionObject.${Territoire.region}.metaux`)
+                    const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
+                    const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
+                    const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
+                    //endregion
+
+                    let Prod;
+                    let Conso;
+                    let Diff;
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Ressources\``,
+                        fields: [
+                            {
+                                name: `> <:acier:1075776411329122304> Acier :`,
+                                value: codeBlock(`• ${Ressources.acier.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> <:beton:1075776342227943526> Béton :`,
+                                value: codeBlock(`• ${Ressources.beton.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> \uD83D\uDCBB Biens de consommation :`,
+                                value: codeBlock(`• ${Ressources.bc.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 🪵 Bois : ⛏️ x${coef_bois}`,
+                                value: codeBlock(`• ${Ressources.bois.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> ⛽ Carburant :`,
+                                value: codeBlock(`• ${Ressources.carburant.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> <:charbon:1075776385517375638> Charbon : ⛏️ x${coef_charbon}`,
+                                value: codeBlock(`• ${Ressources.charbon.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 💧 Eau : ⛏️ x${coef_eau}`,
+                                value: codeBlock(`• ${Ressources.eau.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> <:windmill:1108767955442991225> Eolienne :`,
+                                value: codeBlock(`• ${Ressources.eolienne.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 🪨 Metaux : ⛏️ x${coef_metaux}`,
+                                value: codeBlock(`• ${Ressources.metaux.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 🌽 Nourriture : ⛏️ x${coef_nourriture}`,
+                                value: codeBlock(`• ${Ressources.nourriture.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 🛢️ Pétrole : ⛏️ x${coef_petrole}`,
+                                value: codeBlock(`• ${Ressources.petrole.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> <:sable:1075776363782479873> Sable : ⛏️ x${coef_sable}`,
+                                value: codeBlock(`• ${Ressources.sable.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 🪟 Verre :`,
+                                value: codeBlock(`• ${Ressources.verre.toLocaleString('en-US')}`)
                             },
                         ],
                         color: interaction.member.displayColor,
@@ -4242,6 +5810,1318 @@ module.exports = {
 
                     interaction.deferUpdate()
                     interaction.message.edit({embeds: [embed]})
+                });
+                //endregion
+            } else if (interaction.customId === 'militaire') {
+                //region Militaire
+                const sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Militaire\``,
+                        fields: [
+                            {
+                                name: `> <:avion:1123611379522347048> Avion :`,
+                                value: codeBlock(`• ${Armee.avion.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> 📡 Equipement de support :`,
+                                value: codeBlock(`• ${Armee.equipement_support.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> <:materieldinfanterie:1123611393535512626> Matériel d'infanterie :`,
+                                value: codeBlock(`• ${Armee.materiel_infanterie.toLocaleString('en-US')}`)
+                            },
+                            {
+                                name: `> <:vehicule:1123611407573860362> Véhicule :`,
+                                value: codeBlock(`• ${Armee.vehicule.toLocaleString('en-US')}`)
+                            }
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: { text: Pays.devise }
+                    };
+
+                    interaction.deferUpdate()
+                    interaction.message.edit({embeds: [embed]})
+                });
+                //endregion
+            } else if ((interaction.customId.includes('unite-') || interaction.customId.includes('unite+')) === true) {
+                //region Définir Unité
+                quantite = parseInt(interaction.customId.slice(5));
+
+                let sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}'
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0];
+
+                    sql = `UPDATE armee SET unite=unite+${quantite},
+                                            aviation=aviation-${(quantite * eval(`armeeObject.${Armee.strategie}.aviation`))},
+                                            infanterie=infanterie-${(quantite * eval(`armeeObject.${Armee.strategie}.infanterie`))},
+                                            mecanise=mecanise-${(quantite * eval(`armeeObject.${Armee.strategie}.mecanise`))},
+                                            support=support-${(quantite * eval(`armeeObject.${Armee.strategie}.support`))} WHERE id_joueur='${interaction.member.id}'`;
+                    connection.query(sql, async(err) => { if (err) { throw err; } });
+                })
+                await wait(1000)
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+                    const homme = (Armee.aviation * armeeObject.aviation.homme) + (Armee.infanterie * armeeObject.infanterie.homme) + (Armee.mecanise * armeeObject.mecanise.homme) + (Armee.support * armeeObject.support.homme);
+                    const hommeUnite =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`);
+
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Menu de l'approvisionnement\``,
+                        fields: [
+                            {
+                                name: `> 🪖 Unités : opérationnelles | réserves`,
+                                value: codeBlock(
+                                    `• Unité : ${Armee.unite.toLocaleString('en-US')} | ${Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`)))).toLocaleString('en-US')}\n` +
+                                    ` dont :\n` +
+                                    `  • Aviation : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`)).toLocaleString('en-US')} | ${Armee.aviation.toLocaleString('en-US')}\n` +
+                                    `  • Infanterie : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`)).toLocaleString('en-US')} | ${Armee.infanterie.toLocaleString('en-US')}\n` +
+                                    `  • Mécanisé : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`)).toLocaleString('en-US')} | ${Armee.mecanise.toLocaleString('en-US')}\n` +
+                                    `  • Support : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.support`)).toLocaleString('en-US')} | ${Armee.support.toLocaleString('en-US')}\n` +
+                                    `‎\n` +
+                                    `  • Homme : ${hommeUnite.toLocaleString('en-US')} | ${homme.toLocaleString('en-US')}`) + `\u200B`
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+                    const unitePossible = Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`))));
+                    let plusDix = false;
+                    if (unitePossible < 10) {
+                        plusDix = true;
+                    }
+                    let plusUn = false;
+                    if (unitePossible < 1) {
+                        plusUn = true;
+                    }
+                    let moinsDix = false;
+                    if (Armee.unite < 10) {
+                        moinsDix = true;
+                    }
+                    let moinsUn = false;
+                    if (Armee.unite < 1) {
+                        moinsUn = true;
+                    }
+
+                    const row1 = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`10`)
+                                .setCustomId('unite+10')
+                                .setEmoji('➕')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(plusDix)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`1`)
+                                .setCustomId('unite+1')
+                                .setEmoji('➕')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(plusUn)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setEmoji(`🪖`)
+                                .setCustomId('unite')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`1`)
+                                .setCustomId('unite-1')
+                                .setEmoji('➖')
+                                .setStyle(ButtonStyle.Danger)
+                                .setDisabled(moinsUn)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`10`)
+                                .setCustomId('unite-10')
+                                .setEmoji('➖')
+                                .setStyle(ButtonStyle.Danger)
+                                .setDisabled(moinsDix)
+                        )
+
+                    interaction.deferUpdate()
+                    interaction.message.edit({embeds: [embed], components: [row1]})
+                });
+                //endregion
+            } else if (interaction.customId.includes('assaut_masse') === true) {
+                //region Assaut de masse
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Menu des stratégies\``,
+                        fields: [
+                            {
+                                name: `> ♟️ Assaut de masse`,
+                                value: codeBlock(
+                                    `  • Aviation : ${eval(`armeeObject.assaut_masse.aviation`)}\n` +
+                                    `  • Infanterie : ${eval(`armeeObject.assaut_masse.infanterie`)}\n` +
+                                    `  • Mécanisé : ${eval(`armeeObject.assaut_masse.mecanise`)}\n` +
+                                    `  • Support : ${eval(`armeeObject.assaut_masse.support`)}\n`) + `\u200B`
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+                    const userCooldowned = await strategieCommandCooldown.getUser(interaction.member.id);
+                    let choisir
+                    if (Armee.strategie === 'assaut_masse') {
+                        choisir = true
+                    } else if (userCooldowned) {
+                        choisir = true
+                    } else {
+                        choisir = false
+                    };
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Assaut de masse`)
+                                .setCustomId('assaut_masse')
+                                .setEmoji('💯')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Défense`)
+                                .setCustomId('defense')
+                                .setEmoji('🛡️')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Motorisation`)
+                                .setCustomId('motorisation')
+                                .setEmoji('🛞')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Puissance de feu`)
+                                .setCustomId('puissance_feu')
+                                .setEmoji('💥')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+
+                    const row1 = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Choisir cette stratégie`)
+                                .setCustomId('choisir')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(choisir)
+                        )
+
+                    interaction.message.edit({ embeds: [embed], components: [row, row1] });
+                    interaction.deferUpdate()
+                });
+                //endregion
+            } else if (interaction.customId.includes('defense') === true) {
+                //region Défense
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Menu des stratégies\``,
+                        fields: [
+                            {
+                                name: `> ♟️ Défense`,
+                                value: codeBlock(
+                                    `  • Aviation : ${eval(`armeeObject.defense.aviation`)}\n` +
+                                    `  • Infanterie : ${eval(`armeeObject.defense.infanterie`)}\n` +
+                                    `  • Mécanisé : ${eval(`armeeObject.defense.mecanise`)}\n` +
+                                    `  • Support : ${eval(`armeeObject.defense.support`)}\n`) + `\u200B`
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+                    const userCooldowned = await strategieCommandCooldown.getUser(interaction.member.id);
+                    let choisir
+                    if (Armee.strategie === 'defense') {
+                        choisir = true
+                    } else if (userCooldowned) {
+                        choisir = true
+                    } else {
+                        choisir = false
+                    };
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Assaut de masse`)
+                                .setCustomId('assaut_masse')
+                                .setEmoji('💯')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Défense`)
+                                .setCustomId('defense')
+                                .setEmoji('🛡️')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Motorisation`)
+                                .setCustomId('motorisation')
+                                .setEmoji('🛞')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Puissance de feu`)
+                                .setCustomId('puissance_feu')
+                                .setEmoji('💥')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+
+                    const row1 = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Choisir cette stratégie`)
+                                .setCustomId('choisir')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(choisir)
+                        )
+
+                    interaction.message.edit({ embeds: [embed], components: [row, row1] });
+                    interaction.deferUpdate()
+                });
+                //endregion
+            } else if (interaction.customId.includes('motorisation') === true) {
+                //region Motorisation
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Menu des stratégies\``,
+                        fields: [
+                            {
+                                name: `> ♟️ Motorisation`,
+                                value: codeBlock(
+                                    `  • Aviation : ${eval(`armeeObject.motorisation.aviation`)}\n` +
+                                    `  • Infanterie : ${eval(`armeeObject.motorisation.infanterie`)}\n` +
+                                    `  • Mécanisé : ${eval(`armeeObject.motorisation.mecanise`)}\n` +
+                                    `  • Support : ${eval(`armeeObject.motorisation.support`)}\n`) + `\u200B`
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+                    const userCooldowned = await strategieCommandCooldown.getUser(interaction.member.id);
+                    let choisir
+                    if (Armee.strategie === 'motorisation') {
+                        choisir = true
+                    } else if (userCooldowned) {
+                        choisir = true
+                    } else {
+                        choisir = false
+                    };
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Assaut de masse`)
+                                .setCustomId('assaut_masse')
+                                .setEmoji('💯')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Défense`)
+                                .setCustomId('defense')
+                                .setEmoji('🛡️')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Motorisation`)
+                                .setCustomId('motorisation')
+                                .setEmoji('🛞')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Puissance de feu`)
+                                .setCustomId('puissance_feu')
+                                .setEmoji('💥')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+
+                    const row1 = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Choisir cette stratégie`)
+                                .setCustomId('choisir')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(choisir)
+                        )
+
+                    interaction.message.edit({ embeds: [embed], components: [row, row1] });
+                    interaction.deferUpdate()
+                });
+                //endregion
+            } else if (interaction.customId.includes('puissance_feu') === true) {
+                //region Puissance de feu
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Menu des stratégies\``,
+                        fields: [
+                            {
+                                name: `> ♟️ Puissance de feu`,
+                                value: codeBlock(
+                                    `  • Aviation : ${eval(`armeeObject.puissance_feu.aviation`)}\n` +
+                                    `  • Infanterie : ${eval(`armeeObject.puissance_feu.infanterie`)}\n` +
+                                    `  • Mécanisé : ${eval(`armeeObject.puissance_feu.mecanise`)}\n` +
+                                    `  • Support : ${eval(`armeeObject.puissance_feu.support`)}\n`) + `\u200B`
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+                    const userCooldowned = await strategieCommandCooldown.getUser(interaction.member.id);
+                    let choisir
+                    if (Armee.strategie === 'puissance_feu') {
+                        choisir = true
+                    } else if (userCooldowned) {
+                        choisir = true
+                    } else {
+                        choisir = false
+                    };
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Assaut de masse`)
+                                .setCustomId('assaut_masse')
+                                .setEmoji('💯')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Défense`)
+                                .setCustomId('defense')
+                                .setEmoji('🛡️')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Motorisation`)
+                                .setCustomId('motorisation')
+                                .setEmoji('🛞')
+                                .setStyle(ButtonStyle.Primary)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Puissance de feu`)
+                                .setCustomId('puissance_feu')
+                                .setEmoji('💥')
+                                .setStyle(ButtonStyle.Secondary)
+                                .setDisabled(true)
+                        )
+
+                    const row1 = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Choisir cette stratégie`)
+                                .setCustomId('choisir')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(choisir)
+                        )
+
+                    interaction.message.edit({ embeds: [embed], components: [row, row1] });
+                    interaction.deferUpdate()
+                });
+                //endregion
+            } else if (interaction.customId.includes('choisir') === true) {
+                //region Choisir stratégie
+                const strat = interaction.message.embeds[0].fields[0].name.slice(5);
+                let nom;
+                if (strat === 'Assaut de masse') {
+                    nom = 'assaut_masse'
+                } else if (strat === 'Défense') {
+                    nom = 'defense'
+                } else if (strat === 'Motorisation') {
+                    nom = 'motorisation'
+                } else if (strat === 'Puissance de feu') {
+                    nom = 'puissance_feu'
+                }
+
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const aviation = eval(`armeeObject.${Armee.strategie}.aviation`) * Armee.unite;
+                    const infanterie = eval(`armeeObject.${Armee.strategie}.infanterie`) * Armee.unite;
+                    const mecanise = eval(`armeeObject.${Armee.strategie}.mecanise`) * Armee.unite;
+                    const support = eval(`armeeObject.${Armee.strategie}.support`) * Armee.unite;
+                    let sql = `UPDATE armee SET unite=0,
+                                                aviation=aviation+${aviation},
+                                                infanterie=infanterie+${infanterie},
+                                                mecanise=mecanise+${mecanise},
+                                                support=support+${support},
+                                                strategie='${nom}' WHERE id_joueur='${interaction.member.id}'`;
+                    connection.query(sql, async (err) => {if (err) {throw err;}});
+                });
+                await wait(1000)
+
+                sql = `
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Pays = results[1][0];
+
+                    const embed = {
+                        author: {
+                            name: `${Pays.rang} de ${Pays.nom}`,
+                            icon_url: interaction.member.displayAvatarURL()
+                        },
+                        thumbnail: {
+                            url: Pays.drapeau
+                        },
+                        title: `\`Menu des stratégies\``,
+                        fields: [
+                            {
+                                name: `> ♟️ ${strat}`,
+                                value: codeBlock(
+                                    `Vous avez changé de stratégie. Vous pourrez la changer à nouveau dans 1 semaine.\n`) + `\u200B`
+                            },
+                        ],
+                        color: interaction.member.displayColor,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `${Pays.devise}`
+                        },
+                    };
+                    let assaut_masse = false;
+                    let couleur1 = ButtonStyle.Primary;
+                    if (Armee.strategie === 'assaut_masse') {
+                        assaut_masse = true;
+                        couleur1 = ButtonStyle.Secondary;
+                    }
+                    let defense = false;
+                    let couleur2 = ButtonStyle.Primary;
+                    if (Armee.strategie === 'defense') {
+                        defense = true;
+                        couleur2 = ButtonStyle.Secondary;
+                    }
+                    let motorisation = false;
+                    let couleur3 = ButtonStyle.Primary;
+                    if (Armee.strategie === 'motorisation') {
+                        motorisation = true;
+                        couleur3 = ButtonStyle.Secondary;
+                    }
+                    let puissance_feu = false;
+                    let couleur4 = ButtonStyle.Primary;
+                    if (Armee.strategie === 'puissance_feu') {
+                        puissance_feu = true;
+                        couleur4 = ButtonStyle.Secondary;
+                    }
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Assaut de masse`)
+                                .setCustomId('assaut_masse')
+                                .setEmoji('💯')
+                                .setStyle(couleur1)
+                                .setDisabled(assaut_masse)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Défense`)
+                                .setCustomId('defense')
+                                .setEmoji('🛡️')
+                                .setStyle(couleur2)
+                                .setDisabled(defense)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Motorisation`)
+                                .setCustomId('motorisation')
+                                .setEmoji('🛞')
+                                .setStyle(couleur3)
+                                .setDisabled(motorisation)
+                        )
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Puissance de feu`)
+                                .setCustomId('puissance_feu')
+                                .setEmoji('💥')
+                                .setStyle(couleur4)
+                                .setDisabled(puissance_feu)
+                        )
+
+                    const row1 = new ActionRowBuilder()
+                        .addComponents(
+                            new ButtonBuilder()
+                                .setLabel(`Choisir cette stratégie`)
+                                .setCustomId('choisir')
+                                .setStyle(ButtonStyle.Success)
+                                .setDisabled(true)
+                        )
+
+                    await strategieCommandCooldown.addUser(interaction.member.id);
+                    interaction.message.edit({ embeds: [embed], components: [row, row1] })
+                    interaction.deferUpdate()
+                });
+                //endregion
+            } else if (interaction.customId.includes('raid') === true) {
+                //region Raid
+                id_joueur = interaction.customId.slice(5);
+                let ArmeeA = interaction.message.embeds[0].fields[1].value
+                ArmeeA = ArmeeA.slice(6, ArmeeA.length - 13)
+                const sql = `
+                    SELECT * FROM armee WHERE id_joueur='${id_joueur}';
+                    SELECT * FROM batiments WHERE id_joueur='${id_joueur}';
+                    SELECT * FROM pays WHERE id_joueur='${id_joueur}';
+                    SELECT * FROM population WHERE id_joueur='${id_joueur}';
+                    SELECT * FROM ressources WHERE id_joueur='${id_joueur}';
+                    SELECT * FROM territoire WHERE id_joueur='${id_joueur}';
+                    SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const ArmeeB = results[0][0];
+                    const BatimentB = results[1][0];
+                    const PaysB = results[2][0];
+                    const PopulationB = results[3][0];
+                    const RessourceB = results[4][0];
+                    const TerritoireB = results[5][0];
+                    const BDDA = results[6][0];
+                    const PaysA = results[7][0];
+                    const PopulationA = results[8][0];
+
+                    const minArmee = 1100 * Math.min(ArmeeA, ArmeeB.unite);
+                    const biomeNom = ['desert', 'foret', 'jungle', 'lac', 'mangrove', 'prairie', 'rocheuses', 'savane', 'steppe', 'taiga', 'toundra', 'ville', 'volcan'];
+                    const biomeB_taille = [TerritoireB.desert, TerritoireB.foret, TerritoireB.jungle, TerritoireB.lac, TerritoireB.mangrove, TerritoireB.prairie, TerritoireB.rocheuses, TerritoireB.savane, TerritoireB.steppe, TerritoireB.taiga, TerritoireB.toundra, TerritoireB.ville, TerritoireB.volcan]
+                    const biomeB_max = biomeNom[biomeB_taille.indexOf(Math.max(...biomeB_taille))];
+                    const biomeB_poids = [];
+                    let tailleTotal = 0;
+                    for (let i = 0; i < biomeB_taille.length; i++) {
+                        if (biomeB_taille[i] < minArmee) {
+                            biomeB_taille[i] = 0;
+                        } else {
+                            tailleTotal += biomeB_taille[i];
+                        }
+                    }
+                    for (let i = 0; i < biomeB_taille.length; i++) {
+                        biomeB_poids.push(biomeB_taille[i] / tailleTotal);
+                    }
+                    let biomeBataille;
+                    if (tailleTotal === 0) {
+                        biomeBataille = biomeB_max;
+                    } else {
+                        biomeBataille = chance.weighted(biomeNom, biomeB_poids);
+                    }
+
+                    let raidUniteMin = Math.ceil(0.1 * ArmeeA);
+                    let raidUniteMax = 2 * ArmeeA;
+                    if (ArmeeA > ArmeeB.unite) {
+                        raidUniteMax = Math.min(raidUniteMax, 1.5 * ArmeeB.unite);
+                    } else {
+                        raidUniteMax = Math.min(raidUniteMax, 0.75 * ArmeeB.unite);
+                    }
+                    const modifStratA = eval(`armeeObject.${BDDA.strategie}.bonus_taille`);
+                    const modifStratB = eval(`armeeObject.${ArmeeB.strategie}.bonus_taille`);
+                    const modifBiome = 1;
+                    let raidUnite = Math.round(chance.floating({min: raidUniteMin, max: raidUniteMax}) * modifStratA * modifStratB * modifBiome);
+                    raidUnite = Math.min(raidUnite, raidUniteMax);
+                    let raidUniteA = Math.min(raidUnite, ArmeeA);
+                    let raidUniteB = Math.min(raidUnite, ArmeeB.unite);
+
+
+                    let attaqueA = eval(`strategieObject.${biomeBataille}.${BDDA.strategie}.${ArmeeB.strategie}.attaquant`);
+                    let defenseB = eval(`strategieObject.${biomeBataille}.${BDDA.strategie}.${ArmeeB.strategie}.defenseur`);
+                    function pallier(sup, inf) {
+                        const p = (sup-inf)/inf*100;
+                        if (p < 10) {
+                            return 0;
+                        } else if (p < 15) {
+                            return 10;
+                        } else if (p < 20) {
+                            return 20;
+                        } else if (p < 25) {
+                            return 30;
+                        } else if (p < 30) {
+                            return 40;
+                        } else if (p < 40) {
+                            return 50;
+                        } else {
+                            return 60;
+                        }
+                    }
+
+                    let perteA = 0.1;
+                    let perteB = 0.1;
+
+                    if (raidUniteA > raidUniteB) {
+                        defenseB = defenseB - pallier(raidUniteA, raidUniteB);
+                        perteB = perteB*(raidUniteA/raidUniteB)
+                    } else {
+                        attaqueA = attaqueA - pallier(raidUniteB, raidUniteA);
+                        perteA = perteA*(raidUniteB/raidUniteA)
+                    }
+                    perteA = perteA*eval(`strategieObject.perte_attaquant.strategie_attaquant.${BDDA.strategie}`)*eval(`strategieObject.perte_attaquant.strategie_defenseur.${ArmeeB.strategie}`);
+                    perteB = perteB*eval(`strategieObject.perte_defenseur.strategie_attaquant.${BDDA.strategie}`)*eval(`strategieObject.perte_defenseur.strategie_defenseur.${ArmeeB.strategie}`);
+
+                    const batimentNom = ['acierie', 'atelier_verre', 'carriere_sable', 'centrale_biomasse', 'centrale_charbon', 'centrale_fioul', 'champ', 'cimenterie', 'derrick', 'eolienne', 'mine_charbon', 'mine_metaux', 'station_pompage', 'quartier', 'raffinerie', 'scierie', 'usine_civile'];
+                    const batimentNombre = [BatimentB.acierie, BatimentB.atelier_verre, BatimentB.carriere_sable, BatimentB.centrale_biomasse, BatimentB.centrale_charbon, BatimentB.centrale_fioul, BatimentB.champ, BatimentB.cimenterie, BatimentB.derrick, BatimentB.eolienne, BatimentB.mine_charbon, BatimentB.mine_metaux, BatimentB.station_pompage, BatimentB.quartier, BatimentB.raffinerie, BatimentB.scierie, BatimentB.usine_civile];
+                    const batimentPoids = [];
+                    for (let i = 0; i < batimentNombre.length; i++) {
+                        batimentPoids.push(batimentNombre[i] / BatimentB.usine_total);
+                    }
+                    const batimentBataille = chance.weighted(batimentNom, batimentPoids);
+
+                    let nomBatiment;
+                    let ressource;
+                    switch (batimentBataille) {
+                        case 'acierie':
+                            nomBatiment = 'Acierie';
+                            ressource = 'acier';
+                            break;
+                        case 'atelier_verre':
+                            nomBatiment = 'Atelier de verre';
+                            ressource = 'verre';
+                            break;
+                        case 'carriere_sable':
+                            nomBatiment = 'Carrière de sable';
+                            ressource = 'sable';
+                           break;
+                        case 'centrale_biomasse':
+                            nomBatiment = 'Centrale à biomasse';
+                            ressource = 'none';
+                            break;
+                        case 'centrale_charbon':
+                            nomBatiment = 'Centrale à charbon';
+                            ressource = 'none';
+                            break;
+                        case 'centrale_fioul':
+                            nomBatiment = 'Centrale à fioul';
+                            ressource = 'none';
+                            break;
+                        case 'champ':
+                            nomBatiment = 'Champ';
+                            ressource = 'nourriture';
+                            break;
+                        case 'cimenterie':
+                            nomBatiment = 'Cimenterie';
+                            ressource = 'beton';
+                            break;
+                        case 'derrick':
+                            nomBatiment = 'Derrick';
+                            ressource = 'petrole';
+                            break;
+                        case 'eolienne':
+                            nomBatiment = 'Éolienne';
+                            ressource = 'none';
+                            break;
+                        case 'mine_charbon':
+                            nomBatiment = 'Mine de charbon';
+                            ressource = 'charbon';
+                            break;
+                        case 'mine_metaux':
+                            nomBatiment = 'Mine de métaux';
+                            ressource = 'metaux';
+                            break;
+                        case 'station_pompage':
+                            nomBatiment = 'Station de pompage';
+                            ressource = 'eau';
+                            break;
+                        case 'quartier':
+                            nomBatiment = 'Quartier';
+                            ressource = 'none';
+                            break;
+                        case 'raffinerie':
+                            nomBatiment = 'Raffinerie';
+                            ressource = 'carburant';
+                            break;
+                        case 'scierie':
+                            nomBatiment = 'Scierie';
+                            ressource = 'bois';
+                            break;
+                        case 'usine_civile':
+                            nomBatiment = 'Usine civile';
+                            ressource = 'bc';
+                            break;
+                    };
+                    let pillage = chance.integer({min: 0, max: 10000});
+                    if (eval(`RessourceB.${ressource}`) < pillage && ressource !== 'none') {
+                        pillage = eval(`RessourceB.${ressource}`);
+                    }
+
+                    const uniteEnMoinsA = Math.ceil(perteA * raidUniteA);
+                    //2 à remove des unités
+                    const uniteEnMoinsB = Math.ceil(perteB * raidUniteB);
+
+                    const resteUniteA = uniteEnMoinsA - perteA * raidUniteA;
+                    //2 - 1,3 = 70% d'une unité à remettre en réserve
+                    const resteUniteB = uniteEnMoinsB - perteB * raidUniteB;
+
+                    const aviationA = Math.round(eval(`armeeObject.${BDDA.strategie}.aviation`) * resteUniteA);
+                    const infanterieA = Math.round(eval(`armeeObject.${BDDA.strategie}.infanterie`) * resteUniteA);
+                    const mecaniseA = Math.round(eval(`armeeObject.${BDDA.strategie}.mecanise`) * resteUniteA);
+                    const supportA = Math.round(eval(`armeeObject.${BDDA.strategie}.support`) * resteUniteA);
+                    const mortA = Math.round(perteA * raidUniteA * (
+                        eval(`armeeObject.${BDDA.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        eval(`armeeObject.${BDDA.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        eval(`armeeObject.${BDDA.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        eval(`armeeObject.${BDDA.strategie}.support`) * eval(`armeeObject.support.homme`)
+                    ));
+
+                    const aviationB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.aviation`) * resteUniteB);
+                    const infanterieB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.infanterie`) * resteUniteB);
+                    const mecaniseB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.mecanise`) * resteUniteB);
+                    const supportB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.support`) * resteUniteB)
+                    const mortB = Math.round(perteB * raidUniteB * (
+                        eval(`armeeObject.${ArmeeB.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        eval(`armeeObject.${ArmeeB.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        eval(`armeeObject.${ArmeeB.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        eval(`armeeObject.${ArmeeB.strategie}.support`) * eval(`armeeObject.support.homme`)
+                    ));
+
+                    let mortJeuneA = mortA;
+                    let mortAdulteA = 0;
+                    if (mortA > PopulationA.jeune) {
+                        mortAdulteA = mortA - PopulationA.jeune;
+                        mortJeuneA = PopulationA.jeune;
+                    }
+                    let mortJeuneB = mortB;
+                    let mortAdulteB = 0;
+                    if (mortB > PopulationB.jeune) {
+                        mortAdulteB = mortB - PopulationB.jeune;
+                        mortJeuneB = PopulationB.jeune;
+                    }
+
+                    let sql;
+                    if (attaqueA > defenseB) {
+                        //Attaquant wins
+                        if (ressource === 'none') {
+                            const embedA = {
+                                author: {
+                                    name: `${PaysA.rang} de ${PaysA.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: PaysA.drapeau
+                                },
+                                title: `\`Victoire du Raid\``,
+                                fields: [
+                                    {
+                                        name: `> 🛡️ Défenseur`,
+                                        value:
+                                            `<@${PaysB.id_joueur}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                color: 0x00cc00,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${PaysA.devise}`
+                                },
+                            };
+                            interaction.message.edit({ embeds: [embedA], components: [] });
+                            interaction.deferUpdate()
+
+                            const embedB = {
+                                author: {
+                                    name: `${PaysB.rang} de ${PaysB.nom}`,
+                                    icon_url: PaysB.avatarURL
+                                },
+                                thumbnail: {
+                                    url: PaysB.drapeau
+                                },
+                                title: `\`Défaite d'un Raid\``,
+                                fields: [
+                                    {
+                                        name: `> 🗡️ Attaquant`,
+                                        value:
+                                            `<@${interaction.user.id}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                color: 0xFF0000,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${PaysB.devise}`
+                                },
+                            };
+                            const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                            salonB.send({embeds: [embedB]});
+
+                            sql = `
+                                UPDATE armee SET unite=unite-${uniteEnMoinsA},
+                                                 aviation=aviation+${aviationA},
+                                                 infanterie=infanterie+${infanterieA},
+                                                 mecanise=mecanise+${mecaniseA},
+                                                 support=support+${supportA} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE population SET jeune=jeune-${mortJeuneA},
+                                                      adulte=adulte-${mortAdulteA} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE armee SET unite=unite-${uniteEnMoinsB},
+                                                 aviation=aviation+${aviationB},
+                                                 infanterie=infanterie+${infanterieB},
+                                                 mecanise=mecanise+${mecaniseB},
+                                                 support=support+${supportB} WHERE id_joueur='${id_joueur}';
+                                UPDATE batiments SET ${batimentBataille}=${batimentBataille}-1 WHERE id_joueur='${id_joueur}';
+                                UPDATE population SET jeune=jeune-${mortJeuneB},
+                                                      adulte=adulte-${mortAdulteB} WHERE id_joueur='${id_joueur}';
+                            `;
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
+                        } else {
+                            const embedA = {
+                                author: {
+                                    name: `${PaysA.rang} de ${PaysA.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: PaysA.drapeau
+                                },
+                                title: `\`Victoire du Raid\``,
+                                fields: [
+                                    {
+                                        name: `> 🛡️ Défenseur`,
+                                        value:
+                                            `<@${PaysB.id_joueur}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit : ${nomBatiment}\n` +
+                                            ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                color: 0x00cc00,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${PaysA.devise}`
+                                },
+                            };
+                            interaction.message.edit({ embeds: [embedA], components: [] });
+                            interaction.deferUpdate()
+
+                            const embedB = {
+                                author: {
+                                    name: `${PaysB.rang} de ${PaysB.nom}`,
+                                    icon_url: PaysB.avatarURL
+                                },
+                                thumbnail: {
+                                    url: PaysB.drapeau
+                                },
+                                title: `\`Défaite d'un Raid\``,
+                                fields: [
+                                    {
+                                        name: `> 🗡️ Attaquant`,
+                                        value:
+                                            `<@${interaction.user.id}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit : ${nomBatiment}\n` +
+                                            ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                color: 0xFF0000,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${PaysB.devise}`
+                                },
+                            };
+                            const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                            salonB.send({embeds: [embedB]});
+
+                            sql = `
+                                UPDATE armee SET unite=unite-${uniteEnMoinsA},
+                                                 aviation=aviation+${aviationA},
+                                                 infanterie=infanterie+${infanterieA},
+                                                 mecanise=mecanise+${mecaniseA},
+                                                 support=support+${supportA} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE ressources SET ${ressource}=${ressource}+${pillage} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE population SET jeune=jeune-${mortJeuneA},
+                                                      adulte=adulte-${mortAdulteA} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE armee SET unite=unite-${uniteEnMoinsB},
+                                                 aviation=aviation+${aviationB},
+                                                 infanterie=infanterie+${infanterieB},
+                                                 mecanise=mecanise+${mecaniseB},
+                                                 support=support+${supportB} WHERE id_joueur='${id_joueur}';
+                                UPDATE ressources SET ${ressource}=${ressource}-${pillage} WHERE id_joueur='${id_joueur}';
+                                UPDATE batiments SET ${batimentBataille}=${batimentBataille}-1 WHERE id_joueur='${id_joueur}';
+                                UPDATE population SET jeune=jeune-${mortJeuneB},
+                                                      adulte=adulte-${mortAdulteB} WHERE id_joueur='${id_joueur}';
+                            `;
+                            connection.query(sql, async(err) => {if (err) {throw err;}})
+                        }
+                    } else {
+                        //Defender wins
+                        const embedA = {
+                            author: {
+                                name: `${PaysA.rang} de ${PaysA.nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: PaysA.drapeau
+                            },
+                            title: `\`Victoire du Raid\``,
+                            fields: [
+                                {
+                                    name: `> 🛡️ Défenseur`,
+                                    value:
+                                        `<@${PaysB.id_joueur}>\n` + `\u200B`
+                                },
+                                {
+                                    name: `> 🪖 Unités`,
+                                    value: codeBlock(
+                                        ` Attaquant : ${raidUniteA}\n` +
+                                        ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 🏕️ Autres`,
+                                    value: codeBlock(
+                                        ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                        ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 💥 Dégâts`,
+                                    value: codeBlock(
+                                        ` Attaque : ${attaqueA}\n` +
+                                        ` Défense : ${defenseB}\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 🪦 Pertes`,
+                                    value: codeBlock(
+                                        ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                        ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                        ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                        ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                },
+                            ],
+                            color: 0xFF0000,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${PaysA.devise}`
+                            },
+                        };
+                        interaction.message.edit({ embeds: [embedA], components: [] });
+                        interaction.deferUpdate()
+
+                        const embedB = {
+                            author: {
+                                name: `${PaysB.rang} de ${PaysB.nom}`,
+                                icon_url: PaysB.avatarURL
+                            },
+                            thumbnail: {
+                                url: PaysB.drapeau
+                            },
+                            title: `\`Victoire contre un Raid\``,
+                            fields: [
+                                {
+                                    name: `> 🗡️ Attaquant`,
+                                    value:
+                                        `<@${interaction.user.id}>\n` + `\u200B`
+                                },
+                                {
+                                    name: `> 🪖 Unités`,
+                                    value: codeBlock(
+                                        ` Attaquant : ${raidUniteA}\n` +
+                                        ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 🏕️ Autres`,
+                                    value: codeBlock(
+                                        ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                        ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 💥 Dégâts`,
+                                    value: codeBlock(
+                                        ` Attaque : ${attaqueA}\n` +
+                                        ` Défense : ${defenseB}\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 🪦 Pertes`,
+                                    value: codeBlock(
+                                        ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                        ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                        ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                        ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                },
+                            ],
+                            color: 0x00cc00,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${PaysB.devise}`
+                            },
+                        };
+                        const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                        salonB.send({embeds: [embedB]});
+
+                        sql = `
+                                UPDATE armee SET unite=unite-${uniteEnMoinsA},
+                                                 aviation=aviation+${aviationA},
+                                                 infanterie=infanterie+${infanterieA},
+                                                 mecanise=mecanise+${mecaniseA},
+                                                 support=support+${supportA} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE population SET jeune=jeune-${mortJeuneA},
+                                                      adulte=adulte-${mortAdulteA} WHERE id_joueur='${interaction.user.id}';
+                                UPDATE armee SET unite=unite-${uniteEnMoinsB},
+                                                 aviation=aviation+${aviationB},
+                                                 infanterie=infanterie+${infanterieB},
+                                                 mecanise=mecanise+${mecaniseB},
+                                                 support=support+${supportB} WHERE id_joueur='${id_joueur}';
+                                UPDATE batiments SET ${batimentBataille}=${batimentBataille}-1 WHERE id_joueur='${id_joueur}';
+                                UPDATE population SET jeune=jeune-${mortJeuneB},
+                                                      adulte=adulte-${mortAdulteB} WHERE id_joueur='${id_joueur}';
+                            `;
+                        connection.query(sql, async(err) => {if (err) {throw err;}})
+                    }
+
+                    const embed = {
+                        title: `\`Raid\``,
+                        fields: [
+                            {
+                                name: `> Combattants`,
+                                value:
+                                    `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
+                                    `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
+                            },
+                            {
+                                name: `> 🪖 Unités`,
+                                value: codeBlock(
+                                    ` Attaquant : ${raidUniteA}\n` +
+                                    ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                            },
+                            {
+                                name: `> 🏕️ Autres`,
+                                value: codeBlock(
+                                    ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                    ` raidUnite : ${raidUnite}\n` +
+                                    ` Bâtiment détruit: ${nomBatiment}\n` +
+                                    ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                            },
+                            {
+                                name: `> 💥 Dégâts`,
+                                value: codeBlock(
+                                    ` Attaque : ${attaqueA}\n` +
+                                    ` Défense : ${defenseB}\n`) + `\u200B`
+                            },
+                            {
+                                name: `> 🪦 Pertes`,
+                                value: codeBlock(
+                                    ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                    ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                    ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                    ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                            },
+                        ],
+                        timestamp: new Date(),
+                    }
+                    const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+                    salon_logs.send({embeds: [embed]});
+
+
                 });
                 //endregion
             }
@@ -4267,26 +7147,134 @@ module.exports = {
             //region Usine
             if (interaction.customId === 'usine') {
                 sql = `
+                    SELECT * FROM armee WHERE id_joueur=${interaction.member.id};
                     SELECT * FROM batiments WHERE id_joueur=${interaction.member.id};
                     SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
+                    SELECT * FROM population WHERE id_joueur=${interaction.member.id};
                     SELECT * FROM ressources WHERE id_joueur=${interaction.member.id};
                     SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
                 `;
-                connection.query(sql, async (err, results) => {
-                    if (err) {
-                        throw err;
-                    }
-                    const Batiment = results[0][0];
-                    const Pays = results[1][0];
-                    const Ressource = results[2][0];
-                    const Territoire = results[3][0];
+                connection.query(sql, async (err, results) => {if (err) {throw err;}
+                    const Armee = results[0][0];
+                    const Batiment = results[1][0];
+                    const Pays = results[2][0];
+                    const Population = results[3][0];
+                    const Ressources = results[4][0];
+                    const Territoire = results[5][0];
                     let Electricite;
+                    let Prod;
+                    let Conso;
+                    let Diff;
 
-                    const ressourceObject = JSON.parse(readFileSync('data/ressource.json', 'utf-8'));
-                    const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
-                    const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
+                    //region Calcul du taux d'emploies
+                    const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
+                    const emploies_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
+                    const emploies_carriere_sable = batimentObject.carriere_sable.EMPLOYES_CARRIERE_SABLE * Batiment.carriere_sable;
+                    const emploies_centrale_biomasse = batimentObject.centrale_biomasse.EMPLOYES_CENTRALE_BIOMASSE * Batiment.centrale_biomasse;
+                    const emploies_centrale_charbon = batimentObject.centrale_charbon.EMPLOYES_CENTRALE_CHARBON * Batiment.centrale_charbon;
+                    const emploies_centrale_fioul = batimentObject.centrale_fioul.EMPLOYES_CENTRALE_FIOUL * Batiment.centrale_fioul;
+                    const emploies_champ = batimentObject.champ.EMPLOYES_CHAMP * Batiment.champ;
+                    const emploies_cimenterie = batimentObject.cimenterie.EMPLOYES_CIMENTERIE * Batiment.cimenterie;
+                    const emploies_derrick = batimentObject.derrick.EMPLOYES_DERRICK * Batiment.derrick;
+                    const emploies_eolienne = batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne;
+                    const emploies_mine_charbon = batimentObject.mine_charbon.EMPLOYES_MINE_CHARBON * Batiment.mine_charbon;
+                    const emploies_mine_metaux = batimentObject.mine_metaux.EMPLOYES_MINE_METAUX * Batiment.mine_metaux;
+                    const emploies_station_pompage = batimentObject.station_pompage.EMPLOYES_STATION_POMPAGE * Batiment.station_pompage;
+                    const emploies_raffinerie = batimentObject.raffinerie.EMPLOYES_RAFFINERIE * Batiment.raffinerie;
+                    const emploies_scierie = batimentObject.scierie.EMPLOYES_SCIERIE * Batiment.scierie;
+                    const emploies_usine_civile = batimentObject.usine_civile.EMPLOYES_USINE_CIVILE * Batiment.usine_civile;
+                    const emploies_total =
+                        emploies_acierie + emploies_atelier_verre + emploies_carriere_sable +
+                        emploies_centrale_biomasse + emploies_centrale_charbon + emploies_centrale_fioul +
+                        emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
+                        emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
+                        emploies_raffinerie + emploies_scierie + emploies_usine_civile;
+                    const hommeArmee =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                        (Armee.aviation * armeeObject.aviation.homme) +
+                        (Armee.infanterie * armeeObject.infanterie.homme) +
+                        (Armee.mecanise * armeeObject.mecanise.homme) +
+                        (Armee.support * armeeObject.support.homme);
 
-                    let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses);
+                    let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                    if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
+                        emplois = 1
+                    }
+                    //endregion
+
+                    const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
+
+                    //region Production d'électricité
+                    //region Production d'électricté des centrales biomasse
+                    const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
+                    let prod_centrale_biomasse = true;
+                    if (conso_T_centrale_biomasse_bois > Ressources.bois && conso_T_centrale_biomasse_bois !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse
+                    if (conso_T_centrale_biomasse_eau > Ressources.eau && conso_T_centrale_biomasse_eau !== 0) {
+                        prod_centrale_biomasse = false;
+                    }
+                    //endregion
+                    //region Production d'électricté des centrales au charbon
+                    const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
+                    let prod_centrale_charbon = true;
+                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_bois !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
+                    if (conso_T_centrale_charbon_eau > Ressources.eau && conso_T_centrale_charbon_eau !== 0) {
+                        prod_centrale_charbon = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des centrales au fioul
+                    const conso_T_centrale_fioul_carburant = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_CARBURANT * Batiment.centrale_fioul
+                    let prod_centrale_fioul = true;
+                    if (conso_T_centrale_fioul_carburant > Ressources.carburant && conso_T_centrale_fioul_carburant !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
+                    if (conso_T_centrale_fioul_eau > Ressources.eau && conso_T_centrale_fioul_eau !== 0) {
+                        prod_centrale_fioul = false;
+                    }
+                    //endregion
+                    //region Production d'électricité des éoliennes
+                    let prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
+
+                    let prod_elec = prod_eolienne;
+                    if (prod_centrale_biomasse === true) {
+                        prod_elec += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
+                    }
+                    if (prod_centrale_charbon === true) {
+                        prod_elec += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
+                    }
+                    if (prod_centrale_fioul === true) {
+                        prod_elec += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
+                    }
+                    //endregion
+                    //region Consommation totale d'électricté
+                    const conso_elec = Math.round(
+                        batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
+                        batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
+                        batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
+                        batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
+                        batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
+                        batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
+                        batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
+                        batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
+                        batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
+                        batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
+                        batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
+                        batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
+                        batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
+                    );
+                    //endregion
+                    //endregion
+
+                    let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses + Territoire.mangrove + Territoire.jungle);
                     if (T_bois === 0) {
                         T_bois = 1;
                     }
@@ -4306,7 +7294,7 @@ module.exports = {
                     if (T_metaux === 0) {
                         T_metaux = 1;
                     }
-                    let T_nourriture = (Territoire.prairie + Territoire.savane + Territoire.mangrove + Territoire.steppe)
+                    let T_nourriture = (Territoire.prairie + Territoire.savane + Territoire.steppe + Territoire.jungle)
                     if (T_nourriture === 0) {
                         T_nourriture = 1;
                     }
@@ -4322,6 +7310,30 @@ module.exports = {
                         const conso_acierie_charbon = Math.round(batimentObject.acierie.CONSO_ACIERIE_CHARBON * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_acierie_metaux = Math.round(batimentObject.acierie.CONSO_ACIERIE_METAUX * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_acierie_elec = Math.round(batimentObject.acierie.CONSO_ACIERIE_ELEC);
+
+                        let acierName;
+                        const conso_T_acierie_charbon = Math.round(batimentObject.acierie.CONSO_ACIERIE_CHARBON * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_acierie_metaux = Math.round(batimentObject.acierie.CONSO_ACIERIE_METAUX * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_acierie_charbon > Ressources.charbon) {
+                            acierName = `> ⚠️ Acier : ⚠️`;
+                        } else if (conso_T_acierie_metaux > Ressources.metaux) {
+                            acierName = `> ⚠️ Acier : ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            acierName = `> ⚠️ Acier : ⚠️`;
+                        } else {
+                            acierName = `> <:acier:1075776411329122304> Acier :`;
+                        }
+                        let Acier;
+                        Prod = Math.round(batimentObject.acierie.PROD_ACIERIE * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
+                        Conso = 0
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Acier = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.acier.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Acier = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.acier.toLocaleString('en-US')}`);
+                        } else {
+                            Acier = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.acier.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -4373,8 +7385,8 @@ module.exports = {
                                             `• Totale : ${(prod_acierie * Batiment.acierie).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.acier.toLocaleString('en-US')}`) + `\u200B`
+                                    name: acierName,
+                                    value: Acier + `\u200B`,
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -4415,6 +7427,30 @@ module.exports = {
                         const conso_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_atelier_verre_elec = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC);
 
+                        let verreName;
+                        const conso_T_atelier_verre_eau = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_EAU * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_atelier_verre_eau > Ressources.eau) {
+                            verreName = `> ⚠️ Verre : ⚠️`;
+                        } else if (conso_T_atelier_verre_sable > Ressources.sable) {
+                            verreName = `> ⚠️ Verre : ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            verreName = `> ⚠️ Verre : ⚠️`;
+                        } else {
+                            verreName = `> 🪟 Verre :`;
+                        }
+                        let Verre;
+                        Prod = Math.round(batimentObject.atelier_verre.PROD_ATELIER_VERRE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
+                        const conso_T_usine_civile_verre = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_VERRE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_usine_civile_verre;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Verre = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.verre.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Verre = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.verre.toLocaleString('en-US')}`);
+                        } else {
+                            Verre = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.verre.toLocaleString('en-US')}`);
+                        }
                         const embed = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
@@ -4465,8 +7501,8 @@ module.exports = {
                                             `• Totale : ${(prod_atelier_verre * Batiment.atelier_verre).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.verre.toLocaleString('en-US')}`) + `\u200B`
+                                    name: verreName,
+                                    value: Verre + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -4507,6 +7543,28 @@ module.exports = {
                         const conso_carriere_sable_carburant = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_CARBURANT * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_carriere_sable_elec = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC);
 
+                        let sableName;
+                        const conso_T_carriere_sable_carburant = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_CARBURANT * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_carriere_sable_carburant > Ressources.carburant) {
+                            sableName = `> ⚠️ Sable : ⛏️ x${coef_sable} ⚠️️`;
+                        } else if (prod_elec < conso_elec) {
+                            sableName = `> ⚠️ Sable : ⛏️ x${coef_sable} ⚠️`;
+                        } else {
+                            sableName = `> <:sable:1075776363782479873> Sable : ⛏️ x${coef_sable}`;
+                        }
+                        let Sable;
+                        Prod = Math.round(batimentObject.carriere_sable.PROD_CARRIERE_SABLE * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_sable * emplois);
+                        const conso_T_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_cimenterie_sable = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_SABLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_atelier_verre_sable + conso_T_cimenterie_sable;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Sable = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                        } else {
+                            Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                        }
                         const embed = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
@@ -4541,14 +7599,14 @@ module.exports = {
                                 },
                                 {
                                     name: `> <:sable:1075776363782479873> Production : Sable`,
-                                    value: `⚙ x${coef_sable}\n` +
+                                    value: `⛏️ x${coef_sable}\n` +
                                         codeBlock(
                                         `• Par usine : ${prod_carriere_sable.toLocaleString('en-US')}\n` +
                                         `• Totale : ${(prod_carriere_sable * Batiment.carriere_sable).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.sable.toLocaleString('en-US')}`) + `\u200B`
+                                    name: sableName,
+                                    value: Sable + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -4655,7 +7713,7 @@ module.exports = {
                                         `• Totale : ${(prod_centrale_biomasse * Batiment.centrale_biomasse).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> Flux :`,
+                                    name: `> ⚡ Flux :`,
                                     value: Electricite + `\u200B`
                                 },
                                 {
@@ -4764,7 +7822,7 @@ module.exports = {
                                         `• Totale : ${(prod_centrale_charbon * Batiment.centrale_charbon).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> Flux :`,
+                                    name: `> ⚡ Flux :`,
                                     value: Electricite + `\u200B`
                                 },
                                 {
@@ -4873,7 +7931,7 @@ module.exports = {
                                         `• Totale : ${(prod_centrale_fioul * Batiment.centrale_fioul).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> Flux :`,
+                                    name: `> ⚡ Flux :`,
                                     value: Electricite + `\u200B`
                                 },
                                 {
@@ -4910,12 +7968,35 @@ module.exports = {
                         //endregion
                     } else if (interaction.values == 'champ') {
                         //region Champ
-                        const coef_nourriture = parseFloat(((Territoire.prairie/T_nourriture) * ressourceObject.nourriture.prairie + (Territoire.savane/T_nourriture) * ressourceObject.nourriture.savane + (Territoire.mangrove/T_nourriture) * ressourceObject.nourriture.mangrove + (Territoire.steppe/T_nourriture) * ressourceObject.nourriture.steppe + (Territoire.jungle/T_nourriture) * ressourceObject.nourriture.jungle).toFixed(2))
-
+                        const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
                         const prod_champ = Math.round(batimentObject.champ.PROD_CHAMP * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture);
                         const conso_champ_carburant = Math.round(batimentObject.champ.CONSO_CHAMP_CARBURANT * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_champ_eau = Math.round(batimentObject.champ.CONSO_CHAMP_EAU * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_champ_elec = Math.round(batimentObject.champ.CONSO_CHAMP_ELEC);
+
+                        let nourritureName;
+                        const conso_T_champ_carburant = Math.round(batimentObject.champ.CONSO_CHAMP_CARBURANT * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_champ_eau = Math.round(batimentObject.champ.CONSO_CHAMP_EAU * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_champ_carburant > Ressources.carburant) {
+                            nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                        } else if (conso_T_champ_eau > Ressources.eau) {
+                            nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                        } else {
+                            nourritureName = `> 🌽 Nourriture : ⛏️ x${coef_nourriture}`;
+                        }
+                        let Nourriture;
+                        Prod = Math.round(batimentObject.champ.PROD_CHAMP * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture * emplois);
+                        Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO) / 48);
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Nourriture = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                        } else {
+                            Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -4962,14 +8043,14 @@ module.exports = {
                                 },
                                 {
                                     name: `> 🌽 Production : Nourriture`,
-                                    value: `⚙ x${coef_nourriture}\n` +
+                                    value: `⛏️ x${coef_nourriture}\n` +
                                         codeBlock(
                                         `• Par usine : ${prod_champ.toLocaleString('en-US')}\n` +
                                         `• Totale : ${(prod_champ * Batiment.champ).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.nourriture.toLocaleString('en-US')}`) + `\u200B`
+                                    name: nourritureName,
+                                    value: Nourriture + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5002,6 +8083,91 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
+                    } else if (interaction.values == 'eolienne') {
+                        //region Champ d'éolienne
+                        const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
+                        const prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * coef_eolienne);
+
+                        let Prod = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
+                        Prod += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
+                        Prod += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
+                        Prod += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
+                        const Conso = Math.round(
+                            batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
+                            batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
+                            batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
+                            batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
+                            batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
+                            batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
+                            batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
+                            batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
+                            batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
+                            batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
+                            batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
+                            batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
+                            batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
+                        );
+                        const Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Electricite = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}'`);
+                        } else if (Diff / Prod >= 0) {
+                            Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}`);
+                        } else {
+                            Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}`);
+                        }
+
+                        const embed = {
+                            author: {
+                                name: `${Pays.rang} de ${Pays.nom}`,
+                                icon_url: interaction.member.displayAvatarURL()
+                            },
+                            thumbnail: {
+                                url: Pays.drapeau
+                            },
+                            title: `\`Usine : ${Batiment.eolienne} champs d'éoliennes\``,
+                            fields: [
+                                {
+                                    name: `> ⚡ Production : Electricité`,
+                                    value: codeBlock(
+                                        `• Par usine : ${(prod_eolienne).toLocaleString('en-US')}\n` +
+                                        `• Totale : ${(prod_eolienne * Batiment.eolienne).toLocaleString('en-US')}`) + `\u200B`
+                                },
+                                {
+                                    name: `> ⚡ Flux :`,
+                                    value: Electricite + `\u200B`
+                                },
+                                {
+                                    name: `> 🏞️ Surface :`,
+                                    value:
+                                        `Unitaire : \n` +
+                                        codeBlock(
+                                            `• ${(batimentObject.eolienne.SURFACE_EOLIENNE).toLocaleString('en-US')} km²`) +
+                                        `Totale : \n` +
+                                        codeBlock(
+                                            `• ${(batimentObject.eolienne.SURFACE_EOLIENNE * Batiment.eolienne).toLocaleString('en-US')} km²`) + `\u200B`,
+                                    inline: true
+                                },
+                                {
+                                    name: `> 👩‍🔧 Employés :`,
+                                    value:
+                                        `Unitaire : \n` +
+                                        codeBlock(
+                                            `• ${(batimentObject.eolienne.EMPLOYES_EOLIENNE).toLocaleString('en-US')}`) +
+                                        `Totale : \n` +
+                                        codeBlock(
+                                            `• ${(batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne).toLocaleString('en-US')}`) + `\u200B`,
+                                    inline: true
+                                },
+                            ],
+                            color: interaction.member.displayColor,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${Pays.devise}`
+                            }
+                        };
+
+                        interaction.reply({embeds: [embed]})
+                        //endregion
                     } else if (interaction.values == 'cimenterie') {
                         //region Cimenterie
                         const prod_cimenterie = Math.round(batimentObject.cimenterie.PROD_CIMENTERIE * eval(`gouvernementObject.${Pays.ideologie}.production`));
@@ -5010,6 +8176,32 @@ module.exports = {
                         const conso_cimenterie_sable = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_SABLE * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_cimenterie_elec = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC);
 
+                        let betonName;
+                        const conso_T_cimenterie_eau = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_EAU * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_cimenterie_petrole = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_PETROLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_cimenterie_sable = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_SABLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_cimenterie_eau > Ressources.eau) {
+                            betonName = `> ⚠️ Béton : ⚠️`;
+                        } else if (conso_T_cimenterie_petrole > Ressources.petrole) {
+                            betonName = `> ⚠️ Béton : ⚠️`;
+                        }else if (conso_T_cimenterie_sable > Ressources.sable) {
+                            betonName = `> ⚠️ Béton : ⚠️`;
+                        }else if (prod_elec < conso_elec) {
+                            betonName = `> ⚠️ Béton : ⚠️`;
+                        } else {
+                            betonName = `> <:beton:1075776342227943526> Béton :`;
+                        }
+                        let Beton;
+                        Prod = Math.round(batimentObject.cimenterie.PROD_CIMENTERIE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
+                        Conso = 0
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Beton = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.beton.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Beton = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.beton.toLocaleString('en-US')}`);
+                        } else {
+                            Beton = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.beton.toLocaleString('en-US')}`);
+                        }
                         const embed = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
@@ -5071,8 +8263,8 @@ module.exports = {
                                             `• Totale : ${(prod_cimenterie * Batiment.cimenterie).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.beton.toLocaleString('en-US')}`) + `\u200B`
+                                    name: betonName,
+                                    value: Beton + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5113,6 +8305,30 @@ module.exports = {
                         const prod_derrick = Math.round(batimentObject.derrick.PROD_DERRICK * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_petrole);
                         const conso_derrick_metaux = Math.round(batimentObject.derrick.CONSO_DERRICK_METAUX * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_derrick_elec = Math.round(batimentObject.derrick.CONSO_DERRICK_ELEC);
+                        const conso_T_derrick_metaux = Math.round(batimentObject.derrick.CONSO_DERRICK_METAUX * Batiment.derrick * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+
+                        let petroleName;
+                        if (conso_T_derrick_metaux > Ressources.metaux) {
+                            petroleName = `> ⚠️ Pétrole : ⛏️ x${coef_petrole} ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            petroleName = `> ⚠️ Pétrole : ⛏️ x${coef_petrole} ⚠️`;
+                        } else {
+                            petroleName = `> 🛢️ Pétrole : ⛏️ x${coef_petrole}`;
+                        }
+                        let Petrole;
+                        Prod = Math.round(batimentObject.derrick.PROD_DERRICK * Batiment.derrick * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_petrole * emplois);
+                        const conso_T_cimenterie_petrole = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_PETROLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_raffinerie_petrole = Math.round(batimentObject.raffinerie.CONSO_RAFFINERIE_PETROLE * Batiment.raffinerie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_usine_civile_petrole = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_PETROLE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_cimenterie_petrole + conso_T_raffinerie_petrole + conso_T_usine_civile_petrole;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Petrole = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                        } else {
+                            Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -5122,7 +8338,7 @@ module.exports = {
                             thumbnail: {
                                 url: Pays.drapeau
                             },
-                            title: `\`Usine : ${Batiment.champ} Derrick\``,
+                            title: `\`Usine : ${Batiment.derrick} Derrick\``,
                             fields: [
                                 {
                                     name: `> 🪨 Consommation :`,
@@ -5148,14 +8364,14 @@ module.exports = {
                                 },
                                 {
                                     name: `> 🛢️ Production : Pétrole`,
-                                    value: `⚙ x${coef_petrole}\n` +
+                                    value: `⛏️ x${coef_petrole}\n` +
                                         codeBlock(
                                             `• Par usine : ${prod_derrick.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_derrick * Batiment.derrick).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.petrole.toLocaleString('en-US')}`) + `\u200B`
+                                    name: petroleName,
+                                    value: Petrole + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5189,91 +8405,6 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'eolienne') {
-                        //region Eolienne
-                        const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
-                        const prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * coef_eolienne);
-
-                        let Prod = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
-                        Prod += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
-                        Prod += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
-                        Prod += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
-                        const Conso = Math.round(
-                            batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
-                            batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
-                            batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
-                            batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
-                            batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
-                            batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
-                            batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
-                            batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
-                            batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
-                            batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
-                            batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
-                            batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
-                            batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
-                        );
-                        const Diff = Prod - Conso;
-                        if (Diff / Prod > 0.1) {
-                            Electricite = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}'`);
-                        } else if (Diff / Prod >= 0) {
-                            Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}`);
-                        } else {
-                            Electricite = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} | ${Diff.toLocaleString('en-US')}`);
-                        }
-
-                        const embed = {
-                            author: {
-                                name: `${Pays.rang} de ${Pays.nom}`,
-                                icon_url: interaction.member.displayAvatarURL()
-                            },
-                            thumbnail: {
-                                url: Pays.drapeau
-                            },
-                            title: `\`Usine : ${Batiment.eolienne} Eolienne\``,
-                            fields: [
-                                {
-                                    name: `> ⚡ Production : Electricité`,
-                                    value: codeBlock(
-                                        `• Par usine : ${(prod_eolienne).toLocaleString('en-US')}\n` +
-                                        `• Totale : ${(prod_eolienne * Batiment.eolienne).toLocaleString('en-US')}`) + `\u200B`
-                                },
-                                {
-                                    name: `> Flux :`,
-                                    value: Electricite + `\u200B`
-                                },
-                                {
-                                    name: `> 🏞️ Surface :`,
-                                    value:
-                                        `Unitaire : \n` +
-                                        codeBlock(
-                                            `• ${(batimentObject.eolienne.SURFACE_EOLIENNE).toLocaleString('en-US')} km²`) +
-                                        `Totale : \n` +
-                                        codeBlock(
-                                            `• ${(batimentObject.eolienne.SURFACE_EOLIENNE * Batiment.eolienne).toLocaleString('en-US')} km²`) + `\u200B`,
-                                    inline: true
-                                },
-                                {
-                                    name: `> 👩‍🔧 Employés :`,
-                                    value:
-                                        `Unitaire : \n` +
-                                        codeBlock(
-                                            `• ${(batimentObject.eolienne.EMPLOYES_EOLIENNE).toLocaleString('en-US')}`) +
-                                        `Totale : \n` +
-                                        codeBlock(
-                                            `• ${(batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne).toLocaleString('en-US')}`) + `\u200B`,
-                                    inline: true
-                                },
-                            ],
-                            color: interaction.member.displayColor,
-                            timestamp: new Date(),
-                            footer: {
-                                text: `${Pays.devise}`
-                            }
-                        };
-
-                        interaction.reply({embeds: [embed]})
-                        //endregion
                     } else if (interaction.values == 'mine_charbon') {
                         //region Mine de charbon
                         const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
@@ -5281,6 +8412,28 @@ module.exports = {
                         const prod_mine_charbon = Math.round(batimentObject.mine_charbon.PROD_MINE_CHARBON * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_charbon);
                         const conso_mine_charbon_carburant = Math.round(batimentObject.mine_charbon.CONSO_MINE_CHARBON_CARBURANT * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_mine_charbon_elec = Math.round(batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC);
+
+                        let charbonName;
+                        const conso_T_mine_charbon_carburant = Math.round(batimentObject.mine_charbon.CONSO_MINE_CHARBON_CARBURANT * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_mine_charbon_carburant > Ressources.carburant) {
+                            charbonName = `> ⚠️ Charbon : ⛏️ x${coef_charbon} ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            charbonName = `> ⚠️ Charbon : ⛏️ x${coef_charbon} ⚠️`;
+                        } else {
+                            charbonName = `> <:charbon:1075776385517375638> Charbon : ⛏️ x${coef_charbon}`;
+                        }
+                        let Charbon;
+                        Prod = Math.round(batimentObject.mine_charbon.PROD_MINE_CHARBON * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_charbon * emplois);
+                        const conso_T_acierie_charbon = Math.round(batimentObject.acierie.CONSO_ACIERIE_CHARBON * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_acierie_charbon + conso_T_centrale_charbon_charbon;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Charbon = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                        } else {
+                            Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -5316,14 +8469,14 @@ module.exports = {
                                 },
                                 {
                                     name: `> <:charbon:1075776385517375638> Production : Charbon`,
-                                    value: `⚙ x${coef_charbon}\n` +
+                                    value: `⛏️ x${coef_charbon}\n` +
                                         codeBlock(
                                             `• Par usine : ${prod_mine_charbon.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_mine_charbon * Batiment.mine_charbon).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.charbon.toLocaleString('en-US')}`) + `\u200B`
+                                    name: charbonName,
+                                    value: Charbon + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5364,6 +8517,30 @@ module.exports = {
                         const conso_mine_metaux_carburant = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_CARBURANT * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_mine_metaux_elec = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC);
 
+                        let metauxName;
+                        const conso_T_mine_metaux_carburant = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_CARBURANT * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_mine_metaux_carburant > Ressources.carburant) {
+                            metauxName = `> ⚠️ Metaux : ⛏️ x${coef_metaux} ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            metauxName = `> ⚠️ Metaux : ⛏️ x${coef_metaux} ⚠️`;
+                        } else {
+                            metauxName = `> 🪨 Metaux : ⛏️ x${coef_metaux}`;
+                        }
+                        let Metaux;
+                        Prod = Math.round(batimentObject.mine_metaux.PROD_MINE_METAUX * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_metaux * emplois);
+                        const conso_T_acierie_metaux = Math.round(batimentObject.acierie.CONSO_ACIERIE_METAUX * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_derrick_metaux = Math.round(batimentObject.derrick.CONSO_DERRICK_METAUX * Batiment.derrick * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_usine_civile_metaux = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_METAUX * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_acierie_metaux + conso_T_derrick_metaux + conso_T_usine_civile_metaux;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Metaux = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                        } else {
+                            Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                        }
+
                         const embed = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
@@ -5398,14 +8575,14 @@ module.exports = {
                                 },
                                 {
                                     name: `> 🪨 Production : Métaux`,
-                                    value: `⚙ x${coef_metaux}\n` +
+                                    value: `⛏️ x${coef_metaux}\n` +
                                         codeBlock(
                                             `• Par usine : ${prod_mine_metaux.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_mine_metaux * Batiment.mine_metaux).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.metaux.toLocaleString('en-US')}`) + `\u200B`
+                                    name: metauxName,
+                                    value: Metaux + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5441,11 +8618,36 @@ module.exports = {
                         //endregion
                     } else if (interaction.values == 'station_pompage') {
                         //region Station de pompage
-                        const coef_eau = parseFloat(((Territoire.foret/T_eau) * ressourceObject.eau.foret + (Territoire.prairie/T_eau) * ressourceObject.eau.prairie + (Territoire.toundra/T_eau) * ressourceObject.eau.toundra + (Territoire.taiga/T_eau) * ressourceObject.eau.taiga + (Territoire.savane/T_eau) * ressourceObject.eau.savane + (Territoire.rocheuses/T_eau) * ressourceObject.eau.rocheuses + (Territoire.mangrove/T_eau) * ressourceObject.eau.mangrove + (Territoire.steppe/T_eau) * ressourceObject.eau.steppe  + (Territoire.jungle/T_eau) * ressourceObject.eau.jungle  + (Territoire.lac/T_eau) * ressourceObject.eau.lac).toFixed(2))
+                        const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
 
                         const prod_station_pompage = Math.round(batimentObject.station_pompage.PROD_STATION_POMPAGE * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_eau);
                         const conso_station_pompage_carburant = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_CARBURANT * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_station_pompage_elec = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC);
+
+                        let eauName;
+                        const conso_T_station_pompage_carburant = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_CARBURANT * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_station_pompage_carburant > Ressources.carburant) {
+                            eauName = `> ⚠️ Eau : ⛏️ x${coef_eau} ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            eauName = `> ⚠️ Eau : ⛏️ x${coef_eau} ⚠️`;
+                        } else {
+                            eauName = `> 💧 Eau : ⛏️ x${coef_eau}`;
+                        }
+                        let Eau;
+                        Prod = Math.round(batimentObject.station_pompage.PROD_STATION_POMPAGE * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_eau * emplois);
+                        const conso_T_atelier_verre_eau = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_EAU * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_champ_eau = Math.round(batimentObject.champ.CONSO_CHAMP_EAU * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_cimenterie_eau = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_EAU * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_pop = Math.round((Population.habitant * populationObject.EAU_CONSO) / 48);
+                        Conso = conso_T_atelier_verre_eau + conso_T_champ_eau + conso_T_cimenterie_eau + conso_T_centrale_biomasse_eau + conso_T_centrale_charbon_eau + conso_T_centrale_fioul_eau + conso_pop;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Eau = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                        } else {
+                            Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -5481,14 +8683,14 @@ module.exports = {
                                 },
                                 {
                                     name: `> 💧 Production : Eau`,
-                                    value: `⚙ x${coef_eau}\n` +
+                                    value: `⛏️ x${coef_eau}\n` +
                                         codeBlock(
                                             `• Par usine : ${prod_station_pompage.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_station_pompage * Batiment.station_pompage).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.eau.toLocaleString('en-US')}`) + `\u200B`
+                                    name: eauName,
+                                    value: Eau + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5527,6 +8729,33 @@ module.exports = {
                         const prod_raffinerie = Math.round(batimentObject.raffinerie.PROD_RAFFINERIE * eval(`gouvernementObject.${Pays.ideologie}.production`));
                         const conso_raffinerie_petrole = Math.round(batimentObject.raffinerie.CONSO_RAFFINERIE_PETROLE * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_raffinerie_elec = Math.round(batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC);
+
+                        let carburantName;
+                        const conso_T_raffinerie_petrole = Math.round(batimentObject.raffinerie.CONSO_RAFFINERIE_PETROLE * Batiment.raffinerie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_raffinerie_petrole > Ressources.petrole) {
+                            carburantName = `> ⚠️ Carburant : ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            carburantName = `> ⚠️ Carburant : ⚠️`;
+                        } else {
+                            carburantName = `> ⛽ Carburant :`;
+                        }
+                        let Carburant;
+                        Prod = Math.round(batimentObject.raffinerie.PROD_RAFFINERIE * Batiment.raffinerie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
+                        const conso_T_carriere_sable_carburant = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_CARBURANT * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_champ_carburant = Math.round(batimentObject.champ.CONSO_CHAMP_CARBURANT * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_mine_charbon_carburant = Math.round(batimentObject.mine_charbon.CONSO_MINE_CHARBON_CARBURANT * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_mine_metaux_carburant = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_CARBURANT * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_station_pompage_carburant = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_CARBURANT * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_scierie_carburant = Math.round(batimentObject.scierie.CONSO_SCIERIE_CARBURANT * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_carriere_sable_carburant + conso_T_champ_carburant + conso_T_mine_charbon_carburant + conso_T_mine_metaux_carburant + conso_T_station_pompage_carburant + conso_T_scierie_carburant + conso_T_centrale_fioul_carburant;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Carburant = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.carburant.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Carburant = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.carburant.toLocaleString('en-US')}`);
+                        } else {
+                            Carburant = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.carburant.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -5567,8 +8796,8 @@ module.exports = {
                                             `• Totale : ${(prod_raffinerie * Batiment.raffinerie).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.carburant.toLocaleString('en-US')}`) + `\u200B`
+                                    name: carburantName,
+                                    value: Carburant + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5604,11 +8833,33 @@ module.exports = {
                         //endregion
                     } else if (interaction.values == 'scierie') {
                         //region Scierie
-                        const coef_bois = parseFloat(((Territoire.foret/T_bois) * ressourceObject.bois.foret + (Territoire.taiga/T_bois) * ressourceObject.bois.taiga + (Territoire.rocheuses/T_bois) * ressourceObject.bois.rocheuses + (Territoire.mangrove/T_bois) * ressourceObject.bois.mangrove + (Territoire.jungle/T_bois) * ressourceObject.bois.jungle).toFixed(2))
+                        const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
 
                         const prod_scierie = Math.round(batimentObject.scierie.PROD_SCIERIE * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_bois);
                         const conso_scierie_carburant = Math.round(batimentObject.scierie.CONSO_SCIERIE_CARBURANT * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_scierie_elec = Math.round(batimentObject.scierie.CONSO_SCIERIE_ELEC);
+
+                        let boisName;
+                        const conso_T_scierie_carburant = Math.round(batimentObject.scierie.CONSO_SCIERIE_CARBURANT * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_scierie_carburant > Ressources.carburant) {
+                            boisName = `> ⚠️ Bois : ⛏️ x${coef_bois} ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            boisName = `> ⚠️ Bois : ⛏️ x${coef_bois} ⚠️`;
+                        } else {
+                            boisName = `> 🪵 Bois : ⛏️ x${coef_bois}`;
+                        }
+                        let Bois;
+                        Prod = Math.round(batimentObject.scierie.PROD_SCIERIE * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_bois * emplois);
+                        const conso_T_usine_civile_bois = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_BOIS * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        Conso = conso_T_usine_civile_bois + conso_T_centrale_biomasse_bois;
+                        Diff = Prod - Conso;
+                        if (Diff / Prod > 0.1) {
+                            Bois = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                        } else if (Diff / Prod >= 0) {
+                            Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                        } else {
+                            Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -5643,15 +8894,15 @@ module.exports = {
                                     inline: true
                                 },
                                 {
-                                    name: `> 🪵 Production : Pétrole`,
-                                    value: `⚙ x${coef_bois}\n` +
+                                    name: `> 🪵 Production : Bois`,
+                                    value: `⛏️ x${coef_bois}\n` +
                                         codeBlock(
                                             `• Par usine : ${prod_scierie.toLocaleString('en-US')}\n` +
                                             `• Totale : ${(prod_scierie * Batiment.scierie).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.bois.toLocaleString('en-US')}`) + `\u200B`
+                                    name: boisName,
+                                    value: Bois + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5694,6 +8945,36 @@ module.exports = {
                         const conso_usine_civile_petrole = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_PETROLE * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_usine_civile_verre = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_VERRE * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
                         const conso_usine_civile_elec = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC);
+
+                        let bcName;
+                        const conso_T_usine_civile_bois = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_BOIS * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_usine_civile_metaux = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_METAUX * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_usine_civile_petrole = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_PETROLE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        const conso_T_usine_civile_verre = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_VERRE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                        if (conso_T_usine_civile_bois > Ressources.bois) {
+                            bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                        } else if (conso_T_usine_civile_metaux > Ressources.metaux) {
+                            bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                        } else if (conso_T_usine_civile_petrole > Ressources.petrole) {
+                            bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                        } else if (conso_T_usine_civile_verre > Ressources.verre) {
+                            bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                        } else if (prod_elec < conso_elec) {
+                            bcName = `> ⚠️ Biens de consommation : ⚠️`;
+                        } else {
+                            bcName = `> 💻 Biens de consommation :`;
+                        }
+                        let Bc;
+                        Prod = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
+                        Conso = Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant / 48 * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`));
+                        Diff = Prod - Conso;
+                        if (Diff > 0) {
+                            Bc = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bc.toLocaleString('en-US')}`);
+                        } else if (Diff === 0) {
+                            Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bc.toLocaleString('en-US')}`);
+                        } else {
+                            Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bc.toLocaleString('en-US')}`);
+                        }
 
                         const embed = {
                             author: {
@@ -5767,8 +9048,8 @@ module.exports = {
                                             `• Totale : ${(prod_usine_civile * Batiment.usine_civile).toLocaleString('en-US')}`) + `\u200B`
                                 },
                                 {
-                                    name: `> 📦 En réserve :`,
-                                    value: codeBlock(`• ${Ressource.bc.toLocaleString('en-US')}`) + `\u200B`
+                                    name: bcName,
+                                    value: Bc + `\u200B`
                                 },
                                 {
                                     name: `> 🏞️ Surface :`,
@@ -5807,11 +9088,8 @@ module.exports = {
                 //endregion
             } else if (interaction.customId === 'menu_start') {
                 //region Start
-                sql = `SELECT * FROM pays WHERE id_joueur=${interaction.member.id}`;
-                connection.query(sql, async (err, results) => {
-                    if (err) {
-                        throw err;
-                    }
+                sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                connection.query(sql, async (err, results) => {if (err) {throw err;}
                     if (results.length === 0) {
                         function modalStart(region) {
                             const modal = new ModalBuilder()
@@ -5841,11 +9119,14 @@ module.exports = {
                             case 'afrique_du_nord':
                                 modalStart('Afrique du nord')
                                 break;
+                            case 'amerique_latine':
+                                modalStart('Amérique latine')
+                                break;
                             case 'amerique_du_nord':
                                 modalStart('Amérique du nord')
                                 break;
-                            case 'nord_amerique_latine':
-                                modalStart('Amérique latine du nord')
+                            case 'amerique_du_sud':
+                                modalStart('Amérique du sud')
                                 break;
                             case 'asie_du_nord':
                                 modalStart('Asie du nord')
@@ -5856,17 +9137,14 @@ module.exports = {
                             case 'europe':
                                 modalStart('Europe')
                                 break;
+                            case 'grand_nord':
+                                modalStart('Grand nord')
+                                break;
                             case 'moyen_orient':
                                 modalStart('Moyen orient')
                                 break;
                             case 'oceanie':
                                 modalStart('Océanie')
-                                break;
-                            case 'pays_du_nord':
-                                modalStart('Pays du nord')
-                                break;
-                            case 'sud_amerique_latine':
-                                modalStart('Amérique latine du sud')
                                 break;
                         }
                     } else {
@@ -5874,6 +9152,318 @@ module.exports = {
                         await interaction.reply({content: reponse, ephemeral: true});
                     }
                 })
+                //endregion
+            } else if (interaction.customId == 'action-armee') {
+                //region Action Armée
+                let userCooldowned;
+                switch (interaction.values[0]) {
+                    case 'unite':
+                        //region Mobiliser une unité
+                        sql = `
+                            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}'
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Pays = results[0][0];
+                            const Armee = results[1][0];
+
+                            if (!results[0][0]) {
+                                const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
+                                await interaction.reply({ content: reponse, ephemeral: true });
+                            } else {
+                                const homme = (Armee.aviation * armeeObject.aviation.homme) + (Armee.infanterie * armeeObject.infanterie.homme) + (Armee.mecanise * armeeObject.mecanise.homme) + (Armee.support * armeeObject.support.homme);
+                                const hommeUnite =
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`);
+
+
+                                const embed = {
+                                    author: {
+                                        name: `${Pays.rang} de ${Pays.nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: Pays.drapeau
+                                    },
+                                    title: `\`Menu de l'approvisionnement\``,
+                                    fields: [
+                                        {
+                                            name: `> 🪖 Unités : opérationnelles | réserves`,
+                                            value: codeBlock(
+                                                `• Unité : ${Armee.unite.toLocaleString('en-US')} | ${Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`)))).toLocaleString('en-US')}\n` +
+                                                ` dont :\n` +
+                                                `  • Aviation : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`)).toLocaleString('en-US')} | ${Armee.aviation.toLocaleString('en-US')}\n` +
+                                                `  • Infanterie : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`)).toLocaleString('en-US')} | ${Armee.infanterie.toLocaleString('en-US')}\n` +
+                                                `  • Mécanisé : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`)).toLocaleString('en-US')} | ${Armee.mecanise.toLocaleString('en-US')}\n` +
+                                                `  • Support : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.support`)).toLocaleString('en-US')} | ${Armee.support.toLocaleString('en-US')}\n` +
+                                                `‎\n` +
+                                                `  • Homme : ${hommeUnite.toLocaleString('en-US')} | ${homme.toLocaleString('en-US')}`) + `\u200B`
+                                        },
+                                    ],
+                                    color: interaction.member.displayColor,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${Pays.devise}`
+                                    },
+                                };
+                                const unitePossible = Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`))));
+                                let plusDix = false;
+                                if (unitePossible < 10) {
+                                    plusDix = true;
+                                }
+                                let plusUn = false;
+                                if (unitePossible < 1) {
+                                    plusUn = true;
+                                }
+                                let moinsDix = false;
+                                if (Armee.unite < 10) {
+                                    moinsDix = true;
+                                }
+                                let moinsUn = false;
+                                if (Armee.unite < 1) {
+                                    moinsUn = true;
+                                }
+
+                                const row1 = new ActionRowBuilder()
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setLabel(`10`)
+                                            .setCustomId('unite+10')
+                                            .setEmoji('➕')
+                                            .setStyle(ButtonStyle.Success)
+                                            .setDisabled(plusDix)
+                                    )
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setLabel(`1`)
+                                            .setCustomId('unite+1')
+                                            .setEmoji('➕')
+                                            .setStyle(ButtonStyle.Success)
+                                            .setDisabled(plusUn)
+                                    )
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setEmoji(`🪖`)
+                                            .setCustomId('unite')
+                                            .setStyle(ButtonStyle.Secondary)
+                                            .setDisabled(true)
+                                    )
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setLabel(`1`)
+                                            .setCustomId('unite-1')
+                                            .setEmoji('➖')
+                                            .setStyle(ButtonStyle.Danger)
+                                            .setDisabled(moinsUn)
+                                    )
+                                    .addComponents(
+                                        new ButtonBuilder()
+                                            .setLabel(`10`)
+                                            .setCustomId('unite-10')
+                                            .setEmoji('➖')
+                                            .setStyle(ButtonStyle.Danger)
+                                            .setDisabled(moinsDix)
+                                    )
+
+                                await interaction.reply({ embeds: [embed], components: [row1] });
+                            }
+                        });
+                        //endregion
+                        break;
+                    case 'strategie':
+                        //region Strategie
+                        sql = `
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Armee = results[0][0];
+                            const Pays = results[1][0];
+
+                            const embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                title: `\`Menu des stratégies\``,
+                                fields: [
+                                    {
+                                        name: `> ♟️ ${eval(`armeeObject.${Armee.strategie}.nom`)}`,
+                                        value: codeBlock(
+                                            `  • Aviation : ${eval(`armeeObject.${Armee.strategie}.aviation`)}\n` +
+                                            `  • Infanterie : ${eval(`armeeObject.${Armee.strategie}.infanterie`)}\n` +
+                                            `  • Mécanisé : ${eval(`armeeObject.${Armee.strategie}.mecanise`)}\n` +
+                                            `  • Support : ${eval(`armeeObject.${Armee.strategie}.support`)}\n`) + `\u200B`
+                                    },
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+                            let assaut_masse = false;
+                            let couleur1 = ButtonStyle.Primary;
+                            if (Armee.strategie === 'assaut_masse') {
+                                assaut_masse = true;
+                                couleur1 = ButtonStyle.Secondary;
+                            }
+                            let defense = false;
+                            let couleur2 = ButtonStyle.Primary;
+                            if (Armee.strategie === 'defense') {
+                                defense = true;
+                                couleur2 = ButtonStyle.Secondary;
+                            }
+                            let motorisation = false;
+                            let couleur3 = ButtonStyle.Primary;
+                            if (Armee.strategie === 'motorisation') {
+                                motorisation = true;
+                                couleur3 = ButtonStyle.Secondary;
+                            }
+                            let puissance_feu = false;
+                            let couleur4 = ButtonStyle.Primary;
+                            if (Armee.strategie === 'puissance_feu') {
+                                puissance_feu = true;
+                                couleur4 = ButtonStyle.Secondary;
+                            }
+
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Assaut de masse`)
+                                        .setCustomId('assaut_masse')
+                                        .setEmoji('💯')
+                                        .setStyle(couleur1)
+                                        .setDisabled(assaut_masse)
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Défense`)
+                                        .setCustomId('defense')
+                                        .setEmoji('🛡️')
+                                        .setStyle(couleur2)
+                                        .setDisabled(defense)
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Motorisation`)
+                                        .setCustomId('motorisation')
+                                        .setEmoji('🛞')
+                                        .setStyle(couleur3)
+                                        .setDisabled(motorisation)
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Puissance de feu`)
+                                        .setCustomId('puissance_feu')
+                                        .setEmoji('💥')
+                                        .setStyle(couleur4)
+                                        .setDisabled(puissance_feu)
+                                )
+
+                            const row1 = new ActionRowBuilder()
+                                .addComponents(
+                                    new ButtonBuilder()
+                                        .setLabel(`Choisir cette stratégie`)
+                                        .setCustomId('choisir')
+                                        .setStyle(ButtonStyle.Success)
+                                        .setDisabled(true)
+                                )
+
+                            interaction.reply({ embeds: [embed], components: [row, row1] });
+                        });
+                        //endregion
+                        break;
+                }
+                //endregion
+            } else if (interaction.customId == 'action-diplomatie') {
+                //region Action Diplomatie
+                let userCooldowned;
+                switch (interaction.values[0]) {
+                    case 'creer-ambassade':
+                        //region Crée une ambassade
+                        const modal = new ModalBuilder()
+                            .setCustomId(`creer-ambassade`)
+                            .setTitle(`Créer une ambassade`);
+
+                        const cite = new TextInputBuilder()
+                            .setCustomId('cite')
+                            .setLabel(`Nom de la ville:`)
+                            .setPlaceholder(`Exemple : Paris`)
+                            .setStyle(TextInputStyle.Short)
+                            .setMaxLength(150)
+
+                        const text_annonce = new TextInputBuilder()
+                            .setCustomId('text_annonce')
+                            .setLabel(`Le texte de votre demande :`)
+                            .setStyle(TextInputStyle.Paragraph)
+                            .setMinLength(50)
+                            .setMaxLength(1500)
+                            .setRequired(true)
+
+                        const firstActionRow = new ActionRowBuilder().addComponents(cite);
+                        const secondActionRow = new ActionRowBuilder().addComponents(text_annonce);
+                        modal.addComponents(firstActionRow, secondActionRow);
+                        interaction.showModal(modal);
+                        //endregion
+                        break;
+                    case 'organisation':
+                        //region Organisation
+                        if (
+                            interaction.member.roles.cache.some(role => role.name === "👤 » Maire") ||
+                            interaction.member.roles.cache.some(role => role.name === "👤 » Dirigent") ||
+                            interaction.member.roles.cache.some(role => role.name === "👤 » Chef d'état") ||
+                            interaction.member.roles.cache.some(role => role.name === "👤 » Empereur")
+                        ) {
+                            userCooldowned = await organisationCommandCooldown.getUser(interaction.member.id);
+                            if (userCooldowned) {
+                                const timeLeft = msToMinutes(userCooldowned.msLeft, false);
+                                const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous avez déjà créé une organisation récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir en créer une nouvelle.`);
+                                await interaction.reply({ content: reponse, ephemeral: true });
+                            } else {
+                                const modal = new ModalBuilder()
+                                    .setCustomId(`organisation`)
+                                    .setTitle(`Créer une organisation`);
+
+                                const text_nom = new TextInputBuilder()
+                                    .setCustomId('text_nom')
+                                    .setLabel(`Le nom de votre organisation :`)
+                                    .setStyle(TextInputStyle.Short)
+                                    .setMaxLength(40)
+                                    .setRequired(true)
+
+                                const text_annonce = new TextInputBuilder()
+                                    .setCustomId('text_annonce')
+                                    .setLabel(`Le texte de votre annonce :`)
+                                    .setStyle(TextInputStyle.Paragraph)
+                                    .setMinLength(50)
+                                    .setMaxLength(1500)
+                                    .setRequired(true)
+
+                                const image_annonce = new TextInputBuilder()
+                                    .setCustomId('image_annonce')
+                                    .setLabel(`Ajouter une image :`)
+                                    .setStyle(TextInputStyle.Short)
+                                    .setMaxLength(150)
+
+                                const firstActionRow = new ActionRowBuilder().addComponents(text_nom);
+                                const secondActionRow = new ActionRowBuilder().addComponents(text_annonce);
+                                const thirdActionRow = new ActionRowBuilder().addComponents(image_annonce);
+                                modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
+                                interaction.showModal(modal);
+                            }
+                        } else {
+                            const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous devez être une Cité-Etat pour pouvoir créer des organisations.`);
+                            await interaction.reply({ content: reponse, ephemeral: true });
+                        }
+                        //endregion
+                        break;
+                }
                 //endregion
             } else if (interaction.customId == 'action-gouv') {
                 //region Action Gouvernement
@@ -5899,6 +9489,7 @@ module.exports = {
                             .setPlaceholder(`Lien de l'image`)
                             .setStyle(TextInputStyle.Short)
                             .setMaxLength(150)
+                            .setRequired(false)
 
                         const firstActionRow = new ActionRowBuilder().addComponents(text_annonce);
                         const secondActionRow = new ActionRowBuilder().addComponents(image_annonce);
@@ -5922,6 +9513,7 @@ module.exports = {
                             const text_devise = new TextInputBuilder()
                                 .setCustomId('text_devise')
                                 .setLabel(`Votre nouvelle devise :`)
+                                .setPlaceholder(`Liberté Egalité Fraternité`)
                                 .setStyle(TextInputStyle.Short)
                                 .setMaxLength(40)
                                 .setRequired(true)
@@ -5929,8 +9521,8 @@ module.exports = {
                             const discours = new TextInputBuilder()
                                 .setCustomId('discours')
                                 .setLabel(`Donner un discours :`)
-                                .setPlaceholder(`Pas obligatoire`)
                                 .setStyle(TextInputStyle.Paragraph)
+                                .setRequired(false)
                                 .setMaxLength(1000)
 
                             const firstActionRow = new ActionRowBuilder().addComponents(text_devise);
@@ -6012,65 +9604,96 @@ module.exports = {
                         }
                         //endregion
                         break;
-                    case 'organisation':
-                        //region Organisation
-                        if (
-                            interaction.member.roles.cache.some(role => role.name === "👤 » Maire") ||
-                            interaction.member.roles.cache.some(role => role.name === "👤 » Dirigent") ||
-                            interaction.member.roles.cache.some(role => role.name === "👤 » Chef d'état") ||
-                            interaction.member.roles.cache.some(role => role.name === "👤 » Empereur")
-                        ) {
-                            userCooldowned = await organisationCommandCooldown.getUser(interaction.member.id);
-                            if (userCooldowned) {
-                                const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-                                const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous avez déjà créé une organisation récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir en créer une nouvelle.`);
-                                await interaction.reply({ content: reponse, ephemeral: true });
-                            } else {
-                                const modal = new ModalBuilder()
-                                    .setCustomId(`organisation`)
-                                    .setTitle(`Créer une organisation`);
-
-                                const text_nom = new TextInputBuilder()
-                                    .setCustomId('text_nom')
-                                    .setLabel(`Le nom de votre organisation :`)
-                                    .setStyle(TextInputStyle.Short)
-                                    .setMaxLength(40)
-                                    .setRequired(true)
-
-                                const text_annonce = new TextInputBuilder()
-                                    .setCustomId('text_annonce')
-                                    .setLabel(`Le texte de votre annonce :`)
-                                    .setStyle(TextInputStyle.Paragraph)
-                                    .setMinLength(50)
-                                    .setMaxLength(1500)
-                                    .setRequired(true)
-
-                                const image_annonce = new TextInputBuilder()
-                                    .setCustomId('image_annonce')
-                                    .setLabel(`Ajouter une image :`)
-                                    .setStyle(TextInputStyle.Short)
-                                    .setMaxLength(150)
-
-                                const firstActionRow = new ActionRowBuilder().addComponents(text_nom);
-                                const secondActionRow = new ActionRowBuilder().addComponents(text_annonce);
-                                const thirdActionRow = new ActionRowBuilder().addComponents(image_annonce);
-                                modal.addComponents(firstActionRow, secondActionRow, thirdActionRow);
-                                interaction.showModal(modal);
-                            }
-                        } else {
-                            const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous devez être une Cité-Etat pour pouvoir créer des organisations.`);
-                            await interaction.reply({ content: reponse, ephemeral: true });
-                        }
-                        //endregion
-                        break;
                 }
                 //endregion
             } else if (interaction.customId == 'action-pays') {
                 //region Action Pays
                 switch (interaction.values[0]) {
+                    case 'armee':
+                        //region Armée
+                         sql = `
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Armee = results[0][0];
+                            const Pays = results[1][0];
+                            const homme = (Armee.aviation * armeeObject.aviation.homme) + (Armee.infanterie * armeeObject.infanterie.homme) + (Armee.mecanise * armeeObject.mecanise.homme) + (Armee.support * armeeObject.support.homme);
+                            const hommeUnite =
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`);
+
+                            const embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                title: `\`Vue globale du pays\``,
+                                fields: [
+                                    {
+                                        name: `> ♟️ Stratégie :`,
+                                        value: codeBlock(`• ${eval(`armeeObject.${Armee.strategie}.nom`)}`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités : opérationnelles | réserves`,
+                                        value: codeBlock(
+                                            `• Unité : ${Armee.unite.toLocaleString('en-US')} | ${Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`)))).toLocaleString('en-US')}\n` +
+                                            ` dont :\n` +
+                                            `  • Aviation : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`)).toLocaleString('en-US')} | ${Armee.aviation.toLocaleString('en-US')}\n` +
+                                            `  • Infanterie : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`)).toLocaleString('en-US')} | ${Armee.infanterie.toLocaleString('en-US')}\n` +
+                                            `  • Mécanisé : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`)).toLocaleString('en-US')} | ${Armee.mecanise.toLocaleString('en-US')}\n` +
+                                            `  • Support : ${(Armee.unite * eval(`armeeObject.${Armee.strategie}.support`)).toLocaleString('en-US')} | ${Armee.support.toLocaleString('en-US')}\n` +
+                                            `‎\n` +
+                                            `  • Homme : ${hommeUnite.toLocaleString('en-US')} | ${homme.toLocaleString('en-US')}`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> <:materieldinfanterie:1123611393535512626> Matériel militaire :`,
+                                        value: codeBlock(
+                                            `• ${Armee.avion.toLocaleString('en-US')} avions\n` +
+                                            `• ${Armee.equipement_support.toLocaleString('en-US')} equipements de support\n` +
+                                            `• ${Armee.materiel_infanterie.toLocaleString('en-US')} materiel d\'infanterie\n` +
+                                            `• ${Armee.vehicule.toLocaleString('en-US')} véhicules\n`) + `\u200B`
+                                    },
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new StringSelectMenuBuilder()
+                                        .setCustomId('action-armee')
+                                        .setPlaceholder(`Afficher un autre menu`)
+                                        .addOptions([
+                                            {
+                                                label: `Mobiliser des Unités`,
+                                                emoji: `🪖`,
+                                                description: `Transférer des unités de votre réserve vers votre armée`,
+                                                value: 'unite',
+                                            },
+                                            {
+                                                label: `Stratégie`,
+                                                emoji: `♟️`,
+                                                description: `Choisir une stratégie pour votre armée`,
+                                                value: 'strategie',
+                                            },
+                                        ]),
+                                );
+                            interaction.reply({ embeds: [embed], components: [row] });
+                        });
+                        //endregion
+                        break;
                     case 'diplomatie':
                         //region Diplomatie
-                        sql = `
+                         sql = `
                             SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                         `;
@@ -6084,7 +9707,6 @@ module.exports = {
                             } else {
                                 //transofmrer une string en array
                                 const Ambassade = JSON.parse(Diplomatie.ambassade.replace(/\s/g, ''));
-                                console.log(Ambassade);
                                 const embed = {
                                     author: {
                                         name: `${Pays.rang} de ${Pays.nom}`,
@@ -6096,12 +9718,12 @@ module.exports = {
                                     title: `\`Menu de la diplomatie\``,
                                     fields: [
                                         {
-                                            name: `> 🏛️ Influence :`,
+                                            name: `> 🪩 Influence :`,
                                             value: codeBlock(
                                                 `• ${Diplomatie.influence}\n`) + `\u200B`
                                         },
                                         {
-                                            name: `> 🏛️ Ambassades :`,
+                                            name: `> 🏦 Ambassades :`,
                                             value: codeBlock(
                                                 `• ${Ambassade.length}\n`) + `\u200B`
                                         },
@@ -6112,8 +9734,32 @@ module.exports = {
                                         text: `${Pays.devise}`
                                     },
                                 };
+                                const options = [
+                                    {
+                                        label: `Créer une ambassade`,
+                                        emoji: `☎️`,
+                                        description: `Créer une nouvelle ambassade`,
+                                        value: 'creer-ambassade',
+                                    },
+                                ];
+                                if (Pays.rang !== 'Cité') {
+                                    options.unshift(
+                                        {
+                                            label: `Organisation`,
+                                            emoji: `🇺🇳`,
+                                            description: `Créer une nouvelle organisation`,
+                                            value: 'organisation',
+                                        })
+                                }
+                                const row = new ActionRowBuilder()
+                                    .addComponents(
+                                        new StringSelectMenuBuilder()
+                                            .setCustomId('action-diplomatie')
+                                            .setPlaceholder(`Sélectionner une action`)
+                                            .addOptions(options),
+                                    );
 
-                                await interaction.reply({embeds: [embed]});
+                                await interaction.reply({ embeds: [embed], components: [row] });
                             }
                         });
                         //endregion
@@ -6121,14 +9767,16 @@ module.exports = {
                     case 'economie':
                         //region Economie
                         sql = `
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
                         `;
                         connection.query(sql, async(err, results) => {if (err) {throw err;}
-                            const Batiment = results[0][0];
-                            const Pays = results[1][0];
-                            const Population = results[2][0];
+                            const Armee = results[0][0];
+                            const Batiment = results[1][0];
+                            const Pays = results[2][0];
+                            const Population = results[3][0];
 
                             if (!results[0][0]) {
                                 const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette personne ne joue pas.`);
@@ -6158,17 +9806,27 @@ module.exports = {
                                     emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                                     emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                                     emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                                let emploi = (Population.habitant/emploies_total*100).toFixed(2)
-                                if (Population.habitant/emploies_total > 1) {
+                                const hommeArmee =
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                                    (Armee.aviation * armeeObject.aviation.homme) +
+                                    (Armee.infanterie * armeeObject.infanterie.homme) +
+                                    (Armee.mecanise * armeeObject.mecanise.homme) +
+                                    (Armee.support * armeeObject.support.homme);
+                                let emploi = ((Population.jeune + Population.adulte - hommeArmee)/emploies_total*100).toFixed(2)
+                                if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                                     emploi = 100
                                 }
                                 if (emploi >= 90) {
-                                    Emploi = codeBlock('md', `> • ${Population.habitant.toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}%)`);
+                                    Emploi = codeBlock('md', `> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
                                 } else if (emploi >= 50) {
-                                    Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${Population.habitant.toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}%)`);
+                                    Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
                                 } else {
-                                    Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}%)`);
+                                    Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
                                 }
+
                                 const embed = {
                                     author: {
                                         name: `${Pays.rang} de ${Pays.nom}`,
@@ -6210,6 +9868,18 @@ module.exports = {
                                                     emoji: `📦`,
                                                     description: `Voir vos flux de ressources`,
                                                     value: 'consommations',
+                                                },
+                                                {
+                                                    label: `Emploi`,
+                                                    emoji: `👩‍🔧`,
+                                                    description: `Voir vos postes de travail`,
+                                                    value: 'emploi',
+                                                },
+                                                {
+                                                    label: `Industrie`,
+                                                    emoji: `🏭`,
+                                                    description: `Voir vos industries`,
+                                                    value: 'industrie',
                                                 }
                                             ]),
                                     );
@@ -6256,8 +9926,12 @@ module.exports = {
                                             value: codeBlock(`• ${Pays.ideologie}`) + `\u200B`
                                         },
                                         {
-                                            name: `> 📯 Devise : `,
+                                            name: `> 📃 Devise : `,
                                             value: codeBlock(`• ${Pays.devise}`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> <:Pweeter:983399130154008576> Pweeter : `,
+                                            value: codeBlock(`• ${Pays.pweeter}`) + `\u200B`
                                         }
                                     ],
                                     color: interaction.member.displayColor,
@@ -6279,7 +9953,7 @@ module.exports = {
                                                 },
                                                 {
                                                     label: `Devise`,
-                                                    emoji: `:Rules:853916488696201237`,
+                                                    emoji: `📃`,
                                                     description: `Choisir une nouvelle devise`,
                                                     value: 'devise',
                                                 },
@@ -6295,12 +9969,6 @@ module.exports = {
                                                     description: `Changer son pseudo pweeter`,
                                                     value: 'pweeter',
                                                 },
-                                                {
-                                                    label: `Organisation`,
-                                                    emoji: `🇺🇳`,
-                                                    description: `Créer une nouvelle organisation`,
-                                                    value: 'organisation',
-                                                }
                                             ]),
                                     );
 
@@ -6328,88 +9996,23 @@ module.exports = {
                                 thumbnail: {
                                     url: `${Pays.drapeau}`
                                 },
-                                fields: [
-                                    {
-                                        name: `> <:acier:1075776411329122304> Acierie :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.acierie.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪟 Atelier de verre :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.atelier_verre.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> <:sable:1075776363782479873> Carrière de sable :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.carriere_sable.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> ⚡ Centrale biomasse :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.centrale_biomasse.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> ⚡ Centrale au charbon :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.centrale_charbon.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> ⚡ Centrale au fioul :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.centrale_fioul.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🌽 Champ :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.champ.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> <:beton:1075776342227943526> Cimenterie :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.cimenterie.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🛢️ Derrick :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.derrick.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> ⚡ Eolienne :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.eolienne.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> <:charbon:1075776385517375638> Mine de charbon :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.mine_charbon.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪨 Mine de métaux:`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.mine_metaux.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 💧 Station de pompage :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.station_pompage.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> ⛽ Raffinerie :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.raffinerie.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪵 Scierie :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.scierie.toLocaleString('en-US')}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 💻 Usine civile :`,
-                                        value: codeBlock(
-                                            `• Nombre d'usine : ${Batiment.usine_civile.toLocaleString('en-US')}\n`) + `\u200B`
-                                    }
-                                ],
+                                description:
+                                    `> <:acier:1075776411329122304> \`Acierie : ${Batiment.acierie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🪟 \`Atelier de verre : ${Batiment.atelier_verre.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> <:sable:1075776363782479873> \`Carrière de sable : ${Batiment.carriere_sable.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Centrale biomasse : ${Batiment.centrale_biomasse.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Centrale au charbon : ${Batiment.centrale_charbon.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Centrale au fioul : ${Batiment.centrale_fioul.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🌽 \`Champ : ${Batiment.champ.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Champ d'éoliennes : ${Batiment.eolienne.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> <:beton:1075776342227943526> \`Cimenterie : ${Batiment.cimenterie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🛢️ \`Derrick : ${Batiment.derrick.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> <:charbon:1075776385517375638> \`Mine de charbon : ${Batiment.mine_charbon.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🪨 \`Mine de métaux : ${Batiment.mine_metaux.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 💧 \`Station de pompage : ${Batiment.station_pompage.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⛽ \`Raffinerie : ${Batiment.raffinerie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🪵 \`Scierie : ${Batiment.scierie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 💻 \`Usine civile : ${Batiment.usine_civile.toLocaleString('en-US')}\`\n` + `\u200B\n`,
                                 color: interaction.member.displayColor,
                                 timestamp: new Date(),
                                 footer: {
@@ -6529,23 +10132,25 @@ module.exports = {
                     case 'population':
                         //region Population
                         sql = `
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-                            SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
+                            SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}'
                         `;
-                        connection.query(sql, async (err, results) => {
-                            if (err) {
-                                throw err;
-                            }
-                            const Batiment = results[0][0];
-                            const Pays = results[1][0];
-                            const Population = results[2][0];
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Armee = results[0][0];
+                            const Batiment = results[1][0];
+                            const Pays = results[2][0];
+                            const Population = results[3][0];
+                            const Ressources = results[4][0];
 
                             let Logement;
                             let Nourriture;
                             let Eau;
                             let Bc;
-                            if (!results[0]) {
+
+                            if (!results[0][0]) {
                                 const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette personne ne joue pas.`);
                                 await interaction.reply({content: reponse, ephemeral: true});
                             } else {
@@ -6558,32 +10163,14 @@ module.exports = {
                                     Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
                                 }
 
-                                const conso_nourriture = Math.round((Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)))
-                                if (Population.nourriture_appro / conso_nourriture > 1.1) {
-                                    Nourriture = codeBlock('md', `> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                                } else if (Population.nourriture_appro / conso_nourriture >= 1) {
-                                    Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                                } else {
-                                    Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                                }
-
-                                const conso_eau = Math.round((Population.habitant * parseFloat(populationObject.EAU_CONSO)))
-                                if (Population.eau_appro / conso_eau > 1.1) {
-                                    Eau = codeBlock('md', `> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                                } else if (Population.eau_appro / conso_eau >= 1) {
-                                    Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                                } else {
-                                    Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                                }
-
                                 const conso_bc =  Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`))
-                                const prod_bc = (batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * 48)
+                                const prod_bc = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * 48)
                                 if (prod_bc / conso_bc > 1.1) {
-                                    Bc = codeBlock('md', `> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation\n`);
+                                    Bc = codeBlock('md', `> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
                                 } else if (prod_bc / conso_bc >= 1) {
-                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation\n`);
+                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
                                 } else {
-                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation\n`);
+                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
                                 }
 
                                 //region Calcul du nombre d'employé
@@ -6610,10 +10197,20 @@ module.exports = {
                                     emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                                     emploies_raffinerie + emploies_scierie + emploies_usine_civile;
                                 let chomage;
-                                if (Population.habitant/emploies_total < 1) {
+                                const hommeArmee =
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                    Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                                    (Armee.aviation * armeeObject.aviation.homme) +
+                                    (Armee.infanterie * armeeObject.infanterie.homme) +
+                                    (Armee.mecanise * armeeObject.mecanise.homme) +
+                                    (Armee.support * armeeObject.support.homme);
+
+                                if (emploies_total/(Population.jeune + Population.adulte - hommeArmee) > 1) {
                                     chomage = 0
                                 } else {
-                                    chomage = ((emploies_total/Population.habitant-1)*100).toFixed(2)
+                                    chomage = (((Population.jeune + Population.adulte - hommeArmee)-emploies_total)/(Population.jeune + Population.adulte - hommeArmee)*100).toFixed(2)
                                 }
                                 const Chomage = `• ${emploies_total.toLocaleString('en-US')} emplois (${chomage}% chômage)\n`;
                                 //endregion
@@ -6639,8 +10236,8 @@ module.exports = {
                                         {
                                             name: `> 🛒 Consommation/Approvisionnement`,
                                             value:
-                                                Eau +
-                                                Nourriture +
+                                                //Eau +
+                                                //Nourriture +
                                                 Bc +
                                                 `\u200B`
                                         },
@@ -6665,22 +10262,7 @@ module.exports = {
                                     },
                                 };
 
-                                const row = new ActionRowBuilder()
-                                    .addComponents(
-                                        new StringSelectMenuBuilder()
-                                            .setCustomId('action-population')
-                                            .setPlaceholder(`Faire une action`)
-                                            .addOptions([
-                                                {
-                                                    label: `Approvisonnement`,
-                                                    emoji: `🛒`,
-                                                    description: `Définir l'approvisionnement`,
-                                                    value: 'appro',
-                                                }
-                                            ]),
-                                    );
-
-                                await interaction.reply({embeds: [embed], components: [row]});
+                                await interaction.reply({embeds: [embed]});
                             }
                         });
                         //endregion
@@ -6767,23 +10349,93 @@ module.exports = {
                 //endregion
             } else if (interaction.customId == 'action-economie') {
                 //region Action Economie
+                let sql;
                 switch (interaction.values[0]) {
                     case 'consommations':
                         //region Matières premières
-                        const sql = `
-                    SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
-                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
-                    SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
-                    SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
-                `;
+                        sql = `
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
+                        `;
                         connection.query(sql, async(err, results) => {if (err) {throw err;}
-                            const Batiment = results[0][0];
-                            const Pays = results[1][0];
-                            const Population = results[2][0];
-                            const Ressources = results[3][0];
-                            const Territoire = results[4][0];
+                            const Armee = results[0][0];
+                            const Batiment = results[1][0];
+                            const Pays = results[2][0];
+                            const Population = results[3][0];
+                            const Ressources = results[4][0];
+                            const Territoire = results[5][0];
 
+                            const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
+                            //region Production d'électricité
+                            //region Production d'électricté des centrales biomasse
+                            const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
+                            let prod_centrale_biomasse = true;
+                            if (conso_T_centrale_biomasse_bois > Ressources.bois && conso_T_centrale_biomasse_bois !== 0) {
+                                prod_centrale_biomasse = false;
+                            }
+                            const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse
+                            if (conso_T_centrale_biomasse_eau > Ressources.eau && conso_T_centrale_biomasse_eau !== 0) {
+                                prod_centrale_biomasse = false;
+                            }
+                            //endregion
+                            //region Production d'électricté des centrales au charbon
+                            const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
+                            let prod_centrale_charbon = true;
+                            if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_bois !== 0) {
+                                prod_centrale_charbon = false;
+                            }
+                            const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
+                            if (conso_T_centrale_charbon_eau > Ressources.eau && conso_T_centrale_charbon_eau !== 0) {
+                                prod_centrale_charbon = false;
+                            }
+                            //endregion
+                            //region Production d'électricité des centrales au fioul
+                            const conso_T_centrale_fioul_carburant = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_CARBURANT * Batiment.centrale_fioul
+                            let prod_centrale_fioul = true;
+                            if (conso_T_centrale_fioul_carburant > Ressources.carburant && conso_T_centrale_fioul_carburant !== 0) {
+                                prod_centrale_fioul = false;
+                            }
+                            const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
+                            if (conso_T_centrale_fioul_eau > Ressources.eau && conso_T_centrale_fioul_eau !== 0) {
+                                prod_centrale_fioul = false;
+                            }
+                            //endregion
+                            //region Production d'électricité des éoliennes
+                            let prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * Batiment.eolienne * coef_eolienne);
+
+                            let prod_elec = prod_eolienne;
+                            if (prod_centrale_biomasse === true) {
+                                prod_elec += batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE * Batiment.centrale_biomasse
+                            }
+                            if (prod_centrale_charbon === true) {
+                                prod_elec += batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON * Batiment.centrale_charbon
+                            }
+                            if (prod_centrale_fioul === true) {
+                                prod_elec += batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL * Batiment.centrale_fioul
+                            }
+                            //endregion
+                            //region Consommation totale d'électricté
+                            const conso_elec = Math.round(
+                                batimentObject.acierie.CONSO_ACIERIE_ELEC * Batiment.acierie +
+                                batimentObject.atelier_verre.CONSO_ATELIER_VERRE_ELEC * Batiment.atelier_verre +
+                                batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_ELEC * Batiment.carriere_sable +
+                                batimentObject.champ.CONSO_CHAMP_ELEC * Batiment.champ +
+                                batimentObject.cimenterie.CONSO_CIMENTERIE_ELEC * Batiment.cimenterie +
+                                batimentObject.derrick.CONSO_DERRICK_ELEC * Batiment.derrick +
+                                batimentObject.mine_charbon.CONSO_MINE_CHARBON_ELEC * Batiment.mine_charbon +
+                                batimentObject.mine_metaux.CONSO_MINE_METAUX_ELEC * Batiment.mine_metaux +
+                                batimentObject.station_pompage.CONSO_STATION_POMPAGE_ELEC * Batiment.station_pompage +
+                                batimentObject.quartier.CONSO_QUARTIER_ELEC * Batiment.quartier +
+                                batimentObject.raffinerie.CONSO_RAFFINERIE_ELEC * Batiment.raffinerie +
+                                batimentObject.scierie.CONSO_SCIERIE_ELEC * Batiment.scierie +
+                                batimentObject.usine_civile.CONSO_USINE_CIVILE_ELEC * Batiment.usine_civile
+                            );
+                            //endregion
+                            //endregion
                             //region Calcul du taux d'emploies
                             const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
                             const emploies_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
@@ -6807,85 +10459,125 @@ module.exports = {
                                 emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                                 emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                                 emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                            let emplois = Population.habitant/emploies_total
-                            if (Population.habitant/emploies_total > 1) {
+                            const hommeArmee =
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                                (Armee.aviation * armeeObject.aviation.homme) +
+                                (Armee.infanterie * armeeObject.infanterie.homme) +
+                                (Armee.mecanise * armeeObject.mecanise.homme) +
+                                (Armee.support * armeeObject.support.homme);
+
+                            let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total;
+                            if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                                 emplois = 1
                             }
                             //endregion
-
-                            let Prod;
-                            let Conso;
-                            let Diff;
-
-                            //region Calcul des coefficients de production des ressources
-                            let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses + Territoire.mangrove + Territoire.jungle);
-                            if (T_bois === 0) {
-                                T_bois = 1;
-                            }
-                            let T_eau = (Territoire.foret + Territoire.prairie + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.mangrove + Territoire.steppe + Territoire.jungle + Territoire.lac);
-                            if (T_eau === 0) {
-                                T_eau = 1;
-                            }
-                            let T_nourriture = (Territoire.prairie + Territoire.desert + Territoire.savane + Territoire.steppe + Territoire.jungle)
-                            if (T_nourriture === 0) {
-                                T_nourriture = 1;
-                            }
-                            const coef_bois = parseFloat(((Territoire.foret/T_bois) * ressourceObject.bois.foret + (Territoire.taiga/T_bois) * ressourceObject.bois.taiga + (Territoire.rocheuses/T_bois) * ressourceObject.bois.rocheuses + (Territoire.mangrove/T_bois) * ressourceObject.bois.mangrove + (Territoire.jungle/T_bois) * ressourceObject.bois.jungle).toFixed(2))
+                            const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
                             const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
-                            const coef_eau = parseFloat(((Territoire.foret/T_eau) * ressourceObject.eau.foret + (Territoire.prairie/T_eau) * ressourceObject.eau.prairie + (Territoire.toundra/T_eau) * ressourceObject.eau.toundra + (Territoire.taiga/T_eau) * ressourceObject.eau.taiga + (Territoire.savane/T_eau) * ressourceObject.eau.savane + (Territoire.rocheuses/T_eau) * ressourceObject.eau.rocheuses + (Territoire.mangrove/T_eau) * ressourceObject.eau.mangrove + (Territoire.steppe/T_eau) * ressourceObject.eau.steppe  + (Territoire.jungle/T_eau) * ressourceObject.eau.jungle  + (Territoire.lac/T_eau) * ressourceObject.eau.lac).toFixed(2))
+                            const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
                             const coef_metaux = eval(`regionObject.${Territoire.region}.metaux`)
-                            const coef_nourriture = parseFloat(((Territoire.prairie/T_nourriture) * ressourceObject.nourriture.prairie + (Territoire.savane/T_nourriture) * ressourceObject.nourriture.savane + (Territoire.mangrove/T_nourriture) * ressourceObject.nourriture.mangrove + (Territoire.steppe/T_nourriture) * ressourceObject.nourriture.steppe + (Territoire.jungle/T_nourriture) * ressourceObject.nourriture.jungle).toFixed(2))
+                            const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
                             const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
                             const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
                             //endregion
 
+                            function convertMillisecondsToTime(milliseconds) {
+                                const seconds = Math.floor(milliseconds / 1000);
+                                const hours = Math.floor(seconds / 3600);
+                                return `${hours}h`;
+                            }
+
+                            let Prod;
+                            let Conso;
+                            let Diff;
+                            let boisName;
+                            const conso_T_scierie_carburant = Math.round(batimentObject.scierie.CONSO_SCIERIE_CARBURANT * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                            if (conso_T_scierie_carburant > Ressources.carburant) {
+                                boisName = `> ⚠️ Bois : ⛏️ x${coef_bois} ⚠️`;
+                            } else if (prod_elec < conso_elec) {
+                                boisName = `> 🪫 Bois : ⛏️ x${coef_bois} 🪫`;
+                            } else if (emplois < 0.5) {
+                                boisName = `> 🚷 Bois : ⛏️ x${coef_bois} 🚷`;
+                            } else {
+                                boisName = `> 🪵 Bois : ⛏️ x${coef_bois}`;
+                            }
                             let Bois;
                             Prod = Math.round(batimentObject.scierie.PROD_SCIERIE * Batiment.scierie * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_bois * emplois);
-                            const conso_T_centrale_biomasse_bois = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_BOIS * Batiment.centrale_biomasse
                             const conso_T_usine_civile_bois = Math.round(batimentObject.usine_civile.CONSO_USINE_CIVILE_BOIS * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                             Conso = conso_T_usine_civile_bois + conso_T_centrale_biomasse_bois;
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Bois = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                                Bois = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.bois.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                                Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')}`);
+                                Bois = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.bois.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.bois / Diff) * 10 * 60 * 1000)}`);
                             }
 
+                            let charbonName;
+                            const conso_T_mine_charbon_carburant = Math.round(batimentObject.mine_charbon.CONSO_MINE_CHARBON_CARBURANT * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                            if (conso_T_mine_charbon_carburant > Ressources.carburant) {
+                                charbonName = `> ⚠️ Charbon : ⛏️ x${coef_charbon} ⚠️`;
+                            } else if (prod_elec < conso_elec) {
+                                charbonName = `> 🪫 Charbon : ⛏️ x${coef_charbon} 🪫`;
+                            } else if (emplois < 0.5) {
+                                charbonName = `> 🚷 Charbon : ⛏️ x${coef_charbon} 🚷`;
+                            } else {
+                                charbonName = `> <:charbon:1075776385517375638> Charbon : ⛏️ x${coef_charbon}`;
+                            }
                             let Charbon;
                             Prod = Math.round(batimentObject.mine_charbon.PROD_MINE_CHARBON * Batiment.mine_charbon * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_charbon * emplois);
                             const conso_T_acierie_charbon = Math.round(batimentObject.acierie.CONSO_ACIERIE_CHARBON * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
-                            const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon;
                             Conso = conso_T_acierie_charbon + conso_T_centrale_charbon_charbon;
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Charbon = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                                Charbon = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.charbon.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                                Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')}`);
+                                Charbon = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.charbon.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.charbon / Diff) * 10 * 60 * 1000)}`);
                             }
 
+                            let eauName;
+                            const conso_T_station_pompage_carburant = Math.round(batimentObject.station_pompage.CONSO_STATION_POMPAGE_CARBURANT * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                            if (conso_T_station_pompage_carburant > Ressources.carburant) {
+                                eauName = `> ⚠️ Eau : ⛏️ x${coef_eau} ⚠️`;
+                            } else if (prod_elec < conso_elec) {
+                                eauName = `> 🪫 Eau : ⛏️ x${coef_eau} 🪫`;
+                            } else if (emplois < 0.5) {
+                                eauName = `> 🚷 Eau : ⛏️ x${coef_eau} 🚷`;
+                            } else {
+                                eauName = `> 💧 Eau : ⛏️ x${coef_eau}`;
+                            }
                             let Eau;
                             Prod = Math.round(batimentObject.station_pompage.PROD_STATION_POMPAGE * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_eau * emplois);
                             const conso_T_atelier_verre_eau = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_EAU * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                             const conso_T_champ_eau = Math.round(batimentObject.champ.CONSO_CHAMP_EAU * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                             const conso_T_cimenterie_eau = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_EAU * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
-                            const conso_T_centrale_biomasse_eau = batimentObject.centrale_biomasse.CONSO_CENTRALE_BIOMASSE_EAU * Batiment.centrale_biomasse;
-                            const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon;
-                            const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul;
-                            const conso_pop = Math.round((Population.habitant * populationObject.EAU_CONSO) / 48 * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
+                            const conso_pop = Math.round((Population.habitant * populationObject.EAU_CONSO) / 48);
                             Conso = conso_T_atelier_verre_eau + conso_T_champ_eau + conso_T_cimenterie_eau + conso_T_centrale_biomasse_eau + conso_T_centrale_charbon_eau + conso_T_centrale_fioul_eau + conso_pop;
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Eau = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                                Eau = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                                Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')}`);
+                                Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.eau / Diff) * 10 * 60 * 1000)}`);
                             }
 
+                            let metauxName;
+                            const conso_T_mine_metaux_carburant = Math.round(batimentObject.mine_metaux.CONSO_MINE_METAUX_CARBURANT * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                            if (conso_T_mine_metaux_carburant > Ressources.carburant) {
+                                metauxName = `> ⚠️ Metaux : ⛏️ x${coef_metaux} ⚠️`;
+                            } else if (prod_elec < conso_elec) {
+                                metauxName = `> 🪫 Metaux : ⛏️ x${coef_metaux} 🪫`;
+                            } else if (emplois < 0.5) {
+                                metauxName = `> 🚷 Metaux : ⛏️ x${coef_metaux} 🚷`;
+                            } else {
+                                metauxName = `> 🪨 Metaux : ⛏️ x${coef_metaux}`;
+                            }
                             let Metaux;
                             Prod = Math.round(batimentObject.mine_metaux.PROD_MINE_METAUX * Batiment.mine_metaux * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_metaux * emplois);
                             const conso_T_acierie_metaux = Math.round(batimentObject.acierie.CONSO_ACIERIE_METAUX * Batiment.acierie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -6894,25 +10586,48 @@ module.exports = {
                             Conso = conso_T_acierie_metaux + conso_T_derrick_metaux + conso_T_usine_civile_metaux;
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Metaux = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                                Metaux = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.metaux.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                                Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')}`);
+                                Metaux = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.metaux.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.metaux / Diff) * 10 * 60 * 1000)}`);
                             }
 
+                            let nourritureName;
+                            const conso_T_champ_carburant = Math.round(batimentObject.champ.CONSO_CHAMP_CARBURANT * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                            if (conso_T_champ_carburant > Ressources.carburant) {
+                                nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                            } else if (conso_T_champ_eau > Ressources.eau) {
+                                nourritureName = `> ⚠️ Nourriture : ⛏️ x${coef_nourriture} ⚠️`;
+                            } else if (prod_elec < conso_elec) {
+                                nourritureName = `> 🪫 Nourriture : ⛏️ x${coef_nourriture} 🪫`;
+                            } else if (emplois < 0.5) {
+                                nourritureName = `> 🚷 Nourriture : ⛏️ x${coef_nourriture} 🚷`;
+                            } else {
+                                nourritureName = `> 🌽 Nourriture : ⛏️ x${coef_nourriture}`;
+                            }
                             let Nourriture;
                             Prod = Math.round(batimentObject.champ.PROD_CHAMP * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture * emplois);
-                            Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO) / 48 * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
+                            Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO) / 48);
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Nourriture = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                                Nourriture = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                                Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')}`);
+                                Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.nourriture / Diff) * 10 * 60 * 1000)}`);
                             }
 
+                            let petroleName;
+                            if (conso_T_derrick_metaux > Ressources.metaux) {
+                                petroleName = `> ⚠️ Pétrole : ⛏️ x${coef_petrole} ⚠️`;
+                            } else if (prod_elec < conso_elec) {
+                                petroleName = `> 🪫 Pétrole : ⛏️ x${coef_petrole} 🪫`;
+                            } else if (emplois < 0.5) {
+                                petroleName = `> 🚷 Pétrole : ⛏️ x${coef_petrole} 🚷`;
+                            } else {
+                                petroleName = `> 🛢️ Pétrole : ⛏️ x${coef_petrole}`;
+                            }
                             let Petrole;
                             Prod = Math.round(batimentObject.derrick.PROD_DERRICK * Batiment.derrick * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_petrole * emplois);
                             const conso_T_cimenterie_petrole = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_PETROLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -6921,13 +10636,24 @@ module.exports = {
                             Conso = conso_T_cimenterie_petrole + conso_T_raffinerie_petrole + conso_T_usine_civile_petrole;
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Petrole = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                                Petrole = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.petrole.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                                Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')}`);
+                                Petrole = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.petrole.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.petrole / Diff) * 10 * 60 * 1000)}`);
                             }
 
+                            let sableName;
+                            const conso_T_carriere_sable_carburant = Math.round(batimentObject.carriere_sable.CONSO_CARRIERE_SABLE_CARBURANT * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
+                            if (conso_T_carriere_sable_carburant > Ressources.carburant) {
+                                sableName = `> ⚠️ Sable : ⛏️ x${coef_sable} ⚠️️`;
+                            } else if (prod_elec < conso_elec) {
+                                sableName = `> 🪫 Sable : ⛏️ x${coef_sable} 🪫`;
+                            } else if (emplois < 0.5) {
+                                sableName = `> 🚷 Sable : ⛏️ x${coef_sable} 🚷`;
+                            } else {
+                                sableName = `> <:sable:1075776363782479873> Sable : ⛏️ x${coef_sable}`;
+                            }
                             let Sable;
                             Prod = Math.round(batimentObject.carriere_sable.PROD_CARRIERE_SABLE * Batiment.carriere_sable * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_sable * emplois);
                             const conso_T_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
@@ -6935,11 +10661,11 @@ module.exports = {
                             Conso = conso_T_atelier_verre_sable + conso_T_cimenterie_sable;
                             Diff = Prod - Conso;
                             if (Diff / Prod > 0.1) {
-                                Sable = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                                Sable = codeBlock('md', `> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')}" | 📦 ${Ressources.sable.toLocaleString('en-US')} | 🟩 ∞`);
                             } else if (Diff / Prod >= 0) {
-                                Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                                Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')} | 🟨 ∞`);
                             } else {
-                                Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')}`);
+                                Sable = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> -${Conso.toLocaleString('en-US')} | +${Prod.toLocaleString('en-US')} | :${Diff.toLocaleString('en-US')} | 📦 ${Ressources.sable.toLocaleString('en-US')} | 🟥⌛ ${convertMillisecondsToTime(Math.floor(- Ressources.sable / Diff) * 10 * 60 * 1000)}`);
                             }
 
                             const embed = {
@@ -6953,31 +10679,31 @@ module.exports = {
                                 title: `\`Consommation en : Matières premières\``,
                                 fields: [
                                     {
-                                        name: `> 🪵 Bois : ⚙ x${coef_bois}`,
+                                        name: boisName,
                                         value: Bois,
                                     },
                                     {
-                                        name: `> <:charbon:1075776385517375638> Charbon : ⚙ x${coef_charbon}`,
+                                        name: charbonName,
                                         value: Charbon,
                                     },
                                     {
-                                        name: `> 💧 Eau : ⚙ x${coef_eau}`,
+                                        name: eauName,
                                         value: Eau,
                                     },
                                     {
-                                        name: `> 🪨 Metaux : ⚙ x${coef_metaux}`,
+                                        name: metauxName,
                                         value: Metaux,
                                     },
                                     {
-                                        name: `> 🌽 Nourriture : ⚙ x${coef_nourriture}`,
+                                        name: nourritureName,
                                         value: Nourriture,
                                     },
                                     {
-                                        name: `> 🛢️ Pétrole : ⚙ x${coef_petrole}`,
+                                        name: petroleName,
                                         value: Petrole,
                                     },
                                     {
-                                        name: `> <:sable:1075776363782479873> Sable : ⚙ x${coef_sable}`,
+                                        name: sableName,
                                         value: Sable,
                                     },
                                 ],
@@ -6993,188 +10719,395 @@ module.exports = {
                                         .setCustomId('matiere_premiere')
                                         .setEmoji('<:charbon:1075776385517375638>')
                                         .setStyle(ButtonStyle.Secondary)
+                                        .setDisabled(true)
                                 ).addComponents(
                                     new ButtonBuilder()
                                         .setLabel(`Ressources manufacturés`)
                                         .setCustomId('ressource_manufacture')
                                         .setEmoji('<:acier:1075776411329122304>')
-                                        .setStyle(ButtonStyle.Secondary)
+                                        .setStyle(ButtonStyle.Primary)
                                 )
                                 .addComponents(
                                     new ButtonBuilder()
                                         .setLabel(`Produits manufacturés`)
                                         .setCustomId('produit_manufacture')
                                         .setEmoji('💻')
-                                        .setStyle(ButtonStyle.Secondary)
+                                        .setStyle(ButtonStyle.Primary)
                                 )
                                 .addComponents(
                                     new ButtonBuilder()
                                         .setLabel(`Autre`)
                                         .setCustomId('autre')
                                         .setEmoji('⚡')
-                                        .setStyle(ButtonStyle.Secondary)
+                                        .setStyle(ButtonStyle.Primary)
                                 )
 
                             await interaction.reply({ embeds: [embed], components: [row] });
                         });
                         //endregion
                         break;
+                    case 'industrie':
+                        //region Industrie
+                        sql = `
+                            SELECT * FROM batiments WHERE id_joueur=${interaction.member.id};
+                            SELECT * FROM pays WHERE id_joueur=${interaction.member.id}
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Batiment = results[0][0];
+                            const Pays = results[1][0];
+
+                            const embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                title: `\`Menu des industries\``,
+                                thumbnail: {
+                                    url: `${Pays.drapeau}`
+                                },
+                                description:
+                                    `> <:acier:1075776411329122304> \`Acierie : ${Batiment.acierie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🪟 \`Atelier de verre : ${Batiment.atelier_verre.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> <:sable:1075776363782479873> \`Carrière de sable : ${Batiment.carriere_sable.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Centrale biomasse : ${Batiment.centrale_biomasse.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Centrale au charbon : ${Batiment.centrale_charbon.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Centrale au fioul : ${Batiment.centrale_fioul.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🌽 \`Champ : ${Batiment.champ.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⚡ \`Champ d'éoliennes : ${Batiment.eolienne.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> <:beton:1075776342227943526> \`Cimenterie : ${Batiment.cimenterie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🛢️ \`Derrick : ${Batiment.derrick.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> <:charbon:1075776385517375638> \`Mine de charbon : ${Batiment.mine_charbon.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🪨 \`Mine de métaux : ${Batiment.mine_metaux.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 💧 \`Station de pompage : ${Batiment.station_pompage.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> ⛽ \`Raffinerie : ${Batiment.raffinerie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 🪵 \`Scierie : ${Batiment.scierie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                                    `> 💻 \`Usine civile : ${Batiment.usine_civile.toLocaleString('en-US')}\`\n` + `\u200B\n`,
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new StringSelectMenuBuilder()
+                                        .setCustomId('usine')
+                                        .setPlaceholder(`Le type d\'usine`)
+                                        .addOptions([
+                                            {
+                                                label: `Acierie`,
+                                                emoji: `<:acier:1075776411329122304>`,
+                                                description: `Produit de l'acier`,
+                                                value: 'acierie',
+                                            },
+                                            {
+                                                label: `Atelier de verre`,
+                                                emoji: `🪟`,
+                                                description: `Produit du verre`,
+                                                value: 'atelier_verre',
+                                            },
+                                            {
+                                                label: `Carrière de sable`,
+                                                emoji: `<:sable:1075776363782479873>`,
+                                                description: `Produit du sable`,
+                                                value: 'carriere_sable',
+                                            },
+                                            {
+                                                label: `Centrale biomasse`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'centrale_biomasse',
+                                            },
+                                            {
+                                                label: `Centrale au charbon`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'centrale_charbon',
+                                            },
+                                            {
+                                                label: `Centrale au fioul`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'centrale_fioul',
+                                            },
+                                            {
+                                                label: `Champ`,
+                                                emoji: `🌽`,
+                                                description: `Produit de la nourriture`,
+                                                value: 'champ',
+                                            },
+                                            {
+                                                label: `Champ d'éoliennes`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'eolienne',
+                                            },
+                                            {
+                                                label: `Cimenterie`,
+                                                emoji: `<:beton:1075776342227943526>`,
+                                                description: `Produit du béton`,
+                                                value: 'cimenterie',
+                                            },
+                                            {
+                                                label: `Derrick`,
+                                                emoji: `🛢️`,
+                                                description: `Produit du pétrole`,
+                                                value: 'derrick',
+                                            },
+                                            {
+                                                label: `Mine de charbon`,
+                                                emoji: `<:charbon:1075776385517375638>`,
+                                                description: `Produit du charbon`,
+                                                value: 'mine_charbon',
+                                            },
+                                            {
+                                                label: `Mine de métaux`,
+                                                emoji: `🪨`,
+                                                description: `Produit des métaux`,
+                                                value: 'mine_metaux',
+                                            },
+                                            {
+                                                label: `Station de pompage`,
+                                                emoji: `💧`,
+                                                description: `Produit de l\'eau`,
+                                                value: 'station_pompage',
+                                            },
+                                            {
+                                                label: `Raffinerie`,
+                                                emoji: `⛽`,
+                                                description: `Produit du carburant`,
+                                                value: 'raffinerie',
+                                            },
+                                            {
+                                                label: `Scierie`,
+                                                emoji: `🪵`,
+                                                description: `Produit du bois`,
+                                                value: 'scierie',
+                                            },
+                                            {
+                                                label: `Usine civile`,
+                                                emoji: `💻`,
+                                                description: `Produit des biens de consommation`,
+                                                value: 'usine_civile',
+                                            },
+                                        ]),
+                                );
+
+                            await interaction.reply({ embeds: [embed], components: [row] });
+                            //endregion
+                        });
+                        break;
+                    case 'emploi':
+                        //region Emploi
+                        sql = `
+                            SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Armee = results[0][0];
+                            const Batiment = results[1][0];
+                            const Pays = results[2][0];
+                            const Population = results[3][0];
+
+                            const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
+                            const emploies_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
+                            const emploies_carriere_sable = batimentObject.carriere_sable.EMPLOYES_CARRIERE_SABLE * Batiment.carriere_sable;
+                            const emploies_centrale_biomasse = batimentObject.centrale_biomasse.EMPLOYES_CENTRALE_BIOMASSE * Batiment.centrale_biomasse;
+                            const emploies_centrale_charbon = batimentObject.centrale_charbon.EMPLOYES_CENTRALE_CHARBON * Batiment.centrale_charbon;
+                            const emploies_centrale_fioul = batimentObject.centrale_fioul.EMPLOYES_CENTRALE_FIOUL * Batiment.centrale_fioul;
+                            const emploies_champ = batimentObject.champ.EMPLOYES_CHAMP * Batiment.champ;
+                            const emploies_cimenterie = batimentObject.cimenterie.EMPLOYES_CIMENTERIE * Batiment.cimenterie;
+                            const emploies_derrick = batimentObject.derrick.EMPLOYES_DERRICK * Batiment.derrick;
+                            const emploies_eolienne = batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne;
+                            const emploies_mine_charbon = batimentObject.mine_charbon.EMPLOYES_MINE_CHARBON * Batiment.mine_charbon;
+                            const emploies_mine_metaux = batimentObject.mine_metaux.EMPLOYES_MINE_METAUX * Batiment.mine_metaux;
+                            const emploies_station_pompage = batimentObject.station_pompage.EMPLOYES_STATION_POMPAGE * Batiment.station_pompage;
+                            const emploies_raffinerie = batimentObject.raffinerie.EMPLOYES_RAFFINERIE * Batiment.raffinerie;
+                            const emploies_scierie = batimentObject.scierie.EMPLOYES_SCIERIE * Batiment.scierie;
+                            const emploies_usine_civile = batimentObject.usine_civile.EMPLOYES_USINE_CIVILE * Batiment.usine_civile;
+                            const emploies_total =
+                                emploies_acierie + emploies_atelier_verre + emploies_carriere_sable +
+                                emploies_centrale_biomasse + emploies_centrale_charbon + emploies_centrale_fioul +
+                                emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
+                                emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
+                                emploies_raffinerie + emploies_scierie + emploies_usine_civile;
+                            const hommeArmee =
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                                (Armee.aviation * armeeObject.aviation.homme) +
+                                (Armee.infanterie * armeeObject.infanterie.homme) +
+                                (Armee.mecanise * armeeObject.mecanise.homme) +
+                                (Armee.support * armeeObject.support.homme);
+
+                            let emploi = ((Population.jeune + Population.adulte - hommeArmee)/emploies_total*100).toFixed(2)
+                            if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
+                                emploi = 100
+                            }
+                            if (emploi >= 90) {
+                                Emploi = codeBlock('md', `> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
+                            } else if (emploi >= 50) {
+                                Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
+                            } else {
+                                Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
+                            }
+
+                            const embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                title: `\`Menu des emplois : nb employés | % main d'oeuvre totale\``,
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                description:
+                                    `> <:acier:1075776411329122304> \`${Batiment.acierie} Acierie : ${emploies_acierie.toLocaleString('en-US')} | ${(emploies_acierie/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🪟 \`${Batiment.atelier_verre} Atelier de verre : ${emploies_atelier_verre.toLocaleString('en-US')} | ${(emploies_atelier_verre/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> <:sable:1075776363782479873> \`${Batiment.carriere_sable} Carrière de sable : ${emploies_carriere_sable.toLocaleString('en-US')} | ${(emploies_carriere_sable/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.centrale_biomasse} Centrale biomasse : ${emploies_centrale_biomasse.toLocaleString('en-US')} | ${(emploies_centrale_biomasse/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.centrale_charbon} Centrale au charbon : ${emploies_centrale_charbon.toLocaleString('en-US')} | ${(emploies_centrale_charbon/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.centrale_fioul} Centrale au fioul : ${emploies_centrale_fioul.toLocaleString('en-US')} | ${(emploies_centrale_fioul/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🌽 \`${Batiment.champ} Champ : ${emploies_champ.toLocaleString('en-US')} | ${(emploies_champ/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.eolienne} Champ d'éoliennes : ${emploies_eolienne.toLocaleString('en-US')} | ${(emploies_eolienne/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> <:beton:1075776342227943526> \`${Batiment.cimenterie} Cimenterie : ${emploies_cimenterie.toLocaleString('en-US')} | ${(emploies_cimenterie/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🛢️ \`${Batiment.derrick} Derrick : ${emploies_derrick.toLocaleString('en-US')} | ${(emploies_derrick/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> <:charbon:1075776385517375638> \`${Batiment.mine_charbon} Mine de charbon : ${emploies_mine_charbon.toLocaleString('en-US')} | ${(emploies_mine_charbon/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🪨 \`${Batiment.mine_metaux} Mine de métaux : ${emploies_mine_metaux.toLocaleString('en-US')} | ${(emploies_mine_metaux/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 💧 \`${Batiment.station_pompage} Station de pompage : ${emploies_station_pompage.toLocaleString('en-US')} | ${(emploies_station_pompage/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⛽ \`${Batiment.raffinerie} Raffinerie : ${emploies_raffinerie.toLocaleString('en-US')} | ${(emploies_raffinerie/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🪵 \`${Batiment.scierie} Scierie : ${emploies_scierie.toLocaleString('en-US')} | ${(emploies_scierie/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 💻 \`${Batiment.usine_civile} Usine civile : ${emploies_usine_civile.toLocaleString('en-US')} | ${(emploies_usine_civile/emploies_total*100).toFixed(1)}%\`\n` + `\u200B\n`,
+                                fields: [
+                                    {
+                                        name: `> 👩‍🔧 Emplois :`,
+                                        value: Emploi + `\u200B`
+                                    }
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${Pays.devise}`
+                                },
+                            };
+
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new StringSelectMenuBuilder()
+                                        .setCustomId('usine')
+                                        .setPlaceholder(`Le type d\'usine`)
+                                        .addOptions([
+                                            {
+                                                label: `Acierie`,
+                                                emoji: `<:acier:1075776411329122304>`,
+                                                description: `Produit de l'acier`,
+                                                value: 'acierie',
+                                            },
+                                            {
+                                                label: `Atelier de verre`,
+                                                emoji: `🪟`,
+                                                description: `Produit du verre`,
+                                                value: 'atelier_verre',
+                                            },
+                                            {
+                                                label: `Carrière de sable`,
+                                                emoji: `<:sable:1075776363782479873>`,
+                                                description: `Produit du sable`,
+                                                value: 'carriere_sable',
+                                            },
+                                            {
+                                                label: `Centrale biomasse`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'centrale_biomasse',
+                                            },
+                                            {
+                                                label: `Centrale au charbon`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'centrale_charbon',
+                                            },
+                                            {
+                                                label: `Centrale au fioul`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'centrale_fioul',
+                                            },
+                                            {
+                                                label: `Champ`,
+                                                emoji: `🌽`,
+                                                description: `Produit de la nourriture`,
+                                                value: 'champ',
+                                            },
+                                            {
+                                                label: `Champ d'éoliennes`,
+                                                emoji: `⚡`,
+                                                description: `Produit de l'électricité`,
+                                                value: 'eolienne',
+                                            },
+                                            {
+                                                label: `Cimenterie`,
+                                                emoji: `<:beton:1075776342227943526>`,
+                                                description: `Produit du béton`,
+                                                value: 'cimenterie',
+                                            },
+                                            {
+                                                label: `Derrick`,
+                                                emoji: `🛢️`,
+                                                description: `Produit du pétrole`,
+                                                value: 'derrick',
+                                            },
+                                            {
+                                                label: `Mine de charbon`,
+                                                emoji: `<:charbon:1075776385517375638>`,
+                                                description: `Produit du charbon`,
+                                                value: 'mine_charbon',
+                                            },
+                                            {
+                                                label: `Mine de métaux`,
+                                                emoji: `🪨`,
+                                                description: `Produit des métaux`,
+                                                value: 'mine_metaux',
+                                            },
+                                            {
+                                                label: `Station de pompage`,
+                                                emoji: `💧`,
+                                                description: `Produit de l\'eau`,
+                                                value: 'station_pompage',
+                                            },
+                                            {
+                                                label: `Raffinerie`,
+                                                emoji: `⛽`,
+                                                description: `Produit du carburant`,
+                                                value: 'raffinerie',
+                                            },
+                                            {
+                                                label: `Scierie`,
+                                                emoji: `🪵`,
+                                                description: `Produit du bois`,
+                                                value: 'scierie',
+                                            },
+                                            {
+                                                label: `Usine civile`,
+                                                emoji: `💻`,
+                                                description: `Produit des biens de consommation`,
+                                                value: 'usine_civile',
+                                            },
+                                        ]),
+                                );
+
+                            await interaction.reply({ embeds: [embed], components: [row] });
+                        });
                 }
+                //endregion
                 //endregion
             } else if (interaction.customId == 'action-population') {
                 //region Action Population
                 switch (interaction.values[0]) {
-                        case 'appro':
-                            //region Approvisionnement
-                            if (
-                                interaction.member.roles.cache.some(role => role.name === "👤 » Maire") ||
-                                interaction.member.roles.cache.some(role => role.name === "👤 » Dirigent") ||
-                                interaction.member.roles.cache.some(role => role.name === "👤 » Chef d'état") ||
-                                interaction.member.roles.cache.some(role => role.name === "👤 » Empereur")
-                            ) {
-                                sql = `
-                                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
-                                    SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
-                                `;
-                                connection.query(sql, async(err, results) => {if (err) {throw err;}
-                                    const Pays = results[0][0];
-                                    const Population = results[1][0];
-
-                                    if (!results[0][0]) {
-                                        const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
-                                        await interaction.reply({ content: reponse, ephemeral: true });
-                                    } else {
-                                        let Eau;
-                                        let Nourriture;
-
-                                        const conso_eau = Math.round((Population.habitant * parseFloat(populationObject.EAU_CONSO)))
-                                        if (Population.eau_appro / conso_eau > 1.1) {
-                                            Eau = codeBlock('md', `> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                                        } else if (Population.eau_appro / conso_eau >= 1) {
-                                            Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                                        } else {
-                                            Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_eau.toLocaleString('en-US')}/${Population.eau_appro.toLocaleString('en-US')} eau\n`);
-                                        }
-
-                                        const conso_nourriture = Math.round((Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)))
-                                        if (Population.nourriture_appro / conso_nourriture > 1.1) {
-                                            Nourriture = codeBlock('md', `> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                                        } else if (Population.nourriture_appro / conso_nourriture >= 1) {
-                                            Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                                        } else {
-                                            Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_nourriture.toLocaleString('en-US')}/${Population.nourriture_appro.toLocaleString('en-US')} nourriture\n`);
-                                        }
-
-                                        const embed = {
-                                            author: {
-                                                name: `${Pays.rang} de ${Pays.nom}`,
-                                                icon_url: interaction.member.displayAvatarURL()
-                                            },
-                                            thumbnail: {
-                                                url: Pays.drapeau
-                                            },
-                                            title: `\`Menu de l'approvisionnement\``,
-                                            fields: [
-                                                {
-                                                    name: `> 💧 Approvisionnement en eau :`,
-                                                    value: Eau + `\u200B`
-                                                },
-                                                {
-                                                    name: `> 🌽 Approvisionnement en nourriture :`,
-                                                    value: Nourriture + `\u200B`
-                                                }
-                                            ],
-                                            color: interaction.member.displayColor,
-                                            timestamp: new Date(),
-                                            footer: {
-                                                text: `${Pays.devise}`
-                                            },
-                                        };
-
-                                        const row1 = new ActionRowBuilder()
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`100,000`)
-                                                    .setCustomId('eau-100000')
-                                                    .setEmoji('➖')
-                                                    .setStyle(ButtonStyle.Danger)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`10,000`)
-                                                    .setCustomId('eau-10000')
-                                                    .setEmoji('➖')
-                                                    .setStyle(ButtonStyle.Danger)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setEmoji(`💧`)
-                                                    .setCustomId('eau')
-                                                    .setStyle(ButtonStyle.Secondary)
-                                                    .setDisabled(true)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`10,000`)
-                                                    .setCustomId('eau+10000')
-                                                    .setEmoji('➕')
-                                                    .setStyle(ButtonStyle.Success)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`100,000`)
-                                                    .setCustomId('eau+100000')
-                                                    .setEmoji('➕')
-                                                    .setStyle(ButtonStyle.Success)
-                                            )
-
-                                        const row2 = new ActionRowBuilder()
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`100,000`)
-                                                    .setCustomId('nourriture-100000')
-                                                    .setEmoji('➖')
-                                                    .setStyle(ButtonStyle.Danger)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`10,000`)
-                                                    .setCustomId('nourriture-10000')
-                                                    .setEmoji('➖')
-                                                    .setStyle(ButtonStyle.Danger)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setEmoji(`🌽`)
-                                                    .setCustomId('nourriture')
-                                                    .setStyle(ButtonStyle.Secondary)
-                                                    .setDisabled(true)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`10,000`)
-                                                    .setCustomId('nourriture+10000')
-                                                    .setEmoji('➕')
-                                                    .setStyle(ButtonStyle.Success)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`100,000`)
-                                                    .setCustomId('nourriture+100000')
-                                                    .setEmoji('➕')
-                                                    .setStyle(ButtonStyle.Success)
-                                            )
-
-                                        await interaction.reply({ embeds: [embed], components: [row1, row2] });
-                                    }
-                                });
-                            } else {
-                                const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous devez être une Cité-Etat pour pouvoir gérer l'approvisionnement de votre population.`);
-                                await interaction.reply({ content: reponse, ephemeral: true });
-                            }
-
-                    //endregion
-                    break;
                 }
                 //endregion
             } else if (interaction.customId == 'action-territoire') {
@@ -7345,10 +11278,11 @@ module.exports = {
                         }
                         function success(salon) {
                             function creationDb(message) {
-                                const cash = chance.integer({min: 4975000, max: 5025000});
-                                const jeune = chance.integer({min: 29000, max: 31000});
+                                const cash = chance.integer({min: 5000000, max: 5050000});
+                                const jeune = chance.integer({min: 50000, max: 50100});
 
                                 let sql = `
+                                        INSERT INTO armee SET id_joueur="${interaction.user.id}";
                                         INSERT INTO batiments SET id_joueur="${interaction.user.id}";
                                         INSERT INTO diplomatie SET id_joueur="${interaction.user.id}";
                                         INSERT INTO pays SET id_joueur="${interaction.user.id}",
@@ -7400,6 +11334,7 @@ module.exports = {
                                 "lignes",
                                 "anglais",
                                 "suisse",
+                                "scandinave",
                             ])
                             function couleurs(nombre) {
                                 return chance.pickset([
@@ -7431,6 +11366,10 @@ module.exports = {
                                 ], nombre)}
 
                             let logo;
+                            const width = 600;   // Largeur du canevas
+                            const height = 400;
+                            const couleur = couleurs(1)[0];
+                            let crossThickness = 72; // Épaisseur de la croix
                             switch (figures) {
                                 case "fond":
                                     ctx.fillStyle = couleurs(1)[0]
@@ -7569,19 +11508,14 @@ module.exports = {
                                     }
                                     break;
                                 case "anglais":
-                                    const width = 600;   // Largeur du canevas
-                                    const height = 400;
-                                    const couleur = couleurs(1)[0]
                                     ctx.fillStyle = couleurs(1)[0];
                                     ctx.fillRect(0, 0, 600, 400);
 
-                                    const crossThickness = 72;  // Épaisseur de la croix en pixels
-
-// Dessin de la croix horizontale
+                                    // Dessin de la croix horizontale
                                     ctx.fillStyle = couleur;
                                     ctx.fillRect(0, (height - crossThickness) / 2, width, crossThickness);
 
-// Dessin de la croix verticale
+                                    // Dessin de la croix verticale
                                     ctx.fillRect((width - crossThickness) / 2, 0, crossThickness, height);
 
 
@@ -7616,6 +11550,42 @@ module.exports = {
                                     ctx.fillRect((600 - 240) / 2, (400 - 40) / 2, 240, 40);
 
                                     print_flag()
+                                    break;
+                                case "scandinave":
+                                    ctx.fillStyle = couleurs(1)[0];
+                                    ctx.fillRect(0, 0, 600, 400);
+
+                                    crossThickness = 75;  // Épaisseur de la croix en pixels
+
+                                    // Dessin de la croix horizontale
+                                    ctx.fillStyle = couleur;
+                                    ctx.fillRect(0, (height - crossThickness) / 2, width, crossThickness);
+
+                                    // Dessin de la croix verticale
+                                    ctx.fillRect(187.5, 0, crossThickness, height);
+
+                                    logo = chance.pickone([
+                                        'rien',
+                                        'rien',
+                                        'simple_logo'
+                                    ])
+
+                                    switch (logo) {
+                                        case 'rien':
+                                            print_flag()
+                                            break;
+                                        case 'simple_logo':
+                                            loadImage('flags/simple_logo' + chance.integer({
+                                                min: 1,
+                                                max: process.env.NBR_SIMPLE_LOGO
+                                            }) + '.png')
+                                                .then((image) => {
+                                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                                    print_flag()
+                                                })
+                                            break;
+                                    }
+                                    break;
                             }
 
                             const attachment = new AttachmentBuilder('flags/output.png', { name: 'drapeau.png'});
@@ -7630,7 +11600,7 @@ module.exports = {
                                 title: `\`Bienvenue dans votre cité !\``,
                                 fields: [{
                                     name: `Commencement :`,
-                                    value: `Menez votre peuple à la gloire !`
+                                    value: `Menez votre peuple à la gloire ! Ici se trouve votre salon, vous ferez la plupart de vos commandes ici. C'est un jeu assez complexe, mais nous avons un tutoriel qui commence juste ici <#983315824217579520> !`
                                 }],
                                 color: 0x57F287,
                                 timestamp: new Date(),
@@ -7711,6 +11681,28 @@ module.exports = {
                                                volcan=80
                                     `;
                                     break;
+                                case 'amerique_latine':
+                                    sql = `INSERT INTO territoire
+                                           SET id_joueur="${interaction.user.id}",
+                                               T_total='${T_total}',
+                                               T_libre='${T_libre}',
+                                               T_occ='${T_occ}',
+                                               region='amerique_latine',
+                                               desert=1600,
+                                               foret=0,
+                                               jungle=4800,
+                                               lac=800,
+                                               mangrove=2400,
+                                               prairie=3760,
+                                               rocheuses=480,
+                                               savane=0,
+                                               steppe=0,
+                                               taiga=0,
+                                               toundra=1120,
+                                               ville=960,
+                                               volcan=80
+                                    `;
+                                    break;
                                 case 'amerique_du_nord':
                                     sql = `INSERT INTO territoire
                                            SET id_joueur="${interaction.user.id}",
@@ -7727,6 +11719,28 @@ module.exports = {
                                                rocheuses=480,
                                                savane=0,
                                                steppe=2400,
+                                               taiga=0,
+                                               toundra=0,
+                                               ville=960,
+                                               volcan=80
+                                    `;
+                                    break;
+                                case 'amerique_du_sud':
+                                    sql = `INSERT INTO territoire
+                                           SET id_joueur="${interaction.user.id}",
+                                               T_total='${T_total}',
+                                               T_libre='${T_libre}',
+                                               T_occ='${T_occ}',
+                                               region='amerique_du_sud',
+                                               desert=1440,
+                                               foret=480,
+                                               jungle=3250,
+                                               lac=160,
+                                               mangrove=0,
+                                               prairie=3520,
+                                               rocheuses=480,
+                                               savane=1840,
+                                               steppe=3520,
                                                taiga=0,
                                                toundra=0,
                                                ville=960,
@@ -7799,6 +11813,28 @@ module.exports = {
                                                volcan=80
                                     `;
                                     break;
+                                case 'grand_nord':
+                                    sql = `INSERT INTO territoire
+                                           SET id_joueur="${interaction.user.id}",
+                                               T_total='${T_total}',
+                                               T_libre='${T_libre}',
+                                               T_occ='${T_occ}',
+                                               region='grand_nord',
+                                               desert=0,
+                                               foret=0,
+                                               jungle=0,
+                                               lac=800,
+                                               mangrove=0,
+                                               prairie=0,
+                                               rocheuses=480,
+                                               savane=0,
+                                               steppe=0,
+                                               taiga=10160,
+                                               toundra=3520,
+                                               ville=960,
+                                               volcan=80
+                                    `;
+                                    break;
                                 case 'moyen_orient':
                                     sql = `INSERT INTO territoire
                                            SET id_joueur="${interaction.user.id}",
@@ -7821,28 +11857,6 @@ module.exports = {
                                                volcan=80
                                     `;
                                     break;
-                                case 'nord_amerique_latine':
-                                    sql = `INSERT INTO territoire
-                                           SET id_joueur="${interaction.user.id}",
-                                               T_total='${T_total}',
-                                               T_libre='${T_libre}',
-                                               T_occ='${T_occ}',
-                                               region='nord_amerique_latine',
-                                               desert=1600,
-                                               foret=0,
-                                               jungle=4800,
-                                               lac=800,
-                                               mangrove=2400,
-                                               prairie=3760,
-                                               rocheuses=480,
-                                               savane=0,
-                                               steppe=0,
-                                               taiga=0,
-                                               toundra=1120,
-                                               ville=960,
-                                               volcan=80
-                                    `;
-                                    break;
                                 case 'oceanie':
                                     sql = `INSERT INTO territoire
                                            SET id_joueur="${interaction.user.id}",
@@ -7859,50 +11873,6 @@ module.exports = {
                                                rocheuses=480,
                                                savane=1040,
                                                steppe=0,
-                                               taiga=0,
-                                               toundra=0,
-                                               ville=960,
-                                               volcan=80
-                                    `;
-                                    break;
-                                case 'pays_du_nord':
-                                    sql = `INSERT INTO territoire
-                                           SET id_joueur="${interaction.user.id}",
-                                               T_total='${T_total}',
-                                               T_libre='${T_libre}',
-                                               T_occ='${T_occ}',
-                                               region='pays_du_nord',
-                                               desert=0,
-                                               foret=0,
-                                               jungle=0,
-                                               lac=800,
-                                               mangrove=0,
-                                               prairie=0,
-                                               rocheuses=480,
-                                               savane=0,
-                                               steppe=0,
-                                               taiga=10160,
-                                               toundra=3520,
-                                               ville=960,
-                                               volcan=80
-                                    `;
-                                    break;
-                                case 'sud_amerique_latine':
-                                    sql = `INSERT INTO territoire
-                                           SET id_joueur="${interaction.user.id}",
-                                               T_total='${T_total}',
-                                               T_libre='${T_libre}',
-                                               T_occ='${T_occ}',
-                                               region='sud_amerique_latine',
-                                               desert=1440,
-                                               foret=480,
-                                               jungle=3250,
-                                               lac=160,
-                                               mangrove=0,
-                                               prairie=3520,
-                                               rocheuses=480,
-                                               savane=1840,
-                                               steppe=3520,
                                                taiga=0,
                                                toundra=0,
                                                ville=960,
@@ -8187,23 +12157,146 @@ module.exports = {
                     await pweeterCommandCooldown.addUser(interaction.member.id);
                 });
                 //endregion
+            } else if (interaction.customId.includes('creer-ambassade') == true) {
+                //region Créer ambassade
+                const cite = interaction.fields.getTextInputValue('cite');
+                sql = `SELECT * FROM pays WHERE nom='${cite}'`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    if (results[0] === undefined) {
+                        reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette ville n'existe pas`);
+                        await interaction.reply({content: reponse, ephemeral: true});
+                    } else {
+                        const inviteJoueur = client.users.cache.get(results[0].id_joueur);
+
+                        sql = `
+                            SELECT * FROM diplomatie WHERE id_joueur='${inviteJoueur.id}';
+                            SELECT * FROM pays WHERE id_joueur='${inviteJoueur.id}';
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Diplomatie2 = results[0][0];
+                            const Pays2 = results[1][0];
+
+                            if (!Pays2) {
+                                const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette personne ne joue pas.`);
+                                await interaction.reply({ content: reponse, ephemeral: true });
+                            } else if (inviteJoueur.id === interaction.member.id) {
+                                const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas créer d'ambassade avec vous même !`);
+                                await interaction.reply({ content: reponse, ephemeral: true });
+                            } else {
+                                //region regarder si on a déjà une ambassade avec ce pays
+                                sql = `
+                                    SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
+                                    SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
+                                `;
+                                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                                    const Diplomatie = results[0][0];
+                                    const Pays = results[1][0];
+
+                                    if (Diplomatie.ambassade.includes(inviteJoueur.id) === true) {
+                                        const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous avez déjà une ambassade avec ${Pays2.nom} !`);
+                                        await interaction.reply({ content: reponse, ephemeral: true });
+                                    } else {
+
+                                        const invitation = {
+                                            author: {
+                                                name: `${Pays.rang} de ${Pays.nom}`,
+                                                icon_url: interaction.member.displayAvatarURL()
+                                            },
+                                            thumbnail: {
+                                                url: Pays.drapeau
+                                            },
+                                            title: `\`Invitation reçue !\``,
+                                            description: `Vous avez reçu une demande d'ambassade de ${interaction.member}.\n` +
+                                                `Vous pouvez accepter pour construire mutuellement une ambassade, ou refuser.`,
+                                            fields: [
+                                                {
+                                                    name: `Message :`,
+                                                    value: interaction.fields.getTextInputValue('text_annonce')
+                                                }
+                                            ],
+                                            color: interaction.member.displayColor,
+                                            timestamp: new Date(),
+                                            footer: {
+                                                text: `${Pays.devise}`
+                                            },
+                                        };
+
+                                        const row1 = new ActionRowBuilder()
+                                            .addComponents(
+                                                new ButtonBuilder()
+                                                    .setLabel(`Accepter`)
+                                                    .setEmoji(`✔`)
+                                                    .setCustomId('ambassade-oui-' + interaction.member.id)
+                                                    .setStyle(ButtonStyle.Success),
+                                            )
+                                            .addComponents(
+                                                new ButtonBuilder()
+                                                    .setLabel(`Refuser`)
+                                                    .setEmoji(`✖`)
+                                                    .setCustomId('ambassade-non-' + interaction.member.id)
+                                                    .setStyle(ButtonStyle.Danger),
+                                            )
+
+                                        function bouton(message) {
+                                            return new ActionRowBuilder()
+                                                .addComponents(
+                                                    new ButtonBuilder()
+                                                        .setLabel(`Lien vers le message`)
+                                                        .setEmoji(`🏛️`)
+                                                        .setURL(message.url)
+                                                        .setStyle(ButtonStyle.Link),
+                                                )
+                                        }
+
+                                        interaction.client.channels.cache.get(Pays2.id_salon)
+                                            .send({embeds: [invitation], components: [row1]})
+                                            .then(message => inviteJoueur.send({
+                                                embeds: [invitation],
+                                                components: [bouton(message)]
+                                            }))
+
+
+                                        const embed = {
+                                            author: {
+                                                name: `${Pays.rang} de ${Pays.nom}`,
+                                                icon_url: interaction.member.displayAvatarURL()
+                                            },
+                                            thumbnail: {
+                                                url: Pays.drapeau
+                                            },
+                                            title: `\`Invitation envoyée !\``,
+                                            description: `Vous avez envoyé une demande d'ambassade à ${inviteJoueur}.\n` +
+                                                `Elle est désormais en attente de réponse.`,
+                                            color: interaction.member.displayColor,
+                                            timestamp: new Date(),
+                                            footer: {
+                                                text: `${Pays.devise}`
+                                            },
+                                        };
+
+                                        interaction.reply({embeds: [embed]})
+                                    }
+                                });
+                                //endregion
+                            }
+                        });
+                    }
+                });
+                //endregion
             } else if (interaction.customId.includes('organisation') == true) {
                 //region Organisation
 
-                const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                const nom_sans_maj = interaction.fields.getTextInputValue('text_nom');
+                const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ORGANISATION);
+                const nom = interaction.fields.getTextInputValue('text_nom');
                 const annonce = interaction.fields.getTextInputValue('text_annonce');
                 const image = interaction.fields.getTextInputValue('image_annonce');
-                function capitalizeFirstLetter(sentence) {
-                    return sentence.charAt(0).toUpperCase() + sentence.slice(1).toLowerCase();
-                };
-                const nom = capitalizeFirstLetter(nom_sans_maj);
 
                 sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
                 connection.query(sql, async (err, results) => {if (err) {throw err;}
                     const Pays = results[0];
 
                     function organisation(channel) {
+                        channel.send(`${interaction.member}`)
                         const embed = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
@@ -8213,6 +12306,7 @@ module.exports = {
                                 url: Pays.drapeau,
                             },
                             title: `\`Vous avez fondé : ${nom} !\``,
+                            description: `Pour rajouter des joueurs à votre organisation, il vous suffit de les ping dans ce salon.`,
                             fields: [{
                                 name: `Place de votre organisation :`,
                                 value: `${channel.toString()}`
@@ -8229,82 +12323,28 @@ module.exports = {
                         interaction.user.send({embeds: [embed]});
                     }
 
-                    if (image) {
-                        if (await isImageURL(image) === true) {
-                            const embed = {
-                                author: {
-                                    name: `${Pays.rang} de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: Pays.drapeau
-                                },
-                                title: `\`Création d'une nouvelle organisation :\``,
-                                description: annonce + `\u200B`,
-                                fields: [
-                                    {
-                                        name: `> 🪧 Nom`,
-                                        value: `${nom}` + `\n\u200B`
-                                    },
-                                ],
-                                image: {
-                                    url: image,
-                                },
-                                timestamp: new Date(),
-                                color: interaction.member.displayColor,
-                                footer: {
-                                    text: `${Pays.devise}`
-                                },
-                            };
-
-                            SalonAnnonce.send({embeds: [embed]})
-                            const reponse = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
-                            await interaction.reply({content: reponse});
-
-                            const { ViewChannel, SendMessages, ManageRoles, ReadMessageHistory, ManageMessages, UseApplicationCommands } = PermissionFlagsBits
-                            interaction.guild.channels.create({
-                                name: nom,
-                                type: ChannelType.GuildText,
-                                permissionOverwrites: [
-                                    {
-                                        id: interaction.member.id,
-                                        allow: [ViewChannel, SendMessages, ManageRoles, ReadMessageHistory, ManageMessages, UseApplicationCommands],
-                                    },
-                                    {
-                                        id: interaction.guild.roles.everyone,
-                                        deny: [ViewChannel]
-                                    },
-                                ],
-                                parent: process.env.CATEGORY_ORGANISATION,
-                            })
-                                .then(salon => organisation(salon))
-
-                            await organisationCommandCooldown.addUser(interaction.member.id);
-                        } else {
-                            reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous n'avez pas fourni une URL valide`);
-                            await interaction.reply({content: reponse, ephemeral: true});
-                        }
-                    } else {
+                    let response;
+                    if (await isImageURL(image) === true) {
                         const embed = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
                             },
-                            title: `\`Création d'une nouvelle organisation :\``,
                             thumbnail: {
                                 url: Pays.drapeau
                             },
-                            timestamp: new Date(),
+                            title: `\`Création d'une nouvelle organisation :\``,
+                            description: annonce + `\u200B`,
                             fields: [
                                 {
-                                    name: `> Nom`,
-                                    value: `${nom}` + `\n\u200B`
+                                    name: `> 🪧 Nom`,
+                                    value: nom
                                 },
-                                {
-                                    name: `> Discours`,
-                                    value: annonce
-                                }
                             ],
+                            image: {
+                                url: image,
+                            },
+                            timestamp: new Date(),
                             color: interaction.member.displayColor,
                             footer: {
                                 text: `${Pays.devise}`
@@ -8312,27 +12352,24 @@ module.exports = {
                         };
 
                         SalonAnnonce.send({embeds: [embed]})
-                        const reponse = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
+                        reponse = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
                         await interaction.reply({content: reponse});
 
-                        interaction.guild.channels.create({
-                            name: cite,
-                            type: ChannelType.GuildText,
-                            permissionOverwrites: [
-                                {
-                                    id: interaction.member.id,
-                                    allow: [ViewChannel, SendMessages, ManageRoles, ReadMessageHistory, ManageMessages, UseApplicationCommands],
-                                },
-                                {
-                                    id: interaction.guild.roles.everyone,
-                                    deny: [ViewChannel]
-                                },
-                            ],
-                            parent: process.env.CATEGORY_PAYS,
-                        })
-                            .then(salon => organisation(salon))
+                        const channel = client.channels.cache.get(process.env.SALON_ORGANISATION);
+                        channel.threads
+                            .create({
+                                name: `${nom}`,
+                                autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+                                type: ChannelType.PrivateThread,
+                                reason: 'Nouvelle organisation',
+                            })
+                            .then(channel => organisation(channel))
+                            .catch(console.error);
 
                         await organisationCommandCooldown.addUser(interaction.member.id);
+                    } else {
+                        reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous n'avez pas fourni une URL valide`);
+                        await interaction.reply({content: reponse, ephemeral: true});
                     }
                 });
                 //endregion

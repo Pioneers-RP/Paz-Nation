@@ -1,4 +1,4 @@
-const {ActionRowBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder} = require("discord.js");
+const {ActionRowBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle} = require("discord.js");
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -23,6 +23,7 @@ module.exports = {
             .setLabel(`Ajouter une image :`)
             .setStyle(TextInputStyle.Short)
             .setMaxLength(150)
+            .setRequired(false)
 
         const firstActionRow = new ActionRowBuilder().addComponents(text_annonce);
         const secondActionRow = new ActionRowBuilder().addComponents(image_annonce);

@@ -132,8 +132,8 @@ module.exports = {
                             name: `Bienvenue sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
                         },
                         title: `\`Commencer à jouer \``,
-                        color: '#3BA55C',
-                        description: codeBlock(`Choisissez une cité dans une région pour commencer votre aventure !`) + `\n Pour cela, aidez-vous de la [carte](https://cdn.discordapp.com/attachments/983319236942368818/987077067227152444/unknown.png).`,
+                        color: 0x3BA55C,
+                        description: codeBlock(`Choisissez une ville QUI EXISTE dans une région pour commencer votre aventure !`) + `\n Les territoires déjà pris sont disponibles sur la <#1058462262916042862> ! Vous ne pouvez pas prendre une ville sur un territoire déjà pris !`,
                     };
 
                     const row0 = new ActionRowBuilder()
@@ -158,34 +158,39 @@ module.exports = {
                                         value: 'afrique_du_nord',
                                     },
                                     {
+                                        label: `Amérique latine`,
+                                        emoji: `🇧🇷`,
+                                        value: 'amerique_latine',
+                                    },
+                                    {
                                         label: `Amérique du nord`,
                                         emoji: `🇺🇸`,
                                         value: 'amerique_du_nord',
                                     },
                                     {
-                                        label: `Amérique latine du nord`,
-                                        emoji: `🇧🇷`,
-                                        value: 'nord_amerique_latine',
-                                    },
-                                    {
-                                        label: `Amérique latine du sud`,
+                                        label: `Amérique du sud`,
                                         emoji: `🇦🇷`,
-                                        value: 'sud_amerique_latine',
+                                        value: 'amerique_du_sud',
                                     },
                                     {
                                         label: `Asie du nord`,
-                                        emoji: `🇯🇵`,
+                                        emoji: `🇨🇳`,
                                         value: 'asie_du_nord',
                                     },
                                     {
                                         label: `Asie du sud`,
-                                        emoji: `🇮🇳`,
+                                        emoji: `🇮🇩`,
                                         value: 'asie_du_sud',
                                     },
                                     {
                                         label: `Europe`,
                                         emoji: `🇪🇺`,
                                         value: 'europe',
+                                    },
+                                    {
+                                        label: `Grand nord`,
+                                        emoji: `🇨🇦`,
+                                        value: 'grand_nord',
                                     },
                                     {
                                         label: `Moyen orient`,
@@ -197,16 +202,11 @@ module.exports = {
                                         emoji: `🇦🇺`,
                                         value: 'oceanie',
                                     },
-                                    {
-                                        label: `Pays du nord`,
-                                        emoji: `🇨🇦`,
-                                        value: 'pays_du_nord',
-                                    },
                                 ]
                             ),
                         );
 
-                    const salon_début = interaction.client.channels.cache.get('943105388960690238');
+                    const salon_début = interaction.client.channels.cache.get('983316109367345152');
                     salon_début.send({ embeds: [embed], components: [row0] });
                     await interaction.reply({ content: `Bouton envoyé` });
                     break;

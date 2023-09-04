@@ -18,9 +18,9 @@ module.exports = {
                     { name: `Centrale au charbon`, value: `Centrale au charbon`},
                     { name: `Centrale au fioul`, value: `Centrale au fioul`},
                     { name: `Champ`, value: `Champ`},
+                    { name: `Champ d'eoliennes`, value: `Champ d'eoliennes`},
                     { name: `Cimenterie`, value: `Cimenterie`},
                     { name: `Derrick`, value: `Derrick`},
-                    { name: `Eolienne`, value: `Eolienne`},
                     { name: `Mine de charbon`, value: `Mine de charbon`},
                     { name: 'Mine de metaux', value: 'Mine de metaux'},
                     { name: `Station de pompage`, value: `Station de pompage`},
@@ -198,6 +198,22 @@ module.exports = {
                     //endregion
                     break;
 
+                case 'Champ d\'eoliennes':
+                    //region Eolienne
+                    need_eolienne = true;
+
+                    if (nombre > Batiment.eolienne) {
+                        demo_batiment = false;
+                        reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.eolienne}/${nombre} champs d'éoliennes`);
+                        await interaction.reply({ content: reponse, ephemeral: true });
+                    }
+                    demo_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
+                    demo_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
+                    avant = Batiment.eolienne;
+                    apres = Batiment.eolienne - nombre;
+                    //endregion
+                    break;
+
                 case 'Derrick':
                     //region Derrick
                     need_acier = true;
@@ -211,22 +227,6 @@ module.exports = {
                     demo_acier = Math.round(batimentObject.derrick.CONST_DERRICK_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     avant = Batiment.derrick;
                     apres = Batiment.derrick - nombre;
-                    //endregion
-                    break;
-
-                case 'Eolienne':
-                    //region Eolienne
-                    need_eolienne = true;
-
-                    if (nombre > Batiment.eolienne) {
-                        demo_batiment = false;
-                        reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.eolienne}/${nombre} éoliennes`);
-                        await interaction.reply({ content: reponse, ephemeral: true });
-                    }
-                    demo_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                    demo_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
-                    avant = Batiment.eolienne;
-                    apres = Batiment.eolienne - nombre;
                     //endregion
                     break;
 

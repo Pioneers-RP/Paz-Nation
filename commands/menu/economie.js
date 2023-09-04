@@ -1,5 +1,6 @@
 const { ActionRowBuilder, StringSelectMenuBuilder, SlashCommandBuilder, codeBlock} = require("discord.js");
 const {readFileSync} = require("fs");
+const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 
 module.exports = {
@@ -11,20 +12,22 @@ module.exports = {
         const { connection } = require('../../index.js');
 
         const sql = `
+                SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
                 SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
                 SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                 SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
             `;
             connection.query(sql, async(err, results) => {if (err) {throw err;}
-                const Batiment = results[0][0];
-                const Pays = results[1][0];
-                const Population = results[2][0];
+                const Armee = results[0][0];
+                const Batiment = results[1][0];
+                const Pays = results[2][0];
+                const Population = results[3][0];
 
                 if (!results[0][0]) {
                     const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
                     await interaction.reply({ content: reponse, ephemeral: true });
                 } else {
-                    const Argent = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -0 | +0 | :0 | ${Pays.cash.toLocaleString('en-US')} $`);
+                    const Argent = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -0 | +0 | :0 | ${Pays.cash.toLocaleString('en-US')} PAZ`);
 
                     const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
                     const emploies_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
@@ -48,16 +51,26 @@ module.exports = {
                         emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                         emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                         emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                    let emploi = (Population.habitant/emploies_total*100).toFixed(2)
-                    if (Population.habitant/emploies_total > 1) {
+                    const hommeArmee =
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                        (Armee.aviation * armeeObject.aviation.homme) +
+                        (Armee.infanterie * armeeObject.infanterie.homme) +
+                        (Armee.mecanise * armeeObject.mecanise.homme) +
+                        (Armee.support * armeeObject.support.homme);
+
+                    let emploi = ((Population.jeune + Population.adulte - hommeArmee)/emploies_total*100).toFixed(2)
+                    if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                         emploi = 100
                     }
                     if (emploi >= 90) {
-                        Emploi = codeBlock('md', `> • ${Population.habitant.toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}%)`);
+                        Emploi = codeBlock('md', `> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
                     } else if (emploi >= 50) {
-                        Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${Population.habitant.toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}%)`);
+                        Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
                     } else {
-                        Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}%)`);
+                        Emploi = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${(Population.jeune + Population.adulte - hommeArmee).toLocaleString('en-US')}/${emploies_total.toLocaleString('en-US')} emplois (${emploi}% d'efficacité)`);
                     }
 
                     const embed = {
@@ -101,6 +114,18 @@ module.exports = {
                                         emoji: `📦`,
                                         description: `Voir vos flux de ressources`,
                                         value: 'consommations',
+                                    },
+                                    {
+                                        label: `Emploi`,
+                                        emoji: `👩‍🔧`,
+                                        description: `Voir vos postes de travail`,
+                                        value: 'emploi',
+                                    },
+                                    {
+                                        label: `Industrie`,
+                                        emoji: `🏭`,
+                                        description: `Voir vos industries`,
+                                        value: 'industrie',
                                     }
                                 ]),
                         );

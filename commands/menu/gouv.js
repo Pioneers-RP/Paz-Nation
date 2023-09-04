@@ -42,8 +42,12 @@ module.exports = {
                             value: codeBlock(`• ${Pays.ideologie}`) + `\u200B`
                         },
                         {
-                            name: `> 📯 Devise : `,
+                            name: `> 📃 Devise : `,
                             value: codeBlock(`• ${Pays.devise}`) + `\u200B`
+                        },
+                        {
+                            name: `> <:Pweeter:983399130154008576> Pweeter : `,
+                            value: codeBlock(`• ${Pays.pweeter}`) + `\u200B`
                         }
                     ],
                     color: interaction.member.displayColor,
@@ -65,7 +69,7 @@ module.exports = {
                                 },
                                 {
                                     label: `Devise`,
-                                    emoji: `:Rules:853916488696201237`,
+                                    emoji: `📃`,
                                     description: `Choisir une nouvelle devise`,
                                     value: 'devise',
                                 },
@@ -81,12 +85,6 @@ module.exports = {
                                     description: `Changer son pseudo pweeter`,
                                     value: 'pweeter',
                                 },
-                                {
-                                    label: `Organisation`,
-                                    emoji: `🇺🇳`,
-                                    description: `Créer une nouvelle organisation`,
-                                    value: 'organisation',
-                                }
                             ]),
                     );
 

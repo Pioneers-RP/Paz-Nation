@@ -1,12 +1,11 @@
-const { SlashCommandBuilder, codeBlock} = require('discord.js');
+const { SlashCommandBuilder, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
 const { readFileSync } = require('fs');
 const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
-const ressourceObject = JSON.parse(readFileSync('data/ressource.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName('ressource')
-        .setDescription(`Affiche vos ressources`),
+        .setName('reserve')
+        .setDescription(`Affiche vos réserves`),
 
     async execute(interaction) {
         const { connection } = require('../../index.js');
@@ -23,23 +22,11 @@ module.exports = {
             const Territoire = results[3][0];
 
             //region Calcul des coefficients de production des ressources
-            let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses + Territoire.mangrove + Territoire.jungle);
-            if (T_bois === 0) {
-                T_bois = 1;
-            }
-            let T_eau = (Territoire.foret + Territoire.prairie + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.mangrove + Territoire.steppe + Territoire.jungle + Territoire.lac);
-            if (T_eau === 0) {
-                T_eau = 1;
-            }
-            let T_nourriture = (Territoire.prairie + Territoire.desert + Territoire.savane + Territoire.steppe + Territoire.jungle)
-            if (T_nourriture === 0) {
-                T_nourriture = 1;
-            }
-            const coef_bois = parseFloat(((Territoire.foret/T_bois) * ressourceObject.bois.foret + (Territoire.taiga/T_bois) * ressourceObject.bois.taiga + (Territoire.rocheuses/T_bois) * ressourceObject.bois.rocheuses + (Territoire.mangrove/T_bois) * ressourceObject.bois.mangrove + (Territoire.jungle/T_bois) * ressourceObject.bois.jungle).toFixed(2))
+            const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
             const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
-            const coef_eau = parseFloat(((Territoire.foret/T_eau) * ressourceObject.eau.foret + (Territoire.prairie/T_eau) * ressourceObject.eau.prairie + (Territoire.toundra/T_eau) * ressourceObject.eau.toundra + (Territoire.taiga/T_eau) * ressourceObject.eau.taiga + (Territoire.savane/T_eau) * ressourceObject.eau.savane + (Territoire.rocheuses/T_eau) * ressourceObject.eau.rocheuses + (Territoire.mangrove/T_eau) * ressourceObject.eau.mangrove + (Territoire.steppe/T_eau) * ressourceObject.eau.steppe  + (Territoire.jungle/T_eau) * ressourceObject.eau.jungle  + (Territoire.lac/T_eau) * ressourceObject.eau.lac).toFixed(2))
+            const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
             const coef_metaux = eval(`regionObject.${Territoire.region}.metaux`)
-            const coef_nourriture = parseFloat(((Territoire.prairie/T_nourriture) * ressourceObject.nourriture.prairie + (Territoire.savane/T_nourriture) * ressourceObject.nourriture.savane + (Territoire.mangrove/T_nourriture) * ressourceObject.nourriture.mangrove + (Territoire.steppe/T_nourriture) * ressourceObject.nourriture.steppe + (Territoire.jungle/T_nourriture) * ressourceObject.nourriture.jungle).toFixed(2))
+            const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
             const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
             const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
             //endregion
@@ -67,7 +54,7 @@ module.exports = {
                         value: codeBlock(`• ${Ressources.bc.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> 🪵 Bois : ⚙ x${coef_bois}`,
+                        name: `> 🪵 Bois : ⛏️ x${coef_bois}`,
                         value: codeBlock(`• ${Ressources.bois.toLocaleString('en-US')}`)
                     },
                     {
@@ -75,11 +62,11 @@ module.exports = {
                         value: codeBlock(`• ${Ressources.carburant.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> <:charbon:1075776385517375638> Charbon : ⚙ x${coef_charbon}`,
+                        name: `> <:charbon:1075776385517375638> Charbon : ⛏️ x${coef_charbon}`,
                         value: codeBlock(`• ${Ressources.charbon.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> 💧 Eau : ⚙ x${coef_eau}`,
+                        name: `> 💧 Eau : ⛏️ x${coef_eau}`,
                         value: codeBlock(`• ${Ressources.eau.toLocaleString('en-US')}`)
                     },
                     {
@@ -87,19 +74,19 @@ module.exports = {
                         value: codeBlock(`• ${Ressources.eolienne.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> 🪨 Metaux : ⚙ x${coef_metaux}`,
+                        name: `> 🪨 Metaux : ⛏️ x${coef_metaux}`,
                         value: codeBlock(`• ${Ressources.metaux.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> 🌽 Nourriture : ⚙ x${coef_nourriture}`,
+                        name: `> 🌽 Nourriture : ⛏️ x${coef_nourriture}`,
                         value: codeBlock(`• ${Ressources.nourriture.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> 🛢️ Pétrole : ⚙ x${coef_petrole}`,
+                        name: `> 🛢️ Pétrole : ⛏️ x${coef_petrole}`,
                         value: codeBlock(`• ${Ressources.petrole.toLocaleString('en-US')}`)
                     },
                     {
-                        name: `> <:sable:1075776363782479873> Sable : ⚙ x${coef_sable}`,
+                        name: `> <:sable:1075776363782479873> Sable : ⛏️ x${coef_sable}`,
                         value: codeBlock(`• ${Ressources.sable.toLocaleString('en-US')}`)
                     },
                     {
@@ -112,7 +99,25 @@ module.exports = {
                 footer: { text: Pays.devise }
             };
 
-            await interaction.reply({ embeds: [embed] });
+            if (Pays.rang !== 'Cité') {
+                const row = new ActionRowBuilder()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setLabel(`Ressources`)
+                            .setCustomId('ressources')
+                            .setEmoji('🪵')
+                            .setStyle(ButtonStyle.Secondary)
+                    ).addComponents(
+                        new ButtonBuilder()
+                            .setLabel(`Militaire`)
+                            .setCustomId('militaire')
+                            .setEmoji('⚔️')
+                            .setStyle(ButtonStyle.Secondary)
+                    )
+                await interaction.reply({ embeds: [embed], components: [row] });
+            } else {
+                await interaction.reply({ embeds: [embed] });
+            }
         });
     }
 };
