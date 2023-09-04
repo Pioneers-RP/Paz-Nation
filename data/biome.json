@@ -1,0 +1,1694 @@
+{
+    "afrique_australe": {
+        "nom": "Afrique australe",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 5,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 6,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 6,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 3,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_savane": {
+                "nom": "une petite Savane",
+                "chance": 4,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_savane": {
+                "nom": "une moyenne Savane",
+                "chance": 4,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_savane": {
+                "nom": "une grande Savane",
+                "chance": 2,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_steppe": {
+                "nom": "une petite Steppe",
+                "chance": 4.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_steppe": {
+                "nom": "une moyenne Steppe",
+                "chance": 4.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_steppe": {
+                "nom": "une grande Steppe",
+                "chance": 2.1,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 12.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 12.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 6.1,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 3.8,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 3.8,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 1.9,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 300
+    },
+    "afrique_equatoriale": {
+        "nom": "Afrique équatoriale",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 5,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 5,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 2.5,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_savane": {
+                "nom": "une petite Savane",
+                "chance": 7,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_savane": {
+                "nom": "une moyenne Savane",
+                "chance": 7,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_savane": {
+                "nom": "une grande Savane",
+                "chance": 3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_mangrove": {
+                "nom": "une petite Mangrove",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_mangrove": {
+                "nom": "une moyenne Mangrove",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_mangrove": {
+                "nom": "une grande Mangrove",
+                "chance": 1,
+                "min": 400,
+                "max": 600
+ 	    },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 22,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 22,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 11,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 0.4,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 0.4,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 0.2,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 395
+    },
+    "afrique_du_nord": {
+        "nom": "Afrique du nord",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 30,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 30,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 15,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_steppe": {
+                "nom": "une petite Steppe",
+                "chance": 6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_steppe": {
+                "nom": "une moyenne Steppe",
+                "chance": 6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_steppe": {
+                "nom": "une grande Steppe",
+                "chance": 3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 0.2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 0.2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 0.1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 633
+    },
+    "amerique_latine": {
+        "nom": "Amérique latine",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 9.4,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 9.4,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 4.7,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 4,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 4,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 2,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_toundra": {
+                "nom": "une petite Toundra",
+                "chance": 2.8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_toundra": {
+                "nom": "une moyenne Toundra",
+                "chance": 2.8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_toundra": {
+                "nom": "une grande Toundra",
+                "chance": 1.4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_mangrove": {
+                "nom": "une petite Mangrove",
+                "chance": 6,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_mangrove": {
+                "nom": "une moyenne Mangrove",
+                "chance": 6,
+                "min": 200,
+                "max": 400
+            },
+            "grand_mangrove": {
+                "nom": "une grande Mangrove",
+                "chance": 3,
+                "min": 400,
+                "max": 600
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 13.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 13.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 6.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 388
+    },
+    "amerique_du_nord": {
+        "nom": "Amerique du nord",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_forêt": {
+                "nom": "une petite Foret",
+                "chance": 8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_forêt": {
+                "nom": "une moyenne Foret",
+                "chance": 8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_forêt": {
+                "nom": "une grande Foret",
+                "chance": 4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 7,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 7,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 3.5,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 6,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 6,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 3,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_savane": {
+                "nom": "une petite Savane",
+                "chance": 3.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_savane": {
+                "nom": "une moyenne Savane",
+                "chance": 3.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_savane": {
+                "nom": "une grande Savane",
+                "chance": 1.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_mangrove":{
+                "nom": "une petite Mangrove",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_mangrove":{
+                "nom": "une moyenne Mangrove",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_mangrove":{
+                "nom": "une grande Mangrove",
+                "chance": 1,
+                "min": 400,
+                "max": 600
+            },
+            "petit_steppe": {
+                "nom": "une petite Steppe",
+                "chance": 6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_steppe": {
+                "nom": "une moyenne Steppe",
+                "chance": 6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_steppe": {
+                "nom": "une grande Steppe",
+                "chance": 3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 2,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 341
+    },
+    "amerique_du_sud": {
+        "nom": "Amérique du sud",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_forêt": {
+                "nom": "une petit Foret",
+                "chance": 1.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_forêt": {
+                "nom": "une moyenne Foret",
+                "chance": 1.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_forêt": {
+                "nom": "une grande Foret",
+                "chance": 0.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 8.8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 8.8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 4.4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 3.6,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 3.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 1.8,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_savane": {
+                "nom": "une petite Savane",
+                "chance": 4.6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_savane": {
+                "nom": "une moyenne Savane",
+                "chance": 4.6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_savane": {
+                "nom": "une grande Savane",
+                "chance": 2.3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_steppe": {
+                "nom": "une petite Steppe",
+                "chance": 8.8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_steppe": {
+                "nom": "une moyenne Steppe",
+                "chance": 8.8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_steppe": {
+                "nom": "une grande Steppe",
+                "chance": 4.4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 8.8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 8.8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 4.4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 0.4,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 0.4,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand lac",
+                "chance": 0.2,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 425
+    },
+    "asie_du_nord": {
+        "nom": "Asie du nord",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_forêt": {
+                "nom": "une petit Foret",
+                "chance": 9.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_forêt": {
+                "nom": "une moyenne Foret",
+                "chance": 9.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_forêt": {
+                "nom": "une grande Foret",
+                "chance": 4.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 5.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 5.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 2.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 6.8,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 6.8,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 3.4,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_taiga":{
+                "nom": "une petite Taiga",
+                "chance": 2.2,
+                "min": 600,
+                "max": 800
+            },
+            "moyen_taiga":{
+                "nom": "une moyenne Taiga",
+                "chance": 2.2,
+                "min": 800,
+                "max": 1500
+            },
+            "grand_taiga":{
+                "nom": "une grande Taiga",
+                "chance": 1.1,
+                "min": 1500,
+                "max": 2200
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_steppe": {
+                "nom": "une petite Steppe",
+                "chance": 4.8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_steppe": {
+                "nom": "une moyenne Steppe",
+                "chance": 4.8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_steppe": {
+                "nom": "une grande Steppe",
+                "chance": 2.4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 359
+    },
+    "asie_du_sud": {
+        "nom": "Asie du sud",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_toundra": {
+                "nom": "une petite Toundra",
+                "chance": 6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_toundra": {
+                "nom": "une moyenne Toundra",
+                "chance": 6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_toundra": {
+                "nom": "une grande Toundra",
+                "chance": 3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_mangrove": {
+                "nom": "une petite Mangrove",
+                "chance": 4,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_mangrove": {
+                "nom": "une moyenne Mangrove",
+                "chance": 4,
+                "min": 200,
+                "max": 400
+            },
+            "grand_mangrove": {
+                "nom": "une grande Mangrove",
+                "chance": 2,
+                "min": 400,
+                "max": 600
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 25.4,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 25.4,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 12.7,
+                "min": 1000,
+                "max": 1700
+  	        },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 0.8,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 0.8,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 0.4,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 380
+    },
+    "europe": {
+        "nom": "Europe",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_forêt": {
+                "nom": "une petit Foret",
+                "chance": 26.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_forêt": {
+                "nom": "une moyenne Foret",
+                "chance": 26.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_forêt": {
+                "nom": "une grande Foret",
+                "chance": 13.1,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance":1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 110
+    },
+    "grand_nord": {
+        "nom": "Grand nord",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_toundra": {
+                "nom": "une petite Toundra",
+                "chance": 8.8,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_toundra": {
+                "nom": "un moyenne Toundra",
+                "chance": 8.8,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_toundra": {
+                "nom": "une grande Toundra",
+                "chance": 4.4,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_taiga": {
+                "nom": "une petite Taiga",
+                "chance": 25.4,
+                "min": 600,
+                "max": 800
+            },
+            "moyen_taiga": {
+                "nom": "une moyenne Taiga",
+                "chance": 25.4,
+                "min": 800,
+                "max": 1500
+            },
+            "grand_taiga": {
+                "nom": "une grande Taiga",
+                "chance": 12.2,
+                "min": 1500,
+                "max": 2200
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 524
+    },
+    "moyen_orient": {
+        "nom": "Moyen orient",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 32,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 32,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 16,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_steppe": {
+                "nom": "une petite Steppe",
+                "chance": 4,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_steppe": {
+                "nom": "une moyenne Steppe",
+                "chance": 4,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_steppe": {
+                "nom": "une grande Steppe",
+                "chance": 2,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 0.2,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 0.2,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance":0.1,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 648
+    },
+    "oceanie": {
+        "nom": "Océanie",
+        "biome": {
+            "petit_ville": {
+                "nom": "une petite Ville",
+                "chance": 2.5,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_ville": {
+                "nom": "une moyenne Ville",
+                "chance": 2.5,
+                "min": 500,
+                "max": 700
+            },
+            "grand_ville": {
+                "nom": "une grande Ville",
+                "chance": 1,
+                "min": 700,
+                "max": 900
+            },
+            "petit_forêt": {
+                "nom": "une petit Foret",
+                "chance": 3.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_forêt": {
+                "nom": "une moyenne Foret",
+                "chance": 3.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_forêt": {
+                "nom": "une grande Foret",
+                "chance": 1.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_prairie": {
+                "nom": "une petite Prairie",
+                "chance": 10,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_prairie": {
+                "nom": "une moyenne Prairie",
+                "chance": 10,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_prairie": {
+                "nom": "une grande Prairie",
+                "chance": 5,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_desert": {
+                "nom": "un petit Desert",
+                "chance": 14,
+                "min": 800,
+                "max": 1000
+            },
+            "moyen_desert": {
+                "nom": "un moyen Desert",
+                "chance": 14,
+                "min": 1000,
+                "max": 1700
+            },
+            "grand_desert": {
+                "nom": "un grand Desert",
+                "chance": 7,
+                "min": 1700,
+                "max": 2500
+            },
+            "petit_savane": {
+                "nom": "une petite Savane",
+                "chance": 2.6,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_savane": {
+                "nom": "une moyenne Savane",
+                "chance": 2.6,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_savane": {
+                "nom": "une grande Savane",
+                "chance": 1.3,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_rocheuses": {
+                "nom": "de petites Rocheuses",
+                "chance": 1.3,
+                "min": 300,
+                "max": 500
+            },
+            "moyen_rocheuses": {
+                "nom": "de moyennes Rocheuses",
+                "chance": 1.3,
+                "min": 500,
+                "max": 900
+            },
+            "grand_rocheuses": {
+                "nom": "de grandes Rocheuses",
+                "chance": 0.4,
+                "min": 900,
+                "max": 2200
+            },
+            "petit_volcan": {
+                "nom": "un petit Volcan",
+                "chance": 0.5,
+                "min": 100,
+                "max": 300
+            },
+            "petit_mangrove": {
+                "nom": "une petite Mangrove",
+                "chance": 2.8,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_mangrove": {
+                "nom": "une moyenne Mangrove",
+                "chance": 2.8,
+                "min": 200,
+                "max": 400
+            },
+            "grand_mangrove": {
+                "nom": "une grande Mangrove",
+                "chance": 1.4,
+                "min": 400,
+                "max": 600
+            },
+            "petit_jungle": {
+                "nom": "une petite Jungle",
+                "chance": 3.2,
+                "min": 300,
+                "max": 600
+            },
+            "moyen_jungle": {
+                "nom": "une moyenne Jungle",
+                "chance": 3.2,
+                "min": 600,
+                "max": 1000
+            },
+            "grand_jungle": {
+                "nom": "une grande Jungle",
+                "chance": 1.6,
+                "min": 1000,
+                "max": 1700
+            },
+            "petit_lac": {
+                "nom": "un petit Lac",
+                "chance": 0.4,
+                "min": 100,
+                "max": 200
+            },
+            "moyen_lac": {
+                "nom": "un moyen Lac",
+                "chance": 0.4,
+                "min": 200,
+                "max": 400
+            },
+            "grand_lac": {
+                "nom": "un grand Lac",
+                "chance": 0.2,
+                "min": 400,
+                "max": 600
+            }
+        },
+        "cooldown": 459
+    }
+}

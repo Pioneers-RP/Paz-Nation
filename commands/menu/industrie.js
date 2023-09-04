@@ -1,5 +1,4 @@
 const { ActionRowBuilder, SlashCommandBuilder, StringSelectMenuBuilder, codeBlock} = require('discord.js');
-const { readFileSync } = require('fs');
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -8,7 +7,6 @@ module.exports = {
 
     async execute(interaction) {
         const { connection } = require('../../index.js');
-        const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 
         const sql = `
             SELECT * FROM batiments WHERE id_joueur=${interaction.member.id};
@@ -27,88 +25,23 @@ module.exports = {
                 thumbnail: {
                     url: `${Pays.drapeau}`
                 },
-                fields: [
-                    {
-                        name: `> <:acier:1075776411329122304> Acierie :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.acierie.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 🪟 Atelier de verre :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.atelier_verre.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> <:sable:1075776363782479873> Carrière de sable :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.carriere_sable.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> ⚡ Centrale biomasse :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.centrale_biomasse.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> ⚡ Centrale au charbon :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.centrale_charbon.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> ⚡ Centrale au fioul :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.centrale_fioul.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 🌽 Champ :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.champ.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> <:beton:1075776342227943526> Cimenterie :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.cimenterie.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 🛢️ Derrick :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.derrick.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> ⚡ Eolienne :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.eolienne.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> <:charbon:1075776385517375638> Mine de charbon :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.mine_charbon.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 🪨 Mine de métaux:`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.mine_metaux.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 💧 Station de pompage :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.station_pompage.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> ⛽ Raffinerie :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.raffinerie.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 🪵 Scierie :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.scierie.toLocaleString('en-US')}\n`) + `\u200B`
-                    },
-                    {
-                        name: `> 💻 Usine civile :`,
-                        value: codeBlock(
-                            `• Nombre d'usine : ${Batiment.usine_civile.toLocaleString('en-US')}\n`) + `\u200B`
-                    }
-                ],
+                description:
+                    `> <:acier:1075776411329122304> \`Acierie : ${Batiment.acierie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 🪟 \`Atelier de verre : ${Batiment.atelier_verre.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> <:sable:1075776363782479873> \`Carrière de sable : ${Batiment.carriere_sable.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> ⚡ \`Centrale biomasse : ${Batiment.centrale_biomasse.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> ⚡ \`Centrale au charbon : ${Batiment.centrale_charbon.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> ⚡ \`Centrale au fioul : ${Batiment.centrale_fioul.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 🌽 \`Champ : ${Batiment.champ.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> ⚡ \`Champ d'éoliennes : ${Batiment.eolienne.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> <:beton:1075776342227943526> \`Cimenterie : ${Batiment.cimenterie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 🛢️ \`Derrick : ${Batiment.derrick.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> <:charbon:1075776385517375638> \`Mine de charbon : ${Batiment.mine_charbon.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 🪨 \`Mine de métaux : ${Batiment.mine_metaux.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 💧 \`Station de pompage : ${Batiment.station_pompage.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> ⛽ \`Raffinerie : ${Batiment.raffinerie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 🪵 \`Scierie : ${Batiment.scierie.toLocaleString('en-US')}\`\n` + `\u200B\n` +
+                    `> 💻 \`Usine civile : ${Batiment.usine_civile.toLocaleString('en-US')}\`\n` + `\u200B\n`,
                 color: interaction.member.displayColor,
                 timestamp: new Date(),
                 footer: {
@@ -165,6 +98,12 @@ module.exports = {
                                 value: 'champ',
                             },
                             {
+                                label: `Champ d'éoliennes`,
+                                emoji: `⚡`,
+                                description: `Produit de l'électricité`,
+                                value: 'eolienne',
+                            },
+                            {
                                 label: `Cimenterie`,
                                 emoji: `<:beton:1075776342227943526>`,
                                 description: `Produit du béton`,
@@ -175,12 +114,6 @@ module.exports = {
                                 emoji: `🛢️`,
                                 description: `Produit du pétrole`,
                                 value: 'derrick',
-                            },
-                            {
-                                label: `Eolienne`,
-                                emoji: `⚡`,
-                                description: `Produit de l'électricité`,
-                                value: 'eolienne',
                             },
                             {
                                 label: `Mine de charbon`,

@@ -1,4 +1,4 @@
-const { ActivityType, Events, codeBlock} = require('discord.js');
+const { ActivityType, Events, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
 const { readFileSync, writeFileSync } = require('fs');
 const { connection } = require('../index.js');
 const { globalBox } = require('global-box');
@@ -7,14 +7,16 @@ const dotenv = require('dotenv');
 const Chance = require('chance');
 const chance = new Chance();
 const ms = require('ms');
-const {client} = require("../index");
+const wait = require('node:timers/promises').setTimeout;
+const { client } = require("../index");
 const CronJob = require('cron').CronJob;
 
+const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('data/biome.json', 'utf-8'));
 const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 const populationObject = JSON.parse(readFileSync('data/population.json', 'utf-8'));
 const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
-const ressourceObject = JSON.parse(readFileSync('data/ressource.json', 'utf-8'));
 
 module.exports = {
     name: Events.ClientReady,
@@ -23,7 +25,7 @@ module.exports = {
         console.log(`Lancé sous le bot ${client.user.tag}`);
 
         if (client.user.id == 834855105177845794) {
-            client.channels.cache.get(process.env.SALON_ACTUALITE).send('<@834855105177845794> a été reboot, pensez à relancer vos explorateurs <@&1061392938829094913>')
+            client.channels.cache.get(process.env.SALON_ACTUALITE).send('<@834855105177845794> a été <@&1061392938829094913>')
         }
 
         //region Statut
@@ -90,38 +92,28 @@ module.exports = {
 
                     function chaquePays(value, index, array) {
                         const sql = `
+                            SELECT * FROM armee WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM batiments WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM population WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM ressources WHERE id_joueur='${value.id_joueur}';
-                            SELECT * FROM territoire WHERE id_joueur='${value.id_joueur}'
+                            SELECT * FROM territoire WHERE id_joueur='${value.id_joueur}';
                         `;
-                        connection.query(sql, async (err, results) => {if (err) {throw err;}
-                            const Batiment = results[0][0];
-                            const Pays = results[1][0];
-                            const Population = results[2][0];
-                            const Ressources = results[3][0];
-                            const Territoire = results[4][0];
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Armee = results[0][0];
+                            const Batiment = results[1][0];
+                            const Pays = results[2][0];
+                            const Population = results[3][0];
+                            const Ressources = results[4][0];
+                            const Territoire = results[5][0];
 
                             //region Calcul des coefficients de production des ressources
-                            let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses + Territoire.mangrove + Territoire.jungle);
-                            if (T_bois === 0) {
-                                T_bois = 1;
-                            }
-                            let T_eau = (Territoire.foret + Territoire.prairie + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.mangrove + Territoire.steppe + Territoire.jungle + Territoire.lac);
-                            if (T_eau === 0) {
-                                T_eau = 1;
-                            }
-                            let T_nourriture = (Territoire.prairie + Territoire.desert + Territoire.savane + Territoire.steppe + Territoire.jungle)
-                            if (T_nourriture === 0) {
-                                T_nourriture = 1;
-                            }
-                            const coef_bois = parseFloat(((Territoire.foret/T_bois) * ressourceObject.bois.foret + (Territoire.taiga/T_bois) * ressourceObject.bois.taiga + (Territoire.rocheuses/T_bois) * ressourceObject.bois.rocheuses + (Territoire.mangrove/T_bois) * ressourceObject.bois.mangrove + (Territoire.jungle/T_bois) * ressourceObject.bois.jungle).toFixed(2))
+                            const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
                             const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
-                            const coef_eau = parseFloat(((Territoire.foret/T_eau) * ressourceObject.eau.foret + (Territoire.prairie/T_eau) * ressourceObject.eau.prairie + (Territoire.toundra/T_eau) * ressourceObject.eau.toundra + (Territoire.taiga/T_eau) * ressourceObject.eau.taiga + (Territoire.savane/T_eau) * ressourceObject.eau.savane + (Territoire.rocheuses/T_eau) * ressourceObject.eau.rocheuses + (Territoire.mangrove/T_eau) * ressourceObject.eau.mangrove + (Territoire.steppe/T_eau) * ressourceObject.eau.steppe  + (Territoire.jungle/T_eau) * ressourceObject.eau.jungle  + (Territoire.lac/T_eau) * ressourceObject.eau.lac).toFixed(2))
+                            const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
                             const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
                             const coef_metaux = eval(`regionObject.${Territoire.region}.metaux`)
-                            const coef_nourriture = parseFloat(((Territoire.prairie/T_nourriture) * ressourceObject.nourriture.prairie + (Territoire.savane/T_nourriture) * ressourceObject.nourriture.savane + (Territoire.mangrove/T_nourriture) * ressourceObject.nourriture.mangrove + (Territoire.steppe/T_nourriture) * ressourceObject.nourriture.steppe + (Territoire.jungle/T_nourriture) * ressourceObject.nourriture.jungle).toFixed(2))
+                            const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
                             const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
                             const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
                             //endregion
@@ -132,8 +124,17 @@ module.exports = {
                             const emploies_centrale_fioul = batimentObject.centrale_fioul.EMPLOYES_CENTRALE_FIOUL * Batiment.centrale_fioul;
                             const emploies_eolienne = batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne;
                             const emploies_electricite = emploies_centrale_biomasse + emploies_centrale_charbon + emploies_centrale_fioul + emploies_eolienne;
+                            const hommeArmee =
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                                (Armee.aviation * armeeObject.aviation.homme) +
+                                (Armee.infanterie * armeeObject.infanterie.homme) +
+                                (Armee.mecanise * armeeObject.mecanise.homme) +
+                                (Armee.support * armeeObject.support.homme);
                             //endregion
-                            if (Population.habitant - emploies_electricite < 0) {
+                            if ((Population.jeune + Population.adulte - hommeArmee - emploies_electricite) < 0.5) {
                                 //region Pas assez d'employés
                                 //endregion
                             } else {
@@ -163,7 +164,7 @@ module.exports = {
                                 //region Production d'électricté des centrales au charbon
                                 const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
                                 let prod_centrale_charbon = true;
-                                if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_bois !== 0) {
+                                if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_charbon !== 0) {
                                     prod_centrale_charbon = false;
                                     let sql = `UPDATE ressources SET charbon=0 WHERE id_joueur="${Pays.id_joueur}"`;
                                     connection.query(sql, async (err) => {if (err) {throw err;}})
@@ -189,7 +190,7 @@ module.exports = {
                                     let sql = `UPDATE ressources SET carburant=0 WHERE id_joueur="${Pays.id_joueur}"`;
                                     connection.query(sql, async (err) => {if (err) {throw err;}})
                                 } else {
-                                    let sql = `UPDATE ressources SET petrole=petrole-${conso_T_centrale_fioul_carburant} WHERE id_joueur="${Pays.id_joueur}"`;
+                                    let sql = `UPDATE ressources SET carburant=carburant-${conso_T_centrale_fioul_carburant} WHERE id_joueur="${Pays.id_joueur}"`;
                                     connection.query(sql, async (err) => {if (err) {throw err;}})
                                 }
                                 const conso_T_centrale_fioul_eau = batimentObject.centrale_fioul.CONSO_CENTRALE_FIOUL_EAU * Batiment.centrale_fioul
@@ -243,7 +244,7 @@ module.exports = {
                                         //console.log('elec access')
                                     }
 
-                                    let sql = `
+                                let sql = `
                                     SELECT * FROM batiments WHERE id_joueur='${Pays.id_joueur}';
                                     SELECT * FROM pays WHERE id_joueur='${Pays.id_joueur}';
                                     SELECT * FROM ressources WHERE id_joueur='${Pays.id_joueur}'
@@ -284,8 +285,18 @@ module.exports = {
                                             emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
                                             emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
                                             emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                                        let emplois = Population.habitant/emploies_total
-                                        if (Population.habitant/emploies_total > 1) {
+                                        const hommeArmee =
+                                            Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                                            Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                                            Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                                            Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+                                            (Armee.aviation * armeeObject.aviation.homme) +
+                                            (Armee.infanterie * armeeObject.infanterie.homme) +
+                                            (Armee.mecanise * armeeObject.mecanise.homme) +
+                                            (Armee.support * armeeObject.support.homme);
+
+                                        let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                                        if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
                                             emplois = 1
                                         }
                                         //endregion
@@ -349,7 +360,7 @@ module.exports = {
                                             const conso_T_atelier_verre_sable = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_SABLE * Batiment.atelier_verre * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                                             const conso_T_cimenterie_sable = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_SABLE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.consommation`) * emplois);
                                             const conso_sable = conso_T_atelier_verre_sable + conso_T_cimenterie_sable;
-                                            if (conso_sable > Ressources.sable && sable !== 0) {
+                                            if (conso_sable > Ressources.sable && conso_sable !== 0) {
                                                 manque_sable = true;
                                             }
                                             //endregion
@@ -741,10 +752,164 @@ module.exports = {
             //endregion
         );
 
+        //region Process
+        const autoProcess = new CronJob(
+            '0 * * * * *',
+            //'* * * * * *',
+            function autoProcess() {
+                let sql;
+                sql = `SELECT * FROM processus`;
+                connection.query(sql, async(err, results) => {if (err) {throw err;}
+                    const arrayProcess = Object.values(results);
+                    arrayProcess.forEach(chaqueProcess);
+                    function chaqueProcess(value, index, array) {
+                        // Fonction pour vérifier si un timestamp est déjà passé
+                        function estTimestampPasse(timestamp) {
+                            const maintenant = Date.now();
+                            return timestamp < maintenant;
+                        }
+
+                        // Parcourir la liste de timestamps et vérifier si chaque timestamp est passé
+                        if (estTimestampPasse(value.date)) {
+                            sql = `
+                                SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
+                                SELECT * FROM population WHERE id_joueur='${value.id_joueur}';
+                                SELECT * FROM territoire WHERE id_joueur='${value.id_joueur}'
+                            `;
+                            connection.query(sql, async (err, results) => {if (err) {throw err;}
+                                const Pays = results[0][0];
+                                const Population = results[1][0];
+                                const Territoire = results[2][0];
+
+                                switch (value.type) {
+                                    case 'exploration':
+                                        //region Exploration
+                                        const arrayBiome = Object.keys(eval(`biomeObject.${Territoire.region}.biome`));
+                                        const arrayChance = Object.values(eval(`biomeObject.${Territoire.region}.biome`)).map(item => item.chance);
+                                        const biomeChoisi = chance.weighted(arrayBiome, arrayChance)
+                                        const tailleChoisi = chance.integer({
+                                            min: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.min`)),
+                                            max: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.max`))
+                                        })
+                                        //let densite;
+                                        //switch (biomeChoisi) {
+                                        //    case 'ville':
+                                        //        densite = 376;
+                                        //        break;
+                                        //    case 'rocheuses':
+                                        //        densite = 15;
+                                        //        break;
+                                        //    case 'volcan':
+                                        //        densite = 0;
+                                        //        break;
+                                        //    case 'lac':
+                                        //        densite = 0;
+                                        //        break;
+                                        //    default:
+                                        //        densite = 33;
+                                        //        break;
+                                        //}
+                                        //const enfant = Math.round(tailleChoisi * densite * 0.2);
+                                        //const jeune = Math.round(tailleChoisi * densite * 0.3);
+                                        //const adulte = Math.round(tailleChoisi * densite * 0.4);
+                                        //const vieux = Math.round(tailleChoisi * densite * 0.1);
+
+                                        const joueur = client.users.cache.get(Pays.id_joueur)
+                                        const embedRevenu = {
+                                            author: {
+                                                name: `${Pays.rang} de ${Pays.nom}`,
+                                                icon_url: joueur.avatarURL()
+                                            },
+                                            thumbnail: {
+                                                url: Pays.drapeau
+                                            },
+                                            title: `\`L'explorateur est revenu de mission\``,
+                                            fields: [
+                                                {
+                                                    name: `> 🌄 Territoire :`,
+                                                    value: codeBlock(
+                                                        `• Il a trouvé ${eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.nom`)} de ${tailleChoisi} km²`) + `\u200B`
+                                                }
+                                                //{
+                                                //    name: `> 👪 Population :`,
+                                                //    value: codeBlock(
+                                                //        `• ${enfant.toLocaleString('en-US')} enfants\n` +
+                                                //        `• ${jeune.toLocaleString('en-US')} jeunes\n` +
+                                                //        `• ${adulte.toLocaleString('en-US')} adultes\n` +
+                                                //        `• ${vieux.toLocaleString('en-US')} personnes agées`) + `\u200B`
+                                                //},
+                                            ],
+                                            color: 0x57F287,
+                                            timestamp: new Date(),
+                                            footer: {
+                                                text: `${Pays.devise}`
+                                            },
+                                        };
+
+                                        const row1 = new ActionRowBuilder()
+                                            .addComponents(
+                                                new ButtonBuilder()
+                                                    .setLabel(`Intégrer`)
+                                                    .setEmoji(`✔`)
+                                                    .setCustomId('integrer-' + Pays.id_joueur)
+                                                    .setStyle(ButtonStyle.Success),
+                                            )
+                                            .addComponents(
+                                                new ButtonBuilder()
+                                                    .setLabel(`Refuser`)
+                                                    .setEmoji(`✖`)
+                                                    .setCustomId('refuser-' + Pays.id_joueur)
+                                                    .setStyle(ButtonStyle.Danger),
+                                            )
+
+                                        function bouton(message) {
+                                            return new ActionRowBuilder()
+                                                .addComponents(
+                                                    new ButtonBuilder()
+                                                        .setLabel(`Lien vers le message`)
+                                                        .setEmoji(`🗺️`)
+                                                        .setURL(message.url)
+                                                        .setStyle(ButtonStyle.Link),
+                                                )
+                                        }
+
+                                        client.channels.cache.get(Pays.id_salon).send({embeds: [embedRevenu], components: [row1]})
+                                            .then(message => joueur.send({
+                                                embeds: [embedRevenu],
+                                                components: [bouton(message)]
+                                            }))
+
+                                        sql = `DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
+                                        connection.query(sql, async (err) => {if (err) {throw err;}});
+                                        //endregion
+                                        break;
+                                    case 'integration':
+                                        //region Integration
+                                        sql = `
+                                            UPDATE territoire
+                                            SET T_national=T_national+${value.option2},
+                                               T_libre=T_libre+${value.option2},
+                                               T_controle=T_controle-${value.option2}
+                                            WHERE id_joueur='${value.id_joueur}';
+                                            DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
+                                        connection.query(sql, async (err) => {if (err) {throw err;}});
+                                        //endregion
+                                        break;
+                                }
+                            })
+                        }
+                    }
+                })
+            },
+            null,
+            true,
+            'Europe/Paris'
+        );
+        //endregion
 
         const autoPopulation = new CronJob(
             //region Population
-            '0 0 6,12,20 * * *',
+            '0 0 4,12,20 * * *',
             //'* * * * * *',
             function popUpdate() {
                 let sql;
@@ -767,18 +932,18 @@ module.exports = {
                             const bouffe_acces = Population.nourriture_acces;
                             const flotte_acces = Population.eau_acces;
 
-                            if (Ressources.nourriture >= (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)) && Population.nourriture_appro >= (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)) && Population.nourriture_acces < 21) {
+                            if (Ressources.nourriture >= (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)) && Population.nourriture_acces < 21) {
                                 sql = `UPDATE population SET nourriture_acces=nourriture_acces+0.33 WHERE id_joueur="${Pays.id_joueur}"`;
                                 connection.query(sql, async(err) => { if (err) { throw err; }})
-                            } else if (Ressources.nourriture < (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)) || Population.nourriture_appro < (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO))) {
+                            } else if (Ressources.nourriture < (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO))) {
                                 sql = `UPDATE population SET nourriture_acces=0 WHERE id_joueur="${Pays.id_joueur}"`;
                                 connection.query(sql, async(err) => { if (err) { throw err; }})
                             }
 
-                            if (Ressources.eau >= (Population.habitant * parseFloat(populationObject.EAU_CONSO)) && Population.eau_appro >= (Population.habitant * parseFloat(populationObject.EAU_CONSO)) && Population.eau_acces < 21) {
+                            if (Ressources.eau >= (Population.habitant * parseFloat(populationObject.EAU_CONSO)) && Population.eau_acces < 21) {
                                 sql = `UPDATE population SET eau_acces=eau_acces+0.33 WHERE id_joueur="${Pays.id_joueur}"`;
                                 connection.query(sql, async(err) => { if (err) { throw err; }})
-                            } else if (Ressources.eau < (Population.habitant * parseFloat(populationObject.EAU_CONSO)) || Population.eau_appro < (Population.habitant * parseFloat(populationObject.EAU_CONSO))) {
+                            } else if (Ressources.eau < (Population.habitant * parseFloat(populationObject.EAU_CONSO))) {
                                 sql = `UPDATE population SET eau_acces=0 WHERE id_joueur="${Pays.id_joueur}"`;
                                 connection.query(sql, async(err) => { if (err) { throw err; }})
                             }
@@ -808,10 +973,10 @@ module.exports = {
                                 const Pays = results[1][0];
                                 const Population = results[2][0];
 
-                                const nourriture_acces = Population.nourriture_acces * 1.7;
+                                const nourriture_acces = Population.nourriture_acces * 1.6;
                                 //console.log(nourriture_acces)
 
-                                const eau_acces = Population.eau_acces * 2.1;
+                                const eau_acces = Population.eau_acces * 1.7;
                                 //console.log(eau_acces)
                                 const elec_acces = Population.elec_acces * (0.8 / (6 * 8));
 
@@ -822,7 +987,7 @@ module.exports = {
                                 if (tauxbcmadein > 0.8) {
                                     tauxbcmadein = 0.8;
                                 }
-                                tauxbcmadein = tauxbcmadein * 29;
+                                tauxbcmadein = tauxbcmadein * 25;
                                 //console.log(tauxbcmadein)
 
                                 const place = (Batiment.quartier * 1500)
@@ -831,10 +996,18 @@ module.exports = {
                                     sans_abri = 0;
                                 }
                                 const pourcentage_sans_abri = (sans_abri / Population.habitant)
-                                const sdf = (1 - pourcentage_sans_abri) * 18;
+                                const sdf = (1 - pourcentage_sans_abri) * 23;
                                 //console.log(sdf)
 
-                                const modifier = parseFloat(populationObject.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf + eval(`gouvernementObject.${Pays.ideologie}.bonheur`);
+                                const gouv =  eval(`gouvernementObject.${Pays.ideologie}.bonheur`) * 3
+
+                                let pollution;
+                                if (Batiment.centrale_biomasse + Batiment.centrale_charbon + Batiment.centrale_fioul === 0) {
+                                    pollution = 9;
+                                } else {
+                                    pollution = 0
+                                }
+                                const modifier = parseFloat(populationObject.BONHEUR_BASE) + nourriture_acces + eau_acces + elec_acces + bc_acces + tauxbcmadein + sdf + gouv + pollution
                                 const bonheur = parseFloat(((-92 * Math.exp(-0.02 * modifier)) + 100).toFixed(1));
                                 //console.log(modifier)
                                 //console.log(bonheur)
@@ -941,7 +1114,7 @@ module.exports = {
                                 //region Consommation nourriture
                                 if (Ressources.nourriture >= (Population.habitant * populationObject.NOURRITURE_CONSO)) {
                                     //region Nourriture suffisante
-                                    const sql = `UPDATE ressources SET nourriture=nourriture-${(Population.habitant * populationObject.NOURRITURE_CONSO)} WHERE id_joueur="${Pays.id_joueur}"`;
+                                    const sql = `UPDATE ressources SET nourriture=nourriture-${Math.round(Population.habitant * populationObject.NOURRITURE_CONSO)} WHERE id_joueur="${Pays.id_joueur}"`;
                                     connection.query(sql, async(err) => { if (err) { throw err; }})
                                     //endregion
                                 } else {
@@ -952,7 +1125,7 @@ module.exports = {
                                     const mort_total = func_enfant(Population, mort).enfant_mort + func_jeune(Population, mort).jeune_mort + func_adulte(Population, mort).adulte_mort + func_vieux(Population, mort).vieux_mort;
                                     const habitants_next = func_enfant(Population, mort).enfant + func_jeune(Population, mort).jeune + func_adulte(Population, mort).adulte + func_vieux(Population, mort).vieux;
 
-                                    if (bouffe_acces !== 0 && (mort_total / Population.habitant) > 0.05) {
+                                    if ((mort_total / Population.habitant) > 0.05) {
                                         const embed = {
                                             author: {
                                                 name: `${Pays.rang} de ${Pays.nom}`,
@@ -964,7 +1137,7 @@ module.exports = {
                                             title: `\`Une famine frappe votre pays :\``,
                                             fields: [{
                                                 name: `> ⛔ Manque de nourriture ⛔ :`,
-                                                value: `Nourriture : ${Ressources.nourriture.toLocaleString('en-US')}/${(Population.habitant * populationObject.NOURRITURE_CONSO).toLocaleString('en-US')}\n` +
+                                                value: `Nourriture : ${Ressources.nourriture.toLocaleString('en-US')}/${Math.round(Population.habitant * populationObject.NOURRITURE_CONSO).toLocaleString('en-US')}\n` +
                                                     `Morts : ${mort_total.toLocaleString('en-US')}\n` +
                                                     `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
                                             }],
@@ -1001,7 +1174,7 @@ module.exports = {
                                     //region Consommation eau
                                     if (Ressources.eau >= Population.habitant * populationObject.EAU_CONSO) {
                                         //region Eau suffisante
-                                        const sql = `UPDATE ressources SET eau=eau-${(Population.habitant * populationObject.EAU_CONSO)} WHERE id_joueur="${Pays.id_joueur}"`;
+                                        const sql = `UPDATE ressources SET eau=eau-${Math.round(Population.habitant * populationObject.EAU_CONSO)} WHERE id_joueur="${Pays.id_joueur}"`;
                                         connection.query(sql, async(err) => { if (err) { throw err; }})
                                         //endregion
                                     } else {
@@ -1018,7 +1191,7 @@ module.exports = {
                                         //console.log(func_adulte(mort).adulte_mort)
                                         //console.log(func_vieux(mort).vieux_mort)
 
-                                        if (flotte_acces !== 0 && (mort_total / Population.habitant) > 0.05) {
+                                        if ((mort_total / Population.habitant) > 0.05) {
                                             const embed = {
                                                 author: {
                                                     name: `${Pays.rang} de ${Pays.nom}`,
@@ -1030,7 +1203,7 @@ module.exports = {
                                                 title: `\`Une pénurie frappe votre pays :\``,
                                                 fields: [{
                                                     name: `> ⛔ Manque d'eau ⛔ :`,
-                                                    value: `Nourriture : ${Ressources.eau.toLocaleString('en-US')}/${(Population.habitant * populationObject.EAU_CONSO).toLocaleString('en-US')}\n` +
+                                                    value: `Eau : ${Ressources.eau.toLocaleString('en-US')}/${Math.round(Population.habitant * populationObject.EAU_CONSO).toLocaleString('en-US')}\n` +
                                                         `Morts : ${mort_total.toLocaleString('en-US')}\n` +
                                                         `Population restante : ${habitants_next.toLocaleString('en-US')}\n`
                                                 }],
@@ -1633,6 +1806,7 @@ module.exports = {
                     }
                 })
 
+                wait(2000)
                 sql = `SELECT * FROM diplomatie ORDER BY influence DESC`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     const list = results;
@@ -1729,10 +1903,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    const salonCompetTerritoire = client.channels.cache.get(process.env.SALON_COMPET_TERRITOIRE);
-                    salon_compet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
                     const salonCompet = client.channels.cache.get(process.env.SALON_COMPET);
-                    salon_compet.send('<@&845692674111045673>');
+                    salonCompet.send('<@&845692674111045673>');
+                    salonCompet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
                 })
             },
             null,

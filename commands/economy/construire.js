@@ -18,9 +18,9 @@ module.exports = {
                     { name: `Centrale au charbon`, value: `Centrale au charbon`},
                     { name: `Centrale au fioul`, value: `Centrale au fioul`},
                     { name: `Champ`, value: `Champ`},
+                    { name: `Champ d'eoliennes`, value: `Champ d'eoliennes`},
                     { name: `Cimenterie`, value: `Cimenterie`},
                     { name: `Derrick`, value: `Derrick`},
-                    { name: `Eolienne`, value: `Eolienne`},
                     { name: `Mine de charbon`, value: `Mine de charbon`},
                     { name: 'Mine de metaux', value: 'Mine de metaux'},
                     { name: `Station de pompage`, value: `Station de pompage`},
@@ -255,6 +255,31 @@ module.exports = {
                     //endregion
                     break;
 
+                case 'Champ d\'eoliennes':
+                    //region Eolienne
+                    need_beton = true;
+                    need_eolienne = true;
+
+                    const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
+                    if (const_T_libre > Territoire.T_libre) {
+                        const_batiment = false;
+                        manque_T_libre = true;
+                    }
+
+                    const_beton = Math.round(batimentObject.eolienne.CONST_EOLIENNE_BETON * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    if (const_beton > Ressources.beton) {
+                        const_batiment = false;
+                        manque_beton = true;
+                    }
+
+                    const_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
+                    if (const_eolienne > Ressources.eolienne) {
+                        const_batiment = false;
+                        manque_eolienne = true;
+                    }
+                    //endregion
+                    break;
+
                 case 'Cimenterie':
                     //region Cimenterie
                     need_acier = true;
@@ -301,31 +326,6 @@ module.exports = {
                     if (const_beton > Ressources.beton) {
                         const_batiment = false;
                         manque_beton = true;
-                    }
-                    //endregion
-                    break;
-
-                case 'Eolienne':
-                    //region Eolienne
-                    need_beton = true;
-                    need_eolienne = true;
-
-                    const_T_libre = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                    if (const_T_libre > Territoire.T_libre) {
-                        const_batiment = false;
-                        manque_T_libre = true;
-                    }
-
-                    const_beton = Math.round(batimentObject.eolienne.CONST_EOLIENNE_BETON * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
-                    if (const_beton > Ressources.beton) {
-                        const_batiment = false;
-                        manque_beton = true;
-                    }
-
-                    const_eolienne = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
-                    if (const_eolienne > Ressources.eolienne) {
-                        const_batiment = false;
-                        manque_eolienne = true;
                     }
                     //endregion
                     break;

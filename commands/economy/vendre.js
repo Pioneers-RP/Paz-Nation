@@ -10,7 +10,7 @@ module.exports = {
         .setDescription(`Vendre des ressources sur le marché international (IM)`)
         .addStringOption(ressource =>
             ressource.setName('ressource')
-                .setDescription(`La ressource que vous voulez acheter`)
+                .setDescription(`La ressource que vous voulez vendre`)
                 .addChoices(
                     { name: `Acier`, value: `Acier`},
                     { name: `Béton`, value: `Béton`},
@@ -56,7 +56,7 @@ module.exports = {
             const userCooldowned = await vendreCommandCooldown.getUser(interaction.member.id);
             if (userCooldowned) {
                 const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-                const reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous avez déjà fait une offre récemment. Il reste ${timeLeft.minutes}min ${timeLeft.seconds}sec avant de pouvoir la changer à nouveau.`);
+                const reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous avez déjà fait une offre récemment. Il reste ${timeLeft.minutes}min ${timeLeft.seconds}sec avant d'en faire une autre.`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             } else {
                 const ressource = interaction.options.getString('ressource');
