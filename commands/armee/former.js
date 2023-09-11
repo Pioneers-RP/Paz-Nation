@@ -1,7 +1,4 @@
 const { SlashCommandBuilder, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
-const { CommandCooldown, msToMinutes } = require("discord-command-cooldown");
-const ms = require("ms");
-const { setTimeout: wait } = require("node:timers/promises");
 const { readFileSync } = require("fs");
 const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 
