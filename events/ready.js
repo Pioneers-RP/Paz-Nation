@@ -849,17 +849,17 @@ module.exports = {
                                         const row1 = new ActionRowBuilder()
                                             .addComponents(
                                                 new ButtonBuilder()
+                                                    .setLabel(`Renvoyer un explorateur`)
+                                                    .setEmoji(`🧭`)
+                                                    .setCustomId('explorateur-' + Pays.id_joueur)
+                                                    .setStyle(ButtonStyle.Success)
+                                            )
+                                            .addComponents(
+                                                new ButtonBuilder()
                                                     .setLabel(`Intégrer`)
                                                     .setEmoji(`✔`)
                                                     .setCustomId('integrer-' + Pays.id_joueur)
                                                     .setStyle(ButtonStyle.Success),
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`Refuser`)
-                                                    .setEmoji(`✖`)
-                                                    .setCustomId('refuser-' + Pays.id_joueur)
-                                                    .setStyle(ButtonStyle.Danger),
                                             )
 
                                         function bouton(message) {
@@ -1147,7 +1147,23 @@ module.exports = {
                                                 text: `${Pays.devise}`
                                             }
                                         };
-                                        client.channels.cache.get(Pays.id_salon).send({ embeds: [embed] });
+                                        const joueur = client.users.cache.get(Pays.id_joueur)
+                                        function bouton(message) {
+                                            return new ActionRowBuilder()
+                                                .addComponents(
+                                                    new ButtonBuilder()
+                                                        .setLabel(`Lien vers le message`)
+                                                        .setEmoji(`🌽`)
+                                                        .setURL(message.url)
+                                                        .setStyle(ButtonStyle.Link),
+                                                )
+                                        }
+
+                                        client.channels.cache.get(Pays.id_salon).send({embeds: [embed]})
+                                            .then(message => joueur.send({
+                                                embeds: [embed],
+                                                components: [bouton(message)]
+                                            }))
                                     }
 
                                     sql = `
@@ -1213,7 +1229,23 @@ module.exports = {
                                                     text: `${Pays.devise}`
                                                 }
                                             };
-                                            client.channels.cache.get(Pays.id_salon).send({ embeds: [embed] });
+                                            const joueur = client.users.cache.get(Pays.id_joueur)
+                                            function bouton(message) {
+                                                return new ActionRowBuilder()
+                                                    .addComponents(
+                                                        new ButtonBuilder()
+                                                            .setLabel(`Lien vers le message`)
+                                                            .setEmoji(`💧`)
+                                                            .setURL(message.url)
+                                                            .setStyle(ButtonStyle.Link),
+                                                    )
+                                            }
+
+                                            client.channels.cache.get(Pays.id_salon).send({embeds: [embed]})
+                                                .then(message => joueur.send({
+                                                    embeds: [embed],
+                                                    components: [bouton(message)]
+                                                }))
                                         }
 
                                         sql = `
@@ -1231,6 +1263,24 @@ module.exports = {
                         })
                     }
                 })
+
+                if (client.user.id === 834855105177845794) {
+                    const embed = {
+                        title: `\`Votez pour Paz Nation !\``,
+                        thumbnail: {
+                            url: `https://discord.com/channels/826427184305537054/848913340737650698/940642782643621948`
+                        },
+                        description: `N'oubliez pas de faire /vote & /bump avec <@302050872383242240> et /bump avec <@528557940811104258> ainsi que de voter sur https://top.gg/servers/826427184305537054/vote. L'équipe de Paz Nation vous remercie pour votre soutien !\n` + `\u200B\n`,
+                        color: 0x359d82,
+                        timestamp: new Date(),
+                        footer: {
+                            text: `#1 Serveur RP sur Discord`
+                        },
+                    };
+
+                    const channel = client.channels.cache.get(process.env.SALON_COMMAND);
+                    channel.send({embeds: [embed] })
+                }
             },
             null,
             true,
@@ -1806,107 +1856,108 @@ module.exports = {
                     }
                 })
 
-                wait(2000)
-                sql = `SELECT * FROM diplomatie ORDER BY influence DESC`;
-                connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const list = results;
-                    const fivePartIndex = Math.round(list.length / 5);
+                setTimeout(() => {
+                    sql = `SELECT * FROM diplomatie ORDER BY influence DESC`;
+                    connection.query(sql, async(err, results) => {if (err) {throw err;}
+                        const list = results;
+                        const fivePartIndex = Math.round(list.length / 5);
 
-                    const fifthPart = list.splice(-fivePartIndex);
-                    const fourthPart = list.splice(-fivePartIndex);
-                    const thirdPart = list.splice(-fivePartIndex);
-                    const secondPart = list.splice(-fivePartIndex);
-                    let number = 0;
+                        const fifthPart = list.splice(-fivePartIndex);
+                        const fourthPart = list.splice(-fivePartIndex);
+                        const thirdPart = list.splice(-fivePartIndex);
+                        const secondPart = list.splice(-fivePartIndex);
+                        let number = 0;
 
-                    let array1 = [];
-                    list.forEach(monClassement1);
-                    function monClassement1(item) {
-                        number += 1;
-                        const element = {
-                            name: `#${number}`,
-                            value: `<@${item.id_joueur}>\n` +
-                                codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
-                        array1.push(element);
-                    }
-                    const embed1 = {
-                        title: `\`Classement mondial : 1/5 Influence\``,
-                        fields: array1,
-                        color: 0x018242,
-                        timestamp: new Date(),
-                    };
+                        let array1 = [];
+                        list.forEach(monClassement1);
+                        function monClassement1(item) {
+                            number += 1;
+                            const element = {
+                                name: `#${number}`,
+                                value: `<@${item.id_joueur}>\n` +
+                                    codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
+                            array1.push(element);
+                        }
+                        const embed1 = {
+                            title: `\`Classement mondial : 1/5 Influence\``,
+                            fields: array1,
+                            color: 0x018242,
+                            timestamp: new Date(),
+                        };
 
-                    let array2 = [];
-                    secondPart.forEach(monClassement2);
-                    function monClassement2(item) {
-                        number += 1;
-                        const element = {
-                            name: `#${number}`,
-                            value: `<@${item.id_joueur}>\n` +
-                                codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
-                        array2.push(element);
-                    }
-                    const embed2 = {
-                        title: `\`Classement mondial : 2/5 Influence\``,
-                        fields: array2,
-                        color: 0x86bc30,
-                        timestamp: new Date(),
-                    };
+                        let array2 = [];
+                        secondPart.forEach(monClassement2);
+                        function monClassement2(item) {
+                            number += 1;
+                            const element = {
+                                name: `#${number}`,
+                                value: `<@${item.id_joueur}>\n` +
+                                    codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
+                            array2.push(element);
+                        }
+                        const embed2 = {
+                            title: `\`Classement mondial : 2/5 Influence\``,
+                            fields: array2,
+                            color: 0x86bc30,
+                            timestamp: new Date(),
+                        };
 
-                    let array3 = [];
-                    thirdPart.forEach(monClassement3);
-                    function monClassement3(item) {
-                        number += 1;
-                        const element = {
-                            name: `#${number}`,
-                            value: `<@${item.id_joueur}>\n` +
-                                codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
-                        array3.push(element);
-                    }
-                    const embed3 = {
-                        title: `\`Classement mondial : 3/5 Influence\``,
-                        fields: array3,
-                        color: 0xfecb00,
-                        timestamp: new Date(),
-                    };
+                        let array3 = [];
+                        thirdPart.forEach(monClassement3);
+                        function monClassement3(item) {
+                            number += 1;
+                            const element = {
+                                name: `#${number}`,
+                                value: `<@${item.id_joueur}>\n` +
+                                    codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
+                            array3.push(element);
+                        }
+                        const embed3 = {
+                            title: `\`Classement mondial : 3/5 Influence\``,
+                            fields: array3,
+                            color: 0xfecb00,
+                            timestamp: new Date(),
+                        };
 
-                    let array4 = [];
-                    fourthPart.forEach(monClassement4);
-                    function monClassement4(item) {
-                        number += 1;
-                        const element = {
-                            name: `#${number}`,
-                            value: `<@${item.id_joueur}>\n` +
-                                codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
-                        array4.push(element);
-                    }
-                    const embed4 = {
-                        title: `\`Classement mondial : 4/5 Influence\``,
-                        fields: array4,
-                        color: 0xf28101,
-                        timestamp: new Date(),
-                    };
+                        let array4 = [];
+                        fourthPart.forEach(monClassement4);
+                        function monClassement4(item) {
+                            number += 1;
+                            const element = {
+                                name: `#${number}`,
+                                value: `<@${item.id_joueur}>\n` +
+                                    codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
+                            array4.push(element);
+                        }
+                        const embed4 = {
+                            title: `\`Classement mondial : 4/5 Influence\``,
+                            fields: array4,
+                            color: 0xf28101,
+                            timestamp: new Date(),
+                        };
 
-                    let array5 = [];
-                    fifthPart.forEach(monClassement5);
-                    function monClassement5(item) {
-                        number += 1;
-                        const element = {
-                            name: `#${number}`,
-                            value: `<@${item.id_joueur}>\n` +
-                                codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
-                        array5.push(element);
-                    }
-                    const embed5 = {
-                        title: `\`Classement mondial : 5/5 Influence\``,
-                        fields: array5,
-                        color: 0xe73f12,
-                        timestamp: new Date(),
-                    };
+                        let array5 = [];
+                        fifthPart.forEach(monClassement5);
+                        function monClassement5(item) {
+                            number += 1;
+                            const element = {
+                                name: `#${number}`,
+                                value: `<@${item.id_joueur}>\n` +
+                                    codeBlock(`• ${item.influence.toLocaleString('en-US')} influence`) + `\u200B`}
+                            array5.push(element);
+                        }
+                        const embed5 = {
+                            title: `\`Classement mondial : 5/5 Influence\``,
+                            fields: array5,
+                            color: 0xe73f12,
+                            timestamp: new Date(),
+                        };
 
-                    const salonCompet = client.channels.cache.get(process.env.SALON_COMPET);
-                    salonCompet.send('<@&845692674111045673>');
-                    salonCompet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
-                })
+                        const salonCompet = client.channels.cache.get(process.env.SALON_COMPET);
+                        salonCompet.send('<@&845692674111045673>');
+                        salonCompet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                    })
+                }, 2000)
             },
             null,
             true,

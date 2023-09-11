@@ -8,10 +8,10 @@ dotenv.config();
 const mysql = require('mysql');
 //
 const connection = new mysql.createConnection({
-    host: 'eu01-sql.pebblehost.com',
-    user: 'customer_355631_paznation',
-    password: 'RcL#mBV5#ETKNCoydrbI',
-    database: 'customer_355631_paznation',
+    host: 'eu02-sql.pebblehost.com',
+    user: 'customer_355631_test',
+    password: 'AETcK7VBES~fZKW@lF1r',
+    database: 'customer_355631_test',
     multipleStatements: true
 })
 const client = new Client({

@@ -165,6 +165,7 @@ module.exports = {
                 case 'Support':
                     //region Support
                     need_homme = true;
+                    need_avion = true;
                     need_equipement_support = true;
                     need_materiel_infanterie = true;
                     need_vehicule = true;
@@ -173,6 +174,11 @@ module.exports = {
                     if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
                         const_unite = false;
                         manque_homme = true;
+                    }
+                    const_avion = armeeObject.support.avion * nombre;
+                    if (const_avion > Armee.avion) {
+                        const_unite = false;
+                        manque_avion = true;
                     }
                     const_equipement_support = armeeObject.support.equipement_support * nombre;
                     if (const_equipement_support > Armee.equipement_support) {

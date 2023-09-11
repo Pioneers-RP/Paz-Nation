@@ -1,6 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} = require('discord.js');
 const { readFileSync } = require('fs');
-const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 const assemblageObject = JSON.parse(readFileSync('data/assemblage.json', 'utf-8'));
 
 module.exports = {
@@ -39,10 +38,6 @@ module.exports = {
 
             let manque_acier;
             let const_acier;
-            let manque_beton;
-            let const_beton;
-            let manque_bois;
-            let const_bois;
             let manque_metaux;
             let const_metaux;
             let manque_verre;
@@ -50,8 +45,6 @@ module.exports = {
 
             let const_batiment = true;
             let need_acier = false;
-            let need_beton = false;
-            let need_bois = false;
             let need_metaux = false;
             let need_verre = false;
 
@@ -62,12 +55,12 @@ module.exports = {
                     need_acier = true;
                     need_metaux = true;
 
-                    const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_acier = assemblageObject.avion.CONST_AVION_ACIER * nombre;
                     if (const_acier > Ressources.acier) {
                         const_batiment = false;
                         manque_acier = true;
                     }
-                    const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_metaux = assemblageObject.avion.CONST_AVION_METAUX * nombre;
                     if (const_metaux > Ressources.metaux) {
                         const_batiment = false;
                         manque_metaux = true;
@@ -79,12 +72,12 @@ module.exports = {
                     need_acier = true;
                     need_verre = true;
 
-                    const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_acier = assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre;
                     if (const_acier > Ressources.acier) {
                         const_batiment = false;
                         manque_acier = true;
                     }
-                    const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_verre = assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre;
                     if (const_verre > Ressources.verre) {
                         const_batiment = false;
                         manque_verre = true;
@@ -93,15 +86,14 @@ module.exports = {
                     break;
                 case 'Equipement de support':
                     //region Equipement de support
-                    need_acier = true;
                     need_metaux = true;
 
-                    const_acier = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_acier = assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre;
                     if (const_acier > Ressources.acier) {
                         const_batiment = false;
                         manque_acier = true;
                     }
-                    const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_metaux = assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre;
                     if (const_metaux > Ressources.metaux) {
                         const_batiment = false;
                         manque_metaux = true;
@@ -109,16 +101,15 @@ module.exports = {
                     //endregion
                     break;
                 case 'Matériel d\'infanterie':
-                    //region Matériel d'infanterie
-                    need_acier = true;
+                    //region Matériel d'infanterie  
                     need_metaux = true;
 
-                    const_acier = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_acier = assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre;
                     if (const_acier > Ressources.acier) {
                         const_batiment = false;
                         manque_acier = true;
                     }
-                    const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_metaux = assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre;
                     if (const_metaux > Ressources.metaux) {
                         const_batiment = false;
                         manque_metaux = true;
@@ -130,12 +121,12 @@ module.exports = {
                     need_acier = true;
                     need_metaux = true;
 
-                    const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_acier = assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre;
                     if (const_acier > Ressources.acier) {
                         const_batiment = false;
                         manque_acier = true;
                     }
-                    const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    const_metaux = assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre;
                     if (const_metaux > Ressources.metaux) {
                         const_batiment = false;
                         manque_metaux = true;
@@ -156,34 +147,6 @@ module.exports = {
                     fields.push({
                         name: `> ✅ Acier suffisant ✅ :`,
                         value: codeBlock(`• Acier : ${const_acier.toLocaleString('en-US')}/${const_acier.toLocaleString('en-US')}\n`) + `\u200B`
-                    })
-                }
-            }
-
-            if (need_beton === true) {
-                if (manque_beton === true) {
-                    fields.push({
-                        name: `> ⛔ Manque de béton ⛔ :`,
-                        value: codeBlock(`• Béton : ${Ressources.beton.toLocaleString('en-US')}/${const_beton.toLocaleString('en-US')}\n`) + `\u200B`
-                    })
-                } else {
-                    fields.push({
-                        name: `> ✅ Béton suffisant ✅ :`,
-                        value: codeBlock(`• Béton : ${const_beton.toLocaleString('en-US')}/${const_beton.toLocaleString('en-US')}\n`) + `\u200B`
-                    })
-                }
-            }
-
-            if (need_bois === true) {
-                if (manque_bois === true) {
-                    fields.push({
-                        name: `> ⛔ Manque de bois ⛔ :`,
-                        value: codeBlock(`• Bois : ${Ressources.bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
-                    })
-                } else {
-                    fields.push({
-                        name: `> ✅ Bois suffisant ✅ :`,
-                        value: codeBlock(`• Bois : ${const_bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
                     })
                 }
             }
@@ -222,7 +185,7 @@ module.exports = {
                     icon_url: interaction.member.displayAvatarURL()
                 },
                 thumbnail: {
-                    url: `${Pays.drapeau}`
+                    url: Pays.drapeau
                 },
                 title: `\`Assemblage : ${nombre.toLocaleString('en-US')} ${BatimentChoisi}\``,
                 fields: fields,

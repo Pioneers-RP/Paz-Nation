@@ -2818,7 +2818,6 @@ module.exports = {
                         let manque_vehicule;
                         let const_vehicule;
 
-                        let nom;
                         let const_unite = true;
                         let need_homme = false;
                         let need_avion = false;
@@ -2826,17 +2825,9 @@ module.exports = {
                         let need_materiel_infanterie = false;
                         let need_vehicule = false;
 
-                        let title = interaction.message.embeds[0].title;
-                        title = title.substring(10, title.length - 1);
-                        const espace = title.indexOf(" ");
-                        let nombre = title.slice(0, espace);
-                        nombre = nombre.replace(/,/g, "");
-                        const ressource = title.slice(espace + 1);
-
-                        switch (ressource) {
+                        switch (uniteChoisi) {
                             case 'Aviation':
                                 //region Aviation
-                                nom = 'aviation';
                                 need_homme = true;
                                 need_avion = true;
                                 need_equipement_support = true;
@@ -2872,7 +2863,6 @@ module.exports = {
                                 break;
                             case 'Infanterie':
                                 //region Infanterie
-                                nom = 'infanterie';
                                 need_homme = true;
                                 need_equipement_support = true;
                                 need_materiel_infanterie = true;
@@ -2902,7 +2892,6 @@ module.exports = {
                                 break;
                             case 'Mécanisé':
                                 //region Mecanisé
-                                nom = 'mecanise';
                                 need_homme = true;
                                 need_equipement_support = true;
                                 need_materiel_infanterie = true;
@@ -2932,8 +2921,8 @@ module.exports = {
                                 break;
                             case 'Support':
                                 //region Support
-                                nom = 'support';
                                 need_homme = true;
+                                need_avion = true;
                                 need_equipement_support = true;
                                 need_materiel_infanterie = true;
                                 need_vehicule = true;
@@ -2942,6 +2931,11 @@ module.exports = {
                                 if (const_homme > (Population.jeune + Population.adulte - hommeArmee)) {
                                     const_unite = false;
                                     manque_homme = true;
+                                }
+                                const_avion = armeeObject.support.avion * nombre;
+                                if (const_avion > Armee.avion) {
+                                    const_unite = false;
+                                    manque_avion = true;
                                 }
                                 const_equipement_support = armeeObject.support.equipement_support * nombre;
                                 if (const_equipement_support > Armee.equipement_support) {
@@ -2963,6 +2957,7 @@ module.exports = {
                         }
 
                         const fields = [];
+
                         if (need_homme === true) {
                             if (manque_homme === true) {
                                 fields.push({
@@ -4438,7 +4433,7 @@ module.exports = {
                                     text: `${Pays.devise}`
                                 },
                             };
-                            await interaction.reply({embeds: [embedSuccess]});
+                            await interaction.reply({embeds: [embedSuccess], components: []});
                             await explorateurCooldown.addUser(interaction.member.id);
 
                             const maintenant = new Date();
@@ -4570,11 +4565,18 @@ module.exports = {
                             const row = new ActionRowBuilder()
                                 .addComponents(
                                     new ButtonBuilder()
+                                        .setLabel(`Renvoyer un explorateur`)
+                                        .setEmoji(`🧭`)
+                                        .setCustomId('explorateur-' + interaction.member.id)
+                                        .setStyle(ButtonStyle.Success)
+                                )
+                                .addComponents(
+                                    new ButtonBuilder()
                                         .setLabel(`Nouvelle case !`)
                                         .setEmoji(`🧭`)
                                         .setURL(`https://discord.com/channels/826427184305537054/1058462262916042862`)
                                         .setStyle(ButtonStyle.Link),
-                                )
+                                );
                             interaction.message.edit({ components: [row]});
                         }
 
@@ -5899,7 +5901,7 @@ module.exports = {
                         thumbnail: {
                             url: Pays.drapeau
                         },
-                        title: `\`Menu de l'approvisionnement\``,
+                        title: `\`Menu de mobilisation\``,
                         fields: [
                             {
                                 name: `> 🪖 Unités : opérationnelles | réserves`,
@@ -6504,8 +6506,8 @@ module.exports = {
                     const PopulationA = results[8][0];
 
                     const minArmee = 1100 * Math.min(ArmeeA, ArmeeB.unite);
-                    const biomeNom = ['desert', 'foret', 'jungle', 'lac', 'mangrove', 'prairie', 'rocheuses', 'savane', 'steppe', 'taiga', 'toundra', 'ville', 'volcan'];
-                    const biomeB_taille = [TerritoireB.desert, TerritoireB.foret, TerritoireB.jungle, TerritoireB.lac, TerritoireB.mangrove, TerritoireB.prairie, TerritoireB.rocheuses, TerritoireB.savane, TerritoireB.steppe, TerritoireB.taiga, TerritoireB.toundra, TerritoireB.ville, TerritoireB.volcan]
+                    const biomeNom = ['desert', 'foret', 'jungle', 'prairie', 'rocheuses', 'savane', 'steppe', 'taiga', 'toundra', 'ville'];
+                    const biomeB_taille = [TerritoireB.desert, TerritoireB.foret, TerritoireB.jungle, TerritoireB.prairie, TerritoireB.rocheuses, TerritoireB.savane, TerritoireB.steppe, TerritoireB.taiga, TerritoireB.toundra, TerritoireB.ville]
                     const biomeB_max = biomeNom[biomeB_taille.indexOf(Math.max(...biomeB_taille))];
                     const biomeB_poids = [];
                     let tailleTotal = 0;
@@ -6525,56 +6527,6 @@ module.exports = {
                     } else {
                         biomeBataille = chance.weighted(biomeNom, biomeB_poids);
                     }
-
-                    let raidUniteMin = Math.ceil(0.1 * ArmeeA);
-                    let raidUniteMax = 2 * ArmeeA;
-                    if (ArmeeA > ArmeeB.unite) {
-                        raidUniteMax = Math.min(raidUniteMax, 1.5 * ArmeeB.unite);
-                    } else {
-                        raidUniteMax = Math.min(raidUniteMax, 0.75 * ArmeeB.unite);
-                    }
-                    const modifStratA = eval(`armeeObject.${BDDA.strategie}.bonus_taille`);
-                    const modifStratB = eval(`armeeObject.${ArmeeB.strategie}.bonus_taille`);
-                    const modifBiome = 1;
-                    let raidUnite = Math.round(chance.floating({min: raidUniteMin, max: raidUniteMax}) * modifStratA * modifStratB * modifBiome);
-                    raidUnite = Math.min(raidUnite, raidUniteMax);
-                    let raidUniteA = Math.min(raidUnite, ArmeeA);
-                    let raidUniteB = Math.min(raidUnite, ArmeeB.unite);
-
-
-                    let attaqueA = eval(`strategieObject.${biomeBataille}.${BDDA.strategie}.${ArmeeB.strategie}.attaquant`);
-                    let defenseB = eval(`strategieObject.${biomeBataille}.${BDDA.strategie}.${ArmeeB.strategie}.defenseur`);
-                    function pallier(sup, inf) {
-                        const p = (sup-inf)/inf*100;
-                        if (p < 10) {
-                            return 0;
-                        } else if (p < 15) {
-                            return 10;
-                        } else if (p < 20) {
-                            return 20;
-                        } else if (p < 25) {
-                            return 30;
-                        } else if (p < 30) {
-                            return 40;
-                        } else if (p < 40) {
-                            return 50;
-                        } else {
-                            return 60;
-                        }
-                    }
-
-                    let perteA = 0.1;
-                    let perteB = 0.1;
-
-                    if (raidUniteA > raidUniteB) {
-                        defenseB = defenseB - pallier(raidUniteA, raidUniteB);
-                        perteB = perteB*(raidUniteA/raidUniteB)
-                    } else {
-                        attaqueA = attaqueA - pallier(raidUniteB, raidUniteA);
-                        perteA = perteA*(raidUniteB/raidUniteA)
-                    }
-                    perteA = perteA*eval(`strategieObject.perte_attaquant.strategie_attaquant.${BDDA.strategie}`)*eval(`strategieObject.perte_attaquant.strategie_defenseur.${ArmeeB.strategie}`);
-                    perteB = perteB*eval(`strategieObject.perte_defenseur.strategie_attaquant.${BDDA.strategie}`)*eval(`strategieObject.perte_defenseur.strategie_defenseur.${ArmeeB.strategie}`);
 
                     const batimentNom = ['acierie', 'atelier_verre', 'carriere_sable', 'centrale_biomasse', 'centrale_charbon', 'centrale_fioul', 'champ', 'cimenterie', 'derrick', 'eolienne', 'mine_charbon', 'mine_metaux', 'station_pompage', 'quartier', 'raffinerie', 'scierie', 'usine_civile'];
                     const batimentNombre = [BatimentB.acierie, BatimentB.atelier_verre, BatimentB.carriere_sable, BatimentB.centrale_biomasse, BatimentB.centrale_charbon, BatimentB.centrale_fioul, BatimentB.champ, BatimentB.cimenterie, BatimentB.derrick, BatimentB.eolienne, BatimentB.mine_charbon, BatimentB.mine_metaux, BatimentB.station_pompage, BatimentB.quartier, BatimentB.raffinerie, BatimentB.scierie, BatimentB.usine_civile];
@@ -6598,7 +6550,7 @@ module.exports = {
                         case 'carriere_sable':
                             nomBatiment = 'Carrière de sable';
                             ressource = 'sable';
-                           break;
+                            break;
                         case 'centrale_biomasse':
                             nomBatiment = 'Centrale à biomasse';
                             ressource = 'none';
@@ -6655,307 +6607,14 @@ module.exports = {
                             nomBatiment = 'Usine civile';
                             ressource = 'bc';
                             break;
-                    };
+                    }
+                    ;
                     let pillage = chance.integer({min: 0, max: 10000});
                     if (eval(`RessourceB.${ressource}`) < pillage && ressource !== 'none') {
                         pillage = eval(`RessourceB.${ressource}`);
                     }
 
-                    const uniteEnMoinsA = Math.ceil(perteA * raidUniteA);
-                    //2 à remove des unités
-                    const uniteEnMoinsB = Math.ceil(perteB * raidUniteB);
-
-                    const resteUniteA = uniteEnMoinsA - perteA * raidUniteA;
-                    //2 - 1,3 = 70% d'une unité à remettre en réserve
-                    const resteUniteB = uniteEnMoinsB - perteB * raidUniteB;
-
-                    const aviationA = Math.round(eval(`armeeObject.${BDDA.strategie}.aviation`) * resteUniteA);
-                    const infanterieA = Math.round(eval(`armeeObject.${BDDA.strategie}.infanterie`) * resteUniteA);
-                    const mecaniseA = Math.round(eval(`armeeObject.${BDDA.strategie}.mecanise`) * resteUniteA);
-                    const supportA = Math.round(eval(`armeeObject.${BDDA.strategie}.support`) * resteUniteA);
-                    const mortA = Math.round(perteA * raidUniteA * (
-                        eval(`armeeObject.${BDDA.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
-                        eval(`armeeObject.${BDDA.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
-                        eval(`armeeObject.${BDDA.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
-                        eval(`armeeObject.${BDDA.strategie}.support`) * eval(`armeeObject.support.homme`)
-                    ));
-
-                    const aviationB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.aviation`) * resteUniteB);
-                    const infanterieB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.infanterie`) * resteUniteB);
-                    const mecaniseB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.mecanise`) * resteUniteB);
-                    const supportB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.support`) * resteUniteB)
-                    const mortB = Math.round(perteB * raidUniteB * (
-                        eval(`armeeObject.${ArmeeB.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
-                        eval(`armeeObject.${ArmeeB.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
-                        eval(`armeeObject.${ArmeeB.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
-                        eval(`armeeObject.${ArmeeB.strategie}.support`) * eval(`armeeObject.support.homme`)
-                    ));
-
-                    let mortJeuneA = mortA;
-                    let mortAdulteA = 0;
-                    if (mortA > PopulationA.jeune) {
-                        mortAdulteA = mortA - PopulationA.jeune;
-                        mortJeuneA = PopulationA.jeune;
-                    }
-                    let mortJeuneB = mortB;
-                    let mortAdulteB = 0;
-                    if (mortB > PopulationB.jeune) {
-                        mortAdulteB = mortB - PopulationB.jeune;
-                        mortJeuneB = PopulationB.jeune;
-                    }
-
-                    let sql;
-                    if (attaqueA > defenseB) {
-                        //Attaquant wins
-                        if (ressource === 'none') {
-                            const embedA = {
-                                author: {
-                                    name: `${PaysA.rang} de ${PaysA.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: PaysA.drapeau
-                                },
-                                title: `\`Victoire du Raid\``,
-                                fields: [
-                                    {
-                                        name: `> 🛡️ Défenseur`,
-                                        value:
-                                            `<@${PaysB.id_joueur}>\n` + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪖 Unités`,
-                                        value: codeBlock(
-                                            ` Attaquant : ${raidUniteA}\n` +
-                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🏕️ Autres`,
-                                        value: codeBlock(
-                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                            ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 💥 Dégâts`,
-                                        value: codeBlock(
-                                            ` Attaque : ${attaqueA}\n` +
-                                            ` Défense : ${defenseB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪦 Pertes`,
-                                        value: codeBlock(
-                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
-                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
-                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
-                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
-                                    },
-                                ],
-                                color: 0x00cc00,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${PaysA.devise}`
-                                },
-                            };
-                            interaction.message.edit({ embeds: [embedA], components: [] });
-                            interaction.deferUpdate()
-
-                            const embedB = {
-                                author: {
-                                    name: `${PaysB.rang} de ${PaysB.nom}`,
-                                    icon_url: PaysB.avatarURL
-                                },
-                                thumbnail: {
-                                    url: PaysB.drapeau
-                                },
-                                title: `\`Défaite d'un Raid\``,
-                                fields: [
-                                    {
-                                        name: `> 🗡️ Attaquant`,
-                                        value:
-                                            `<@${interaction.user.id}>\n` + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪖 Unités`,
-                                        value: codeBlock(
-                                            ` Attaquant : ${raidUniteA}\n` +
-                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🏕️ Autres`,
-                                        value: codeBlock(
-                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                            ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 💥 Dégâts`,
-                                        value: codeBlock(
-                                            ` Attaque : ${attaqueA}\n` +
-                                            ` Défense : ${defenseB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪦 Pertes`,
-                                        value: codeBlock(
-                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
-                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
-                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
-                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
-                                    },
-                                ],
-                                color: 0xFF0000,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${PaysB.devise}`
-                                },
-                            };
-                            const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                            salonB.send({embeds: [embedB]});
-
-                            sql = `
-                                UPDATE armee SET unite=unite-${uniteEnMoinsA},
-                                                 aviation=aviation+${aviationA},
-                                                 infanterie=infanterie+${infanterieA},
-                                                 mecanise=mecanise+${mecaniseA},
-                                                 support=support+${supportA} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE population SET jeune=jeune-${mortJeuneA},
-                                                      adulte=adulte-${mortAdulteA} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE armee SET unite=unite-${uniteEnMoinsB},
-                                                 aviation=aviation+${aviationB},
-                                                 infanterie=infanterie+${infanterieB},
-                                                 mecanise=mecanise+${mecaniseB},
-                                                 support=support+${supportB} WHERE id_joueur='${id_joueur}';
-                                UPDATE batiments SET ${batimentBataille}=${batimentBataille}-1 WHERE id_joueur='${id_joueur}';
-                                UPDATE population SET jeune=jeune-${mortJeuneB},
-                                                      adulte=adulte-${mortAdulteB} WHERE id_joueur='${id_joueur}';
-                            `;
-                            connection.query(sql, async(err) => {if (err) {throw err;}})
-                        } else {
-                            const embedA = {
-                                author: {
-                                    name: `${PaysA.rang} de ${PaysA.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: PaysA.drapeau
-                                },
-                                title: `\`Victoire du Raid\``,
-                                fields: [
-                                    {
-                                        name: `> 🛡️ Défenseur`,
-                                        value:
-                                            `<@${PaysB.id_joueur}>\n` + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪖 Unités`,
-                                        value: codeBlock(
-                                            ` Attaquant : ${raidUniteA}\n` +
-                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🏕️ Autres`,
-                                        value: codeBlock(
-                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                            ` Bâtiment détruit : ${nomBatiment}\n` +
-                                            ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 💥 Dégâts`,
-                                        value: codeBlock(
-                                            ` Attaque : ${attaqueA}\n` +
-                                            ` Défense : ${defenseB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪦 Pertes`,
-                                        value: codeBlock(
-                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
-                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
-                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
-                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
-                                    },
-                                ],
-                                color: 0x00cc00,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${PaysA.devise}`
-                                },
-                            };
-                            interaction.message.edit({ embeds: [embedA], components: [] });
-                            interaction.deferUpdate()
-
-                            const embedB = {
-                                author: {
-                                    name: `${PaysB.rang} de ${PaysB.nom}`,
-                                    icon_url: PaysB.avatarURL
-                                },
-                                thumbnail: {
-                                    url: PaysB.drapeau
-                                },
-                                title: `\`Défaite d'un Raid\``,
-                                fields: [
-                                    {
-                                        name: `> 🗡️ Attaquant`,
-                                        value:
-                                            `<@${interaction.user.id}>\n` + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪖 Unités`,
-                                        value: codeBlock(
-                                            ` Attaquant : ${raidUniteA}\n` +
-                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🏕️ Autres`,
-                                        value: codeBlock(
-                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                            ` Bâtiment détruit : ${nomBatiment}\n` +
-                                            ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 💥 Dégâts`,
-                                        value: codeBlock(
-                                            ` Attaque : ${attaqueA}\n` +
-                                            ` Défense : ${defenseB}\n`) + `\u200B`
-                                    },
-                                    {
-                                        name: `> 🪦 Pertes`,
-                                        value: codeBlock(
-                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
-                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
-                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
-                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
-                                    },
-                                ],
-                                color: 0xFF0000,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${PaysB.devise}`
-                                },
-                            };
-                            const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                            salonB.send({embeds: [embedB]});
-
-                            sql = `
-                                UPDATE armee SET unite=unite-${uniteEnMoinsA},
-                                                 aviation=aviation+${aviationA},
-                                                 infanterie=infanterie+${infanterieA},
-                                                 mecanise=mecanise+${mecaniseA},
-                                                 support=support+${supportA} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE ressources SET ${ressource}=${ressource}+${pillage} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE population SET jeune=jeune-${mortJeuneA},
-                                                      adulte=adulte-${mortAdulteA} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE armee SET unite=unite-${uniteEnMoinsB},
-                                                 aviation=aviation+${aviationB},
-                                                 infanterie=infanterie+${infanterieB},
-                                                 mecanise=mecanise+${mecaniseB},
-                                                 support=support+${supportB} WHERE id_joueur='${id_joueur}';
-                                UPDATE ressources SET ${ressource}=${ressource}-${pillage} WHERE id_joueur='${id_joueur}';
-                                UPDATE batiments SET ${batimentBataille}=${batimentBataille}-1 WHERE id_joueur='${id_joueur}';
-                                UPDATE population SET jeune=jeune-${mortJeuneB},
-                                                      adulte=adulte-${mortAdulteB} WHERE id_joueur='${id_joueur}';
-                            `;
-                            connection.query(sql, async(err) => {if (err) {throw err;}})
-                        }
-                    } else {
-                        //Defender wins
+                    if (ArmeeB.unite === 0) {
                         const embedA = {
                             author: {
                                 name: `${PaysA.rang} de ${PaysA.nom}`,
@@ -6974,37 +6633,24 @@ module.exports = {
                                 {
                                     name: `> 🪖 Unités`,
                                     value: codeBlock(
-                                        ` Attaquant : ${raidUniteA}\n` +
-                                        ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        ` Attaquant : ${ArmeeA}\n` +
+                                        ` Défenseur : 0\n`) + `\u200B`
                                 },
                                 {
                                     name: `> 🏕️ Autres`,
                                     value: codeBlock(
                                         ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                        ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
-                                },
-                                {
-                                    name: `> 💥 Dégâts`,
-                                    value: codeBlock(
-                                        ` Attaque : ${attaqueA}\n` +
-                                        ` Défense : ${defenseB}\n`) + `\u200B`
-                                },
-                                {
-                                    name: `> 🪦 Pertes`,
-                                    value: codeBlock(
-                                        ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
-                                        ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
-                                        ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
-                                        ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
-                                },
+                                        ` Bâtiment détruit : ${nomBatiment}\n` +
+                                        ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                }
                             ],
-                            color: 0xFF0000,
+                            color: 0x00cc00,
                             timestamp: new Date(),
                             footer: {
                                 text: `${PaysA.devise}`
                             },
                         };
-                        interaction.message.edit({ embeds: [embedA], components: [] });
+                        interaction.message.edit({embeds: [embedA], components: []});
                         interaction.deferUpdate()
 
                         const embedB = {
@@ -7015,12 +6661,740 @@ module.exports = {
                             thumbnail: {
                                 url: PaysB.drapeau
                             },
-                            title: `\`Victoire contre un Raid\``,
+                            title: `\`Défaite d'un Raid\``,
                             fields: [
                                 {
                                     name: `> 🗡️ Attaquant`,
                                     value:
                                         `<@${interaction.user.id}>\n` + `\u200B`
+                                },
+                                {
+                                    name: `> 🪖 Unités`,
+                                    value: codeBlock(
+                                        ` Attaquant : ${ArmeeA}\n` +
+                                        ` Défenseur : 0\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 🏕️ Autres`,
+                                    value: codeBlock(
+                                        ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                        ` Bâtiment détruit : ${nomBatiment}\n` +
+                                        ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                }
+                            ],
+                            color: 0xFF0000,
+                            timestamp: new Date(),
+                            footer: {
+                                text: `${PaysB.devise}`
+                            },
+                        };
+                        const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                        salonB.send({embeds: [embedB]});
+
+                        const embedGuerre = {
+                            title: `\`Rapport de raid\``,
+                            fields: [
+                                {
+                                    name: `> Combattants`,
+                                    value:
+                                        `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
+                                        `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
+                                },
+                                {
+                                    name: `> 🪖 Unités`,
+                                    value: codeBlock(
+                                        ` Attaquant : ${ArmeeA}\n` +
+                                        ` Défenseur : 0\n`) + `\u200B`
+                                },
+                                {
+                                    name: `> 🏕️ Autres`,
+                                    value: codeBlock(
+                                        ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                        ` Bâtiment détruit: ${nomBatiment}\n` +
+                                        ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                },
+                            ],
+                            timestamp: new Date(),
+                        }
+                        const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
+                        salonGuerre.send({embeds: [embedGuerre]});
+
+                        let sql = `
+                                    UPDATE armee
+                                    SET victoire=victoire + 1
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE ressources
+                                    SET ${ressource}=${ressource} + ${pillage}
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE armee
+                                    SET defaite=defaite + 1
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE ressources
+                                    SET ${ressource}=${ressource} - ${pillage}
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE batiments
+                                    SET ${batimentBataille}=${batimentBataille} - 1
+                                    WHERE id_joueur = '${id_joueur}';
+                                `;
+                        connection.query(sql, async (err) => {if (err) {throw err;}})
+                    } else {
+                        let raidUniteMin = Math.ceil(0.1 * ArmeeA);
+                        let raidUniteMax = 2 * ArmeeA;
+                        if (ArmeeA > ArmeeB.unite) {
+                            raidUniteMax = Math.min(raidUniteMax, 1.5 * ArmeeB.unite);
+                        } else {
+                            raidUniteMax = Math.min(raidUniteMax, 0.75 * ArmeeB.unite);
+                        }
+                        const modifStratA = eval(`armeeObject.${BDDA.strategie}.bonus_taille`);
+                        const modifStratB = eval(`armeeObject.${ArmeeB.strategie}.bonus_taille`);
+                        const modifBiome = 1;
+                        let raidUnite = Math.round(chance.floating({
+                            min: raidUniteMin,
+                            max: raidUniteMax
+                        }) * modifStratA * modifStratB * modifBiome);
+                        raidUnite = Math.min(raidUnite, raidUniteMax);
+                        let raidUniteA = Math.min(raidUnite, ArmeeA);
+                        let raidUniteB = Math.min(raidUnite, ArmeeB.unite);
+
+
+                        let attaqueA = eval(`strategieObject.${biomeBataille}.${BDDA.strategie}.${ArmeeB.strategie}.attaquant`);
+                        let defenseB = eval(`strategieObject.${biomeBataille}.${BDDA.strategie}.${ArmeeB.strategie}.defenseur`);
+
+                        function pallier(sup, inf) {
+                            const p = (sup - inf) / inf * 100;
+                            if (p < 10) {
+                                return 0;
+                            } else if (p < 15) {
+                                return 10;
+                            } else if (p < 20) {
+                                return 20;
+                            } else if (p < 25) {
+                                return 30;
+                            } else if (p < 30) {
+                                return 40;
+                            } else if (p < 40) {
+                                return 50;
+                            } else {
+                                return 60;
+                            }
+                        }
+
+                        let perteA = 0.1;
+                        let perteB = 0.1;
+
+                        if (raidUniteA > raidUniteB) {
+                            defenseB = defenseB - pallier(raidUniteA, raidUniteB);
+                            perteB = perteB * (raidUniteA / raidUniteB)
+                        } else {
+                            attaqueA = attaqueA - pallier(raidUniteB, raidUniteA);
+                            perteA = perteA * (raidUniteB / raidUniteA)
+                        }
+                        perteA = perteA * eval(`strategieObject.perte_attaquant.strategie_attaquant.${BDDA.strategie}`) * eval(`strategieObject.perte_attaquant.strategie_defenseur.${ArmeeB.strategie}`);
+                        perteB = perteB * eval(`strategieObject.perte_defenseur.strategie_attaquant.${BDDA.strategie}`) * eval(`strategieObject.perte_defenseur.strategie_defenseur.${ArmeeB.strategie}`);
+
+                        const uniteEnMoinsA = Math.ceil(perteA * raidUniteA);
+                        //2 à remove des unités
+                        const uniteEnMoinsB = Math.ceil(perteB * raidUniteB);
+
+                        const resteUniteA = uniteEnMoinsA - perteA * raidUniteA;
+                        //2 - 1,3 = 70% d'une unité à remettre en réserve
+                        const resteUniteB = uniteEnMoinsB - perteB * raidUniteB;
+
+                        const aviationA = Math.round(eval(`armeeObject.${BDDA.strategie}.aviation`) * resteUniteA);
+                        const infanterieA = Math.round(eval(`armeeObject.${BDDA.strategie}.infanterie`) * resteUniteA);
+                        const mecaniseA = Math.round(eval(`armeeObject.${BDDA.strategie}.mecanise`) * resteUniteA);
+                        const supportA = Math.round(eval(`armeeObject.${BDDA.strategie}.support`) * resteUniteA);
+                        const mortA = Math.round(perteA * raidUniteA * (
+                            eval(`armeeObject.${BDDA.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                            eval(`armeeObject.${BDDA.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                            eval(`armeeObject.${BDDA.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                            eval(`armeeObject.${BDDA.strategie}.support`) * eval(`armeeObject.support.homme`)
+                        ));
+
+                        const aviationB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.aviation`) * resteUniteB);
+                        const infanterieB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.infanterie`) * resteUniteB);
+                        const mecaniseB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.mecanise`) * resteUniteB);
+                        const supportB = Math.round(eval(`armeeObject.${ArmeeB.strategie}.support`) * resteUniteB)
+                        const mortB = Math.round(perteB * raidUniteB * (
+                            eval(`armeeObject.${ArmeeB.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+                            eval(`armeeObject.${ArmeeB.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+                            eval(`armeeObject.${ArmeeB.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+                            eval(`armeeObject.${ArmeeB.strategie}.support`) * eval(`armeeObject.support.homme`)
+                        ));
+
+                        let mortJeuneA = mortA;
+                        let mortAdulteA = 0;
+                        if (mortA > PopulationA.jeune) {
+                            mortAdulteA = mortA - PopulationA.jeune;
+                            mortJeuneA = PopulationA.jeune;
+                        }
+                        let mortJeuneB = mortB;
+                        let mortAdulteB = 0;
+                        if (mortB > PopulationB.jeune) {
+                            mortAdulteB = mortB - PopulationB.jeune;
+                            mortJeuneB = PopulationB.jeune;
+                        }
+
+                        let sql;
+                        if (attaqueA > defenseB) {
+                            //Attaquant wins
+                            if (ressource === 'none') {
+                                const embedA = {
+                                    author: {
+                                        name: `${PaysA.rang} de ${PaysA.nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: PaysA.drapeau
+                                    },
+                                    title: `\`Victoire du Raid\``,
+                                    fields: [
+                                        {
+                                            name: `> 🛡️ Défenseur`,
+                                            value:
+                                                `<@${PaysB.id_joueur}>\n` + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪖 Unités`,
+                                            value: codeBlock(
+                                                ` Attaquant : ${raidUniteA}\n` +
+                                                ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🏕️ Autres`,
+                                            value: codeBlock(
+                                                ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                                ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 💥 Dégâts`,
+                                            value: codeBlock(
+                                                ` Attaque : ${attaqueA}\n` +
+                                                ` Défense : ${defenseB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪦 Pertes`,
+                                            value: codeBlock(
+                                                ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                                ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                                ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                                ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                        },
+                                    ],
+                                    color: 0x00cc00,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${PaysA.devise}`
+                                    },
+                                };
+                                interaction.message.edit({embeds: [embedA], components: []});
+                                interaction.deferUpdate()
+
+                                const embedB = {
+                                    author: {
+                                        name: `${PaysB.rang} de ${PaysB.nom}`,
+                                        icon_url: PaysB.avatarURL
+                                    },
+                                    thumbnail: {
+                                        url: PaysB.drapeau
+                                    },
+                                    title: `\`Défaite d'un Raid\``,
+                                    fields: [
+                                        {
+                                            name: `> 🗡️ Attaquant`,
+                                            value:
+                                                `<@${interaction.user.id}>\n` + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪖 Unités`,
+                                            value: codeBlock(
+                                                ` Attaquant : ${raidUniteA}\n` +
+                                                ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🏕️ Autres`,
+                                            value: codeBlock(
+                                                ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                                ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 💥 Dégâts`,
+                                            value: codeBlock(
+                                                ` Attaque : ${attaqueA}\n` +
+                                                ` Défense : ${defenseB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪦 Pertes`,
+                                            value: codeBlock(
+                                                ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                                ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                                ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                                ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                        },
+                                    ],
+                                    color: 0xFF0000,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${PaysB.devise}`
+                                    },
+                                };
+                                const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                                salonB.send({embeds: [embedB]});
+
+                                const embedGuerre = {
+                                    title: `\`Rapport de raid\``,
+                                    fields: [
+                                        {
+                                            name: `> Combattants`,
+                                            value:
+                                                `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
+                                                `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪖 Unités`,
+                                            value: codeBlock(
+                                                ` Attaquant : ${raidUniteA}\n` +
+                                                ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🏕️ Autres`,
+                                            value: codeBlock(
+                                                ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                                ` Bâtiment détruit: ${nomBatiment}\n` +
+                                                ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 💥 Dégâts`,
+                                            value: codeBlock(
+                                                ` Attaque : ${attaqueA}\n` +
+                                                ` Défense : ${defenseB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪦 Pertes`,
+                                            value: codeBlock(
+                                                ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                                ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                                ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                                ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                        },
+                                    ],
+                                    timestamp: new Date(),
+                                }
+                                const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
+                                salonGuerre.send({embeds: [embedGuerre]});
+
+                                sql = `
+                                    UPDATE armee
+                                    SET unite=unite - ${uniteEnMoinsA},
+                                        aviation=aviation + ${aviationA},
+                                        infanterie=infanterie + ${infanterieA},
+                                        mecanise=mecanise + ${mecaniseA},
+                                        support=support + ${supportA},
+                                        victoire=victoire + 1
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE population
+                                    SET jeune=jeune - ${mortJeuneA},
+                                        adulte=adulte - ${mortAdulteA}
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE armee
+                                    SET unite=unite - ${uniteEnMoinsB},
+                                        aviation=aviation + ${aviationB},
+                                        infanterie=infanterie + ${infanterieB},
+                                        mecanise=mecanise + ${mecaniseB},
+                                        support=support + ${supportB},
+                                        defaite = defaite + 1
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE batiments
+                                    SET ${batimentBataille}=${batimentBataille} - 1
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE population
+                                    SET jeune=jeune - ${mortJeuneB},
+                                        adulte=adulte - ${mortAdulteB}
+                                    WHERE id_joueur = '${id_joueur}';
+                                `;
+                                connection.query(sql, async (err) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                })
+                            } else {
+                                const embedA = {
+                                    author: {
+                                        name: `${PaysA.rang} de ${PaysA.nom}`,
+                                        icon_url: interaction.member.displayAvatarURL()
+                                    },
+                                    thumbnail: {
+                                        url: PaysA.drapeau
+                                    },
+                                    title: `\`Victoire du Raid\``,
+                                    fields: [
+                                        {
+                                            name: `> 🛡️ Défenseur`,
+                                            value:
+                                                `<@${PaysB.id_joueur}>\n` + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪖 Unités`,
+                                            value: codeBlock(
+                                                ` Attaquant : ${raidUniteA}\n` +
+                                                ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🏕️ Autres`,
+                                            value: codeBlock(
+                                                ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                                ` Bâtiment détruit : ${nomBatiment}\n` +
+                                                ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 💥 Dégâts`,
+                                            value: codeBlock(
+                                                ` Attaque : ${attaqueA}\n` +
+                                                ` Défense : ${defenseB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪦 Pertes`,
+                                            value: codeBlock(
+                                                ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                                ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                                ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                                ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                        },
+                                    ],
+                                    color: 0x00cc00,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${PaysA.devise}`
+                                    },
+                                };
+                                interaction.message.edit({embeds: [embedA], components: []});
+                                interaction.deferUpdate()
+
+                                const embedB = {
+                                    author: {
+                                        name: `${PaysB.rang} de ${PaysB.nom}`,
+                                        icon_url: PaysB.avatarURL
+                                    },
+                                    thumbnail: {
+                                        url: PaysB.drapeau
+                                    },
+                                    title: `\`Défaite d'un Raid\``,
+                                    fields: [
+                                        {
+                                            name: `> 🗡️ Attaquant`,
+                                            value:
+                                                `<@${interaction.user.id}>\n` + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪖 Unités`,
+                                            value: codeBlock(
+                                                ` Attaquant : ${raidUniteA}\n` +
+                                                ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🏕️ Autres`,
+                                            value: codeBlock(
+                                                ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                                ` Bâtiment détruit : ${nomBatiment}\n` +
+                                                ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 💥 Dégâts`,
+                                            value: codeBlock(
+                                                ` Attaque : ${attaqueA}\n` +
+                                                ` Défense : ${defenseB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪦 Pertes`,
+                                            value: codeBlock(
+                                                ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                                ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                                ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                                ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                        },
+                                    ],
+                                    color: 0xFF0000,
+                                    timestamp: new Date(),
+                                    footer: {
+                                        text: `${PaysB.devise}`
+                                    },
+                                };
+                                const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                                salonB.send({embeds: [embedB]});
+
+                                const embedGuerre = {
+                                    title: `\`Rapport de raid\``,
+                                    fields: [
+                                        {
+                                            name: `> Combattants`,
+                                            value:
+                                                `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
+                                                `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪖 Unités`,
+                                            value: codeBlock(
+                                                ` Attaquant : ${raidUniteA}\n` +
+                                                ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🏕️ Autres`,
+                                            value: codeBlock(
+                                                ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                                ` Bâtiment détruit: ${nomBatiment}\n` +
+                                                ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 💥 Dégâts`,
+                                            value: codeBlock(
+                                                ` Attaque : ${attaqueA}\n` +
+                                                ` Défense : ${defenseB}\n`) + `\u200B`
+                                        },
+                                        {
+                                            name: `> 🪦 Pertes`,
+                                            value: codeBlock(
+                                                ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                                ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                                ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                                ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                        },
+                                    ],
+                                    timestamp: new Date(),
+                                }
+                                const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
+                                salonGuerre.send({embeds: [embedGuerre]});
+
+                                sql = `
+                                    UPDATE armee
+                                    SET unite=unite - ${uniteEnMoinsA},
+                                        aviation=aviation + ${aviationA},
+                                        infanterie=infanterie + ${infanterieA},
+                                        mecanise=mecanise + ${mecaniseA},
+                                        support=support + ${supportA},
+                                        victoire=victoire + 1
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE ressources
+                                    SET ${ressource}=${ressource} + ${pillage}
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE population
+                                    SET jeune=jeune - ${mortJeuneA},
+                                        adulte=adulte - ${mortAdulteA}
+                                    WHERE id_joueur = '${interaction.user.id}';
+                                    UPDATE armee
+                                    SET unite=unite - ${uniteEnMoinsB},
+                                        aviation=aviation + ${aviationB},
+                                        infanterie=infanterie + ${infanterieB},
+                                        mecanise=mecanise + ${mecaniseB},
+                                        support=support + ${supportB},
+                                        defaite = defaite + 1
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE ressources
+                                    SET ${ressource}=${ressource} - ${pillage}
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE batiments
+                                    SET ${batimentBataille}=${batimentBataille} - 1
+                                    WHERE id_joueur = '${id_joueur}';
+                                    UPDATE population
+                                    SET jeune=jeune - ${mortJeuneB},
+                                        adulte=adulte - ${mortAdulteB}
+                                    WHERE id_joueur = '${id_joueur}';
+                                `;
+                                connection.query(sql, async (err) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                })
+                            }
+                        } else {
+                            //Defender wins
+                            const embedA = {
+                                author: {
+                                    name: `${PaysA.rang} de ${PaysA.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: PaysA.drapeau
+                                },
+                                title: `\`Victoire du Raid\``,
+                                fields: [
+                                    {
+                                        name: `> 🛡️ Défenseur`,
+                                        value:
+                                            `<@${PaysB.id_joueur}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                color: 0xFF0000,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${PaysA.devise}`
+                                },
+                            };
+                            interaction.message.edit({embeds: [embedA], components: []});
+                            interaction.deferUpdate()
+
+                            const embedB = {
+                                author: {
+                                    name: `${PaysB.rang} de ${PaysB.nom}`,
+                                    icon_url: PaysB.avatarURL
+                                },
+                                thumbnail: {
+                                    url: PaysB.drapeau
+                                },
+                                title: `\`Victoire contre un Raid\``,
+                                fields: [
+                                    {
+                                        name: `> 🗡️ Attaquant`,
+                                        value:
+                                            `<@${interaction.user.id}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                color: 0x00cc00,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: `${PaysB.devise}`
+                                },
+                            };
+                            const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
+                            salonB.send({embeds: [embedB]});
+
+                            const embedGuerre = {
+                                title: `\`Rapport de raid\``,
+                                fields: [
+                                    {
+                                        name: `> Combattants`,
+                                        value:
+                                            `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
+                                            `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪖 Unités`,
+                                        value: codeBlock(
+                                            ` Attaquant : ${raidUniteA}\n` +
+                                            ` Défenseur : ${raidUniteB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🏕️ Autres`,
+                                        value: codeBlock(
+                                            ` Biome : ${chance.capitalize(biomeBataille)}\n` +
+                                            ` Bâtiment détruit: ${nomBatiment}\n` +
+                                            ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 💥 Dégâts`,
+                                        value: codeBlock(
+                                            ` Attaque : ${attaqueA}\n` +
+                                            ` Défense : ${defenseB}\n`) + `\u200B`
+                                    },
+                                    {
+                                        name: `> 🪦 Pertes`,
+                                        value: codeBlock(
+                                            ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
+                                            ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
+                                            ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
+                                            ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
+                                    },
+                                ],
+                                timestamp: new Date(),
+                            }
+                            const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
+                            salonGuerre.send({embeds: [embedGuerre]});
+
+                            sql = `
+                                UPDATE armee
+                                SET unite=unite - ${uniteEnMoinsA},
+                                    aviation=aviation + ${aviationA},
+                                    infanterie=infanterie + ${infanterieA},
+                                    mecanise=mecanise + ${mecaniseA},
+                                    support=support + ${supportA},
+                                    defaite = defaite + 1
+                                WHERE id_joueur = '${interaction.user.id}';
+                                UPDATE population
+                                SET jeune=jeune - ${mortJeuneA},
+                                    adulte=adulte - ${mortAdulteA}
+                                WHERE id_joueur = '${interaction.user.id}';
+                                UPDATE armee
+                                SET unite=unite - ${uniteEnMoinsB},
+                                    aviation=aviation + ${aviationB},
+                                    infanterie=infanterie + ${infanterieB},
+                                    mecanise=mecanise + ${mecaniseB},
+                                    support=support + ${supportB},
+                                    victoire=victoire + 1
+                                WHERE id_joueur = '${id_joueur}';
+                                UPDATE batiments
+                                SET ${batimentBataille}=${batimentBataille} - 1
+                                WHERE id_joueur = '${id_joueur}';
+                                UPDATE population
+                                SET jeune=jeune - ${mortJeuneB},
+                                    adulte=adulte - ${mortAdulteB}
+                                WHERE id_joueur = '${id_joueur}';
+                            `;
+                            connection.query(sql, async (err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                            })
+                        }
+
+                        const embed = {
+                            title: `\`Raid\``,
+                            fields: [
+                                {
+                                    name: `> Combattants`,
+                                    value:
+                                        `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
+                                        `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
                                 },
                                 {
                                     name: `> 🪖 Unités`,
@@ -7032,7 +7406,9 @@ module.exports = {
                                     name: `> 🏕️ Autres`,
                                     value: codeBlock(
                                         ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                        ` Bâtiment détruit : ${nomBatiment}\n`) + `\u200B`
+                                        ` raidUnite : ${raidUnite}\n` +
+                                        ` Bâtiment détruit: ${nomBatiment}\n` +
+                                        ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
                                 },
                                 {
                                     name: `> 💥 Dégâts`,
@@ -7049,79 +7425,11 @@ module.exports = {
                                         ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
                                 },
                             ],
-                            color: 0x00cc00,
                             timestamp: new Date(),
-                            footer: {
-                                text: `${PaysB.devise}`
-                            },
-                        };
-                        const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                        salonB.send({embeds: [embedB]});
-
-                        sql = `
-                                UPDATE armee SET unite=unite-${uniteEnMoinsA},
-                                                 aviation=aviation+${aviationA},
-                                                 infanterie=infanterie+${infanterieA},
-                                                 mecanise=mecanise+${mecaniseA},
-                                                 support=support+${supportA} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE population SET jeune=jeune-${mortJeuneA},
-                                                      adulte=adulte-${mortAdulteA} WHERE id_joueur='${interaction.user.id}';
-                                UPDATE armee SET unite=unite-${uniteEnMoinsB},
-                                                 aviation=aviation+${aviationB},
-                                                 infanterie=infanterie+${infanterieB},
-                                                 mecanise=mecanise+${mecaniseB},
-                                                 support=support+${supportB} WHERE id_joueur='${id_joueur}';
-                                UPDATE batiments SET ${batimentBataille}=${batimentBataille}-1 WHERE id_joueur='${id_joueur}';
-                                UPDATE population SET jeune=jeune-${mortJeuneB},
-                                                      adulte=adulte-${mortAdulteB} WHERE id_joueur='${id_joueur}';
-                            `;
-                        connection.query(sql, async(err) => {if (err) {throw err;}})
+                        }
+                        const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
+                        salon_logs.send({embeds: [embed]});
                     }
-
-                    const embed = {
-                        title: `\`Raid\``,
-                        fields: [
-                            {
-                                name: `> Combattants`,
-                                value:
-                                    `* 🗡️ Attaquant : <@${interaction.user.id}>\n` +
-                                    `* 🛡️ Défenseur : <@${PaysB.id_joueur}>\n` + `\u200B`
-                            },
-                            {
-                                name: `> 🪖 Unités`,
-                                value: codeBlock(
-                                    ` Attaquant : ${raidUniteA}\n` +
-                                    ` Défenseur : ${raidUniteB}\n`) + `\u200B`
-                            },
-                            {
-                                name: `> 🏕️ Autres`,
-                                value: codeBlock(
-                                    ` Biome : ${chance.capitalize(biomeBataille)}\n` +
-                                    ` raidUnite : ${raidUnite}\n` +
-                                    ` Bâtiment détruit: ${nomBatiment}\n` +
-                                    ` Pillage : ${pillage} ${ressource}\n`) + `\u200B`
-                            },
-                            {
-                                name: `> 💥 Dégâts`,
-                                value: codeBlock(
-                                    ` Attaque : ${attaqueA}\n` +
-                                    ` Défense : ${defenseB}\n`) + `\u200B`
-                            },
-                            {
-                                name: `> 🪦 Pertes`,
-                                value: codeBlock(
-                                    ` Perte Attaquant : ${(perteA * raidUniteA).toFixed(2)} Unités\n` +
-                                    ` Perte Attaquant : ${mortA.toLocaleString('en-US')} hommes\n` +
-                                    ` Perte Défenseur : ${(perteB * raidUniteB).toFixed(2)} Unités\n` +
-                                    ` Perte Défenseur : ${mortB.toLocaleString('en-US')} hommes\n`) + `\u200B`
-                            },
-                        ],
-                        timestamp: new Date(),
-                    }
-                    const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
-                    salon_logs.send({embeds: [embed]});
-
-
                 });
                 //endregion
             }
@@ -7222,7 +7530,7 @@ module.exports = {
                     //region Production d'électricté des centrales au charbon
                     const conso_T_centrale_charbon_charbon = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_CHARBON * Batiment.centrale_charbon
                     let prod_centrale_charbon = true;
-                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_bois !== 0) {
+                    if (conso_T_centrale_charbon_charbon > Ressources.charbon && conso_T_centrale_charbon_charbon !== 0) {
                         prod_centrale_charbon = false;
                     }
                     const conso_T_centrale_charbon_eau = batimentObject.centrale_charbon.CONSO_CENTRALE_CHARBON_EAU * Batiment.centrale_charbon
@@ -7273,35 +7581,6 @@ module.exports = {
                     );
                     //endregion
                     //endregion
-
-                    let T_bois = (Territoire.foret + Territoire.taiga + Territoire.rocheuses + Territoire.mangrove + Territoire.jungle);
-                    if (T_bois === 0) {
-                        T_bois = 1;
-                    }
-                    let T_brique = (Territoire.foret + Territoire.prairie + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.steppe);
-                    if (T_brique === 0) {
-                        T_brique = 1;
-                    }
-                    let T_eau = (Territoire.foret + Territoire.prairie + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.mangrove + Territoire.steppe);
-                    if (T_eau === 0) {
-                        T_eau = 1;
-                    }
-                    let T_electricite = (Territoire.prairie + Territoire.desert + Territoire.toundra + Territoire.savane + Territoire.steppe);
-                    if (T_electricite === 0) {
-                        T_electricite = 1;
-                    }
-                    let T_metaux = (Territoire.foret + Territoire.prairie + Territoire.desert + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.rocheuses + Territoire.steppe);
-                    if (T_metaux === 0) {
-                        T_metaux = 1;
-                    }
-                    let T_nourriture = (Territoire.prairie + Territoire.savane + Territoire.steppe + Territoire.jungle)
-                    if (T_nourriture === 0) {
-                        T_nourriture = 1;
-                    }
-                    let T_petrole = Territoire.foret + Territoire.prairie + Territoire.desert + Territoire.toundra + Territoire.taiga + Territoire.savane + Territoire.mangrove + Territoire.steppe
-                    if (T_petrole === 0) {
-                        T_petrole = 1;
-                    }
 
                     if (interaction.values == 'acierie') {
                         //region Acierie
@@ -9640,6 +9919,12 @@ module.exports = {
                                         value: codeBlock(`• ${eval(`armeeObject.${Armee.strategie}.nom`)}`) + `\u200B`
                                     },
                                     {
+                                        name: `> ⚖️ Performance :`,
+                                        value: codeBlock(
+                                            `• Victoires : ${Armee.victoire}\n` +
+                                            `• Défaites : ${Armee.defaite}\n`) + `\u200B`
+                                    },
+                                    {
                                         name: `> 🪖 Unités : opérationnelles | réserves`,
                                         value: codeBlock(
                                             `• Unité : ${Armee.unite.toLocaleString('en-US')} | ${Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`)))).toLocaleString('en-US')}\n` +
@@ -10136,7 +10421,8 @@ module.exports = {
                             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                             SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
-                            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}'
+                            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+                            SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
                         `;
                         connection.query(sql, async(err, results) => {if (err) {throw err;}
                             const Armee = results[0][0];
@@ -10144,33 +10430,21 @@ module.exports = {
                             const Pays = results[2][0];
                             const Population = results[3][0];
                             const Ressources = results[4][0];
-
-                            let Logement;
-                            let Nourriture;
-                            let Eau;
-                            let Bc;
+                            const Territoire = results[5][0];
 
                             if (!results[0][0]) {
                                 const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette personne ne joue pas.`);
                                 await interaction.reply({content: reponse, ephemeral: true});
                             } else {
+                                let Logement;
                                 const logement = Batiment.quartier * 1500
                                 if (logement / Population.habitant > 1.1) {
                                     Logement = codeBlock('md', `> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
                                 } else if (logement / Population.habitant >= 1) {
                                     Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
                                 } else {
-                                    Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
-                                }
-
-                                const conso_bc =  Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`))
-                                const prod_bc = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * 48)
-                                if (prod_bc / conso_bc > 1.1) {
-                                    Bc = codeBlock('md', `> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
-                                } else if (prod_bc / conso_bc >= 1) {
-                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
-                                } else {
-                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
+                                    const quartier = Math.ceil((Population.habitant - logement)/1500);
+                                    Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements | ${quartier} quartiers manquants\n`);
                                 }
 
                                 //region Calcul du nombre d'employé
@@ -10206,14 +10480,58 @@ module.exports = {
                                     (Armee.infanterie * armeeObject.infanterie.homme) +
                                     (Armee.mecanise * armeeObject.mecanise.homme) +
                                     (Armee.support * armeeObject.support.homme);
-
                                 if (emploies_total/(Population.jeune + Population.adulte - hommeArmee) > 1) {
                                     chomage = 0
                                 } else {
                                     chomage = (((Population.jeune + Population.adulte - hommeArmee)-emploies_total)/(Population.jeune + Population.adulte - hommeArmee)*100).toFixed(2)
                                 }
                                 const Chomage = `• ${emploies_total.toLocaleString('en-US')} emplois (${chomage}% chômage)\n`;
+                                let emplois = (Population.jeune + Population.adulte - hommeArmee)/emploies_total
+                                if ((Population.jeune + Population.adulte - hommeArmee)/emploies_total > 1) {
+                                    emplois = 1
+                                }
                                 //endregion
+                                let Prod;
+                                let Conso;
+                                let Diff;
+                                const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
+                                const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
+
+                                let Bc;
+                                Prod = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois * 48)
+                                Conso =  Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`))
+                                Diff = Prod - Conso;
+                                if (Prod / Conso > 1.1) {
+                                    Bc = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💻 | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟩 ∞`);
+                                } else if (Prod / Conso >= 1) {
+                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💻 | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟨 ∞`);
+                                } else {
+                                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💻 | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟥⌛ ${Math.floor(- Ressources.bc / Diff)}`);
+                                }
+
+                                let Eau;
+                                Prod = Math.round(batimentObject.station_pompage.PROD_STATION_POMPAGE * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_eau * emplois * 48);
+                                Conso = Math.round((Population.habitant * populationObject.EAU_CONSO));
+                                Diff = Prod - Conso;
+                                if (Prod / Conso > 1.1) {
+                                    Eau = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💧 | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟩 ∞`);
+                                } else if (Prod / Conso >= 1) {
+                                    Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💧 | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟨 ∞`);
+                                } else {
+                                    Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💧 | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟥⌛ ${Math.floor(- Ressources.eau / Diff)}`);
+                                }
+
+                                let Nourriture;
+                                Prod = Math.round(batimentObject.champ.PROD_CHAMP * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture * emplois * 48);
+                                Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO));
+                                Diff = Prod - Conso;
+                                if (Prod / Conso > 1.1) {
+                                    Nourriture = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 🌽 | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟩 ∞`);
+                                } else if (Prod / Conso >= 1) {
+                                    Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 🌽 | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟨 ∞`);
+                                } else {
+                                    Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 🌽 | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟥⌛ ${Math.floor(- Ressources.nourriture / Diff)}`);
+                                }
 
                                 const embed = {
                                     author: {
@@ -10236,9 +10554,9 @@ module.exports = {
                                         {
                                             name: `> 🛒 Consommation/Approvisionnement`,
                                             value:
-                                                //Eau +
-                                                //Nourriture +
                                                 Bc +
+                                                Eau +
+                                                Nourriture +
                                                 `\u200B`
                                         },
                                         {
@@ -10744,7 +11062,6 @@ module.exports = {
 
                             await interaction.reply({ embeds: [embed], components: [row] });
                         });
-                        //endregion
                         break;
                     case 'industrie':
                         //region Industrie

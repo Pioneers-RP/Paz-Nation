@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mariadb://eu01-sql.pebblehost.com:3306/customer_355631_paznation</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="Base Test" uuid="129ee08a-53e1-43c0-a449-860e5d604bf0">
+      <driver-ref>mariadb</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
+      <jdbc-url>jdbc:mariadb://eu02-sql.pebblehost.com:3306/customer_355631_test</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

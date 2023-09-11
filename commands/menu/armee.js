@@ -39,6 +39,12 @@ module.exports = {
                         value: codeBlock(`• ${eval(`armeeObject.${Armee.strategie}.nom`)}`) + `\u200B`
                     },
                     {
+                        name: `> ⚖️ Performance :`,
+                        value: codeBlock(
+                            `• Victoires : ${Armee.victoire}\n` +
+                            `• Défaites : ${Armee.defaite}\n`) + `\u200B`
+                    },
+                    {
                         name: `> 🪖 Unités : opérationnelles | réserves`,
                         value: codeBlock(
                             `• Unité : ${Armee.unite.toLocaleString('en-US')} | ${Math.floor(Math.min((Armee.aviation/eval(`armeeObject.${Armee.strategie}.aviation`)), (Armee.infanterie/eval(`armeeObject.${Armee.strategie}.infanterie`)), (Armee.mecanise/eval(`armeeObject.${Armee.strategie}.mecanise`)), (Armee.support/eval(`armeeObject.${Armee.strategie}.support`)))).toLocaleString('en-US')}\n` +

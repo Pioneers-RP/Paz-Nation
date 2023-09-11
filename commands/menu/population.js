@@ -4,6 +4,7 @@ const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 const populationObject = JSON.parse(readFileSync('data/population.json', 'utf-8'));
 const gouvernementObject = JSON.parse(readFileSync('data/gouvernement.json', 'utf-8'));
 const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
+const regionObject = JSON.parse(readFileSync('data/region.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -18,7 +19,8 @@ module.exports = {
             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
             SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
             SELECT * FROM population WHERE id_joueur='${interaction.member.id}';
-            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}'
+            SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
+            SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
         `;
         connection.query(sql, async(err, results) => {if (err) {throw err;}
             const Armee = results[0][0];
@@ -26,23 +28,21 @@ module.exports = {
             const Pays = results[2][0];
             const Population = results[3][0];
             const Ressources = results[4][0];
-
-            let Logement;
-            let Nourriture;
-            let Eau;
-            let Bc;
+            const Territoire = results[5][0];
 
             if (!results[0][0]) {
                 const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette personne ne joue pas.`);
                 await interaction.reply({content: reponse, ephemeral: true});
             } else {
+                let Logement;
                 const logement = Batiment.quartier * 1500
                 if (logement / Population.habitant > 1.1) {
                     Logement = codeBlock('md', `> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
                 } else if (logement / Population.habitant >= 1) {
                     Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
                 } else {
-                    Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements\n`);
+                    const quartier = Math.ceil((Population.habitant - logement)/1500);
+                    Logement = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${Population.habitant.toLocaleString('en-US')}/${logement.toLocaleString('en-US')} logements | ${quartier} quartiers manquants\n`);
                 }
 
                 //region Calcul du nombre d'employé
@@ -89,15 +89,46 @@ module.exports = {
                     emplois = 1
                 }
                 //endregion
+                let Prod;
+                let Conso;
+                let Diff;
+                const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
+                const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
 
-                const conso_bc =  Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`))
-                const prod_bc = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois * 48)
-                if (prod_bc / conso_bc > 1.1) {
-                    Bc = codeBlock('md', `> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
-                } else if (prod_bc / conso_bc >= 1) {
-                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
+                let Bc;
+                Prod = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * Batiment.usine_civile * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois * 48)
+                Conso =  Math.round((1 + Population.bc_acces * 0.04 + Population.bonheur * 0.016 + (Population.habitant / 10000000) * 0.04) * Population.habitant * eval(`gouvernementObject.${Pays.ideologie}.conso_bc`))
+                Diff = Prod - Conso;
+                if (Prod / Conso > 1.1) {
+                    Bc = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💻 | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟩 ∞`);
+                } else if (Prod / Conso >= 1) {
+                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💻 | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟨 ∞`);
                 } else {
-                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${conso_bc.toLocaleString('en-US')}/${prod_bc.toLocaleString('en-US')} biens de consommation | 📦 ${Ressources.bc.toLocaleString('en-US')}\n`);
+                    Bc = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💻 | 📦 ${Ressources.bc.toLocaleString('en-US')} | 🟥⌛ ${Math.floor(- Ressources.bc / Diff)}`);
+                }
+
+                let Eau;
+                Prod = Math.round(batimentObject.station_pompage.PROD_STATION_POMPAGE * Batiment.station_pompage * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_eau * emplois * 48);
+                Conso = Math.round((Population.habitant * populationObject.EAU_CONSO));
+                Diff = Prod - Conso;
+                if (Prod / Conso > 1.1) {
+                    Eau = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💧 | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟩 ∞`);
+                } else if (Prod / Conso >= 1) {
+                    Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💧 | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟨 ∞`);
+                } else {
+                    Eau = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 💧 | 📦 ${Ressources.eau.toLocaleString('en-US')} | 🟥⌛ ${Math.floor(- Ressources.eau / Diff)}`);
+                }
+
+                let Nourriture;
+                Prod = Math.round(batimentObject.champ.PROD_CHAMP * Batiment.champ * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture * emplois * 48);
+                Conso = Math.round((Population.habitant * populationObject.NOURRITURE_CONSO));
+                Diff = Prod - Conso;
+                if (Prod / Conso > 1.1) {
+                    Nourriture = codeBlock('md', `> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 🌽 | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟩 ∞`);
+                } else if (Prod / Conso >= 1) {
+                    Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 🌽 | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟨 ∞`);
+                } else {
+                    Nourriture = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> ${Conso.toLocaleString('en-US')}/${Prod.toLocaleString('en-US')} 🌽 | 📦 ${Ressources.nourriture.toLocaleString('en-US')} | 🟥⌛ ${Math.floor(- Ressources.nourriture / Diff)}`);
                 }
 
                 const embed = {
@@ -121,9 +152,9 @@ module.exports = {
                         {
                             name: `> 🛒 Consommation/Approvisionnement`,
                             value:
-                                //Eau +
-                                //Nourriture +
                                 Bc +
+                                Eau +
+                                Nourriture +
                                 `\u200B`
                         },
                         {
