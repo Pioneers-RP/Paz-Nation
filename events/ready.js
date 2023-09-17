@@ -3,12 +3,9 @@ const { readFileSync, writeFileSync } = require('fs');
 const { connection } = require('../index.js');
 const { globalBox } = require('global-box');
 const box = globalBox();
-const dotenv = require('dotenv');
 const Chance = require('chance');
 const chance = new Chance();
 const ms = require('ms');
-const wait = require('node:timers/promises').setTimeout;
-const { client } = require("../index");
 const CronJob = require('cron').CronJob;
 
 const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
@@ -24,7 +21,7 @@ module.exports = {
     execute(client) {
         console.log(`Lancé sous le bot ${client.user.tag}`);
 
-        if (client.user.id == 834855105177845794) {
+        if (client.user.id === 834855105177845794) {
             client.channels.cache.get(process.env.SALON_ACTUALITE).send('<@834855105177845794> a été <@&1061392938829094913>')
         }
 
@@ -84,13 +81,13 @@ module.exports = {
             //'* * * * * *',
             function autoUpdate() {
 
-                const sql = `SELECT * FROM pays`;
+                const sql = `SELECT * FROM pays WHERE vacances=0`;
                 //const sql = `SELECT * FROM pays WHERE id_joueur='764403931534065675'`;
                 connection.query(sql, async (err, results) => {
                     const arrayPays = Object.values(results);
                     arrayPays.forEach(chaquePays);
 
-                    function chaquePays(value, index, array) {
+                    function chaquePays(value) {
                         const sql = `
                             SELECT * FROM armee WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM batiments WHERE id_joueur='${value.id_joueur}';
@@ -455,7 +452,7 @@ module.exports = {
                                             }
                                             //endregion
                                             //region Production des cimenteries
-                                            if (manque_eau === false && manque_petrole == false && manque_sable === false) {
+                                            if (manque_eau === false && manque_petrole === false && manque_sable === false) {
                                                 const prod_T_cimenterie = Math.round(batimentObject.cimenterie.PROD_CIMENTERIE * Batiment.cimenterie * eval(`gouvernementObject.${Pays.ideologie}.production`) * emplois);
                                                 sql = `
                                                     UPDATE ressources
@@ -762,7 +759,7 @@ module.exports = {
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     const arrayProcess = Object.values(results);
                     arrayProcess.forEach(chaqueProcess);
-                    function chaqueProcess(value, index, array) {
+                    function chaqueProcess(value) {
                         // Fonction pour vérifier si un timestamp est déjà passé
                         function estTimestampPasse(timestamp) {
                             const maintenant = Date.now();
@@ -773,13 +770,11 @@ module.exports = {
                         if (estTimestampPasse(value.date)) {
                             sql = `
                                 SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
-                                SELECT * FROM population WHERE id_joueur='${value.id_joueur}';
                                 SELECT * FROM territoire WHERE id_joueur='${value.id_joueur}'
                             `;
                             connection.query(sql, async (err, results) => {if (err) {throw err;}
                                 const Pays = results[0][0];
-                                const Population = results[1][0];
-                                const Territoire = results[2][0];
+                                const Territoire = results[1][0];
 
                                 switch (value.type) {
                                     case 'exploration':
@@ -913,13 +908,13 @@ module.exports = {
             //'* * * * * *',
             function popUpdate() {
                 let sql;
-                sql = `SELECT * FROM pays`;
+                sql = `SELECT * FROM pays WHERE vacances=0`;
                 //sql = `SELECT * FROM pays WHERE id_joueur='764403931534065675'`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     const arrayPays = Object.values(results);
                     arrayPays.forEach(chaquePays);
 
-                    function chaquePays(value, index, array) {
+                    function chaquePays(value) {
                         sql = `
                             SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM population WHERE id_joueur='${value.id_joueur}';
@@ -929,8 +924,6 @@ module.exports = {
                             const Pays = results[0][0];
                             const Population = results[1][0];
                             const Ressources = results[2][0];
-                            const bouffe_acces = Population.nourriture_acces;
-                            const flotte_acces = Population.eau_acces;
 
                             if (Ressources.nourriture >= (Population.habitant * parseFloat(populationObject.NOURRITURE_CONSO)) && Population.nourriture_acces < 21) {
                                 sql = `UPDATE population SET nourriture_acces=nourriture_acces+0.33 WHERE id_joueur="${Pays.id_joueur}"`;
@@ -1264,23 +1257,23 @@ module.exports = {
                     }
                 })
 
-                if (client.user.id === 834855105177845794) {
-                    const embed = {
-                        title: `\`Votez pour Paz Nation !\``,
-                        thumbnail: {
-                            url: `https://discord.com/channels/826427184305537054/848913340737650698/940642782643621948`
-                        },
-                        description: `N'oubliez pas de faire /vote & /bump avec <@302050872383242240> et /bump avec <@528557940811104258> ainsi que de voter sur https://top.gg/servers/826427184305537054/vote. L'équipe de Paz Nation vous remercie pour votre soutien !\n` + `\u200B\n`,
-                        color: 0x359d82,
-                        timestamp: new Date(),
-                        footer: {
-                            text: `#1 Serveur RP sur Discord`
-                        },
-                    };
-
-                    const channel = client.channels.cache.get(process.env.SALON_COMMAND);
-                    channel.send({embeds: [embed] })
-                }
+                //if (client.user.id === 834855105177845794) {
+                //    const embed = {
+                //        title: `\`Votez pour Paz Nation !\``,
+                //        thumbnail: {
+                //            url: `https://discord.com/channels/826427184305537054/848913340737650698/940642782643621948`
+                //        },
+                //        description: `N'oubliez pas de faire /vote & /bump avec <@302050872383242240> et /bump avec <@528557940811104258> ainsi que de voter sur https://top.gg/servers/826427184305537054/vote. L'équipe de Paz Nation vous remercie pour votre soutien !\n` + `\u200B\n`,
+                //        color: 0x359d82,
+                //        timestamp: new Date(),
+                //        footer: {
+                //            text: `#1 Serveur RP sur Discord`
+                //        },
+                //    };
+//
+                //    const channel = client.channels.cache.get(process.env.SALON_COMMAND);
+                //    channel.send({embeds: [embed] })
+                //}
             },
             null,
             true,
@@ -1343,7 +1336,7 @@ module.exports = {
                     arrayQvente.forEach(chaqueMarket);
                     arrayQachat.forEach(chaqueMarket);
 
-                    function chaqueMarket(value, index, array) {
+                    function chaqueMarket(value) {
                         switch (value.ressource) {
                             case 'Acier':
                                 box.set('acier_prix_total', (box.get('acier_prix_total') + value.prix));
@@ -1828,7 +1821,7 @@ module.exports = {
                     };
 
                     list2.forEach(ancienPop)
-                    function ancienPop(value, index, array) {
+                    function ancienPop(value) {
                         let sql = `UPDATE population SET ancien_pop="${value.habitant}" WHERE id_joueur="${value.id_joueur}"`;
                         connection.query(sql, async(err) => { if (err) { throw err; }})
                     }
@@ -1971,7 +1964,7 @@ module.exports = {
             //'0 * * * * *',
             function jourUpdate() {
 
-                let sql = `SELECT * FROM pays`;
+                let sql = `SELECT * FROM pays WHERE vacances=0`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     results.forEach(dailyJour);
                     function dailyJour(item) {

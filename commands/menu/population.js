@@ -1,4 +1,4 @@
-const { SlashCommandBuilder, codeBlock} = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
 const { readFileSync } = require('fs');
 const { menuPopulation } = require("../../fonctions/functions");
 const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
@@ -15,6 +15,6 @@ module.exports = {
     async execute(interaction) {
         const { connection } = require('../../index.js');
 
-        menuPopulation(interaction, connection, armeeObject, populationObject, gouvernementObject, batimentObject, regionObject)
+        menuPopulation(interaction, connection, armeeObject, batimentObject, gouvernementObject, populationObject, regionObject)
     },
 };

@@ -672,7 +672,7 @@ function menuPopulation(interaction, connection, armeeObject, batimentObject, go
                         Logement + `\u200B`
                 },
                 {
-                    name: `> 🛒 Consommation/Approvisionnement`,
+                    name: `> 🛒 Consommation/Approvisionnement toutes les 8h`,
                     value:
                         Bc +
                         Eau +
@@ -781,7 +781,7 @@ function menuTerritoire(interaction, connection, biomeObject) {
     });
 }
 
-function menuConsommation(interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject) {
+function menuConsommation(mode, interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject) {
     const sql = `
         SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -1137,9 +1137,11 @@ function menuConsommation(interaction, connection, armeeObject , batimentObject,
                     .setStyle(ButtonStyle.Primary)
             )
 
-        return {
-            embed: embed,
-            row: row
+        if (mode === "menu") {
+            await interaction.reply({ embeds: [embed], components: [row] });
+        } else if (mode === "edit") {
+            interaction.message.edit({embeds: [embed], components: [row] })
+            interaction.deferUpdate()
         }
     })
 }

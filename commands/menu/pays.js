@@ -1,6 +1,6 @@
 const { ActionRowBuilder, SlashCommandBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, codeBlock} = require('discord.js');
 const { readFileSync } = require('fs');
-const {connection} = require("../../index");
+const {calculerSoldat, calculerEmploi} = require("../../fonctions/functions");
 const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 const batimentObject = JSON.parse(readFileSync('data/batiment.json', 'utf-8'));
 const biomeObject = JSON.parse(readFileSync('data/biome.json', 'utf-8'));
@@ -43,43 +43,14 @@ module.exports = {
                 const region = eval(`biomeObject.${Territoire.region}.nom`);
 
                 //region Calcul du nombre d'employés
-                const emploies_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
-                const emploies_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
-                const emploies_carriere_sable = batimentObject.carriere_sable.EMPLOYES_CARRIERE_SABLE * Batiment.carriere_sable;
-                const emploies_centrale_biomasse = batimentObject.centrale_biomasse.EMPLOYES_CENTRALE_BIOMASSE * Batiment.centrale_biomasse;
-                const emploies_centrale_charbon = batimentObject.centrale_charbon.EMPLOYES_CENTRALE_CHARBON * Batiment.centrale_charbon;
-                const emploies_centrale_fioul = batimentObject.centrale_fioul.EMPLOYES_CENTRALE_FIOUL * Batiment.centrale_fioul;
-                const emploies_champ = batimentObject.champ.EMPLOYES_CHAMP * Batiment.champ;
-                const emploies_cimenterie = batimentObject.cimenterie.EMPLOYES_CIMENTERIE * Batiment.cimenterie;
-                const emploies_derrick = batimentObject.derrick.EMPLOYES_DERRICK * Batiment.derrick;
-                const emploies_eolienne = batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne;
-                const emploies_mine_charbon = batimentObject.mine_charbon.EMPLOYES_MINE_CHARBON * Batiment.mine_charbon;
-                const emploies_mine_metaux = batimentObject.mine_metaux.EMPLOYES_MINE_METAUX * Batiment.mine_metaux;
-                const emploies_station_pompage = batimentObject.station_pompage.EMPLOYES_STATION_POMPAGE * Batiment.station_pompage;
-                const emploies_raffinerie = batimentObject.raffinerie.EMPLOYES_RAFFINERIE * Batiment.raffinerie;
-                const emploies_scierie = batimentObject.scierie.EMPLOYES_SCIERIE * Batiment.scierie;
-                const emploies_usine_civile = batimentObject.usine_civile.EMPLOYES_USINE_CIVILE * Batiment.usine_civile;
-                const emploies_total =
-                    emploies_acierie + emploies_atelier_verre + emploies_carriere_sable +
-                    emploies_centrale_biomasse + emploies_centrale_charbon + emploies_centrale_fioul +
-                    emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
-                    emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
-                    emploies_raffinerie + emploies_scierie + emploies_usine_civile;
-                let chomage;
-                const hommeArmee =
-                    Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
-                    Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
-                    Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
-                    Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
-                    (Armee.aviation * armeeObject.aviation.homme) +
-                    (Armee.infanterie * armeeObject.infanterie.homme) +
-                    (Armee.mecanise * armeeObject.mecanise.homme) +
-                    (Armee.support * armeeObject.support.homme);
+                const emploisTotaux = calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject).emploisTotaux;
+                const soldat = calculerSoldat(Armee, armeeObject)
 
-                if (emploies_total/(Population.jeune + Population.adulte - hommeArmee) > 1) {
+                let chomage;
+                if (emploisTotaux/(Population.jeune + Population.adulte - soldat) > 1) {
                     chomage = 0
                 } else {
-                    chomage = ((((Population.jeune + Population.adulte - hommeArmee)-emploies_total)/(Population.jeune + Population.adulte - hommeArmee))*100).toFixed(2)
+                    chomage = ((((Population.jeune + Population.adulte - soldat)-emploisTotaux)/(Population.jeune + Population.adulte - soldat))*100).toFixed(2)
                 }
                 //endregion
                 let embed = {
@@ -154,6 +125,12 @@ module.exports = {
                         emoji: `👪`,
                         description: `Menu de la population`,
                         value: 'population',
+                    },
+                    {
+                        label: `Options`,
+                        emoji: `⚙️`,
+                        description: `Menu des options`,
+                        value: 'options',
                     },
                     {
                         label: `Territoire`,

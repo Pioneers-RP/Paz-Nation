@@ -1,10 +1,9 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, ModalBuilder, AttachmentBuilder, PermissionFlagsBits, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ThreadAutoArchiveDuration, codeBlock} = require('discord.js');
 const { connection, client } = require('../index.js');
 const { menuArmee, menuConsommation, menuEconomie, menuDiplomatie, menuGouvernement, menuIndustrie, menuPopulation, menuTerritoire,
-    calculerEmploi, calculerSoldat,
+    calculerEmploi,
 } = require("../fonctions/functions");
 
-const dotenv = require('dotenv');
 const { readFileSync } = require('fs');
 const Chance = require('chance');
 const chance = new Chance();
@@ -20,6 +19,7 @@ const drapeauCommandCooldown = new CommandCooldown('drapeau', ms('7d'));
 const pweeterCommandCooldown = new CommandCooldown('pweeter', ms('7d'));
 const organisationCommandCooldown = new CommandCooldown('organisation', ms('7d'));
 const strategieCommandCooldown = new CommandCooldown('strategie', ms('7d'));
+const vacancesCommandCooldown = new CommandCooldown('vacances', ms('7d'));
 
 const armeeObject = JSON.parse(readFileSync('data/armee.json', 'utf-8'));
 const assemblageObject = JSON.parse(readFileSync('data/assemblage.json', 'utf-8'));
@@ -35,16 +35,12 @@ module.exports = {
     name: Events.InteractionCreate,
     execute: async function (interaction) {
         let res;
-        let espace2;
-        let prix;
-        let prix_u;
         let quantite;
         let ressource;
         let espace;
         let fields;
         let reponse;
         let id_joueur;
-        let joueur_id;
         let sql;
         let log;
         //region Commande
@@ -53,204 +49,222 @@ module.exports = {
             connection.query(sql, async (err, results) => {if (err) {throw err;}
                 const Pays = results[0];
 
-                if (Pays.daily === 0) {
-                    let salon;
-                    let sql = `UPDATE pays SET daily=1, jour=jour+1 WHERE id_joueur="${interaction.member.id}"`;
-                    connection.query(sql, async (err) => {if (err) {throw err;}})
+                if (Pays.vacances === 0) {
+                    sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
+                    connection.query(sql, async (err, results) => {if (err) {throw err;}
+                        const Pays = results[0];
 
-                    switch (Pays.jour) {
-                        case 1:
-                            sql = `UPDATE pays SET rang='Cité-Etat' WHERE id_joueur="${interaction.member.id}"`;
+                        if (Pays.daily === 0) {
+                            let salon;
+                            let sql = `UPDATE pays SET daily=1, jour=jour+1 WHERE id_joueur="${interaction.member.id}"`;
                             connection.query(sql, async (err) => {if (err) {throw err;}})
 
-                            if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
-                            } else {
-                                let roleMaire = interaction.guild.roles.cache.find(r => r.name === "👤 » Maire");
-                                interaction.member.roles.add(roleMaire);
-                                let roleBourgmestre = interaction.guild.roles.cache.find(r => r.name === "👤 » Bourgmestre");
-                                interaction.member.roles.remove(roleBourgmestre);
-                            }
+                            switch (Pays.jour) {
+                                case 1:
+                                    sql = `UPDATE pays SET rang='Cité-Etat' WHERE id_joueur="${interaction.member.id}"`;
+                                    connection.query(sql, async (err) => {if (err) {throw err;}})
 
-                            embed = {
-                                author: {
-                                    name: `Cité-Etat de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: Pays.drapeau
-                                },
-                                title: `\`Devenir une Cité-Etat :\``,
-                                description: `
+                                    if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
+                                    } else {
+                                        let roleMaire = interaction.guild.roles.cache.find(r => r.name === "👤 » Maire");
+                                        interaction.member.roles.add(roleMaire);
+                                        let roleBourgmestre = interaction.guild.roles.cache.find(r => r.name === "👤 » Bourgmestre");
+                                        interaction.member.roles.remove(roleBourgmestre);
+                                    }
+
+                                    embed = {
+                                        author: {
+                                            name: `Cité-Etat de ${Pays.nom}`,
+                                            icon_url: interaction.member.displayAvatarURL()
+                                        },
+                                        thumbnail: {
+                                            url: Pays.drapeau
+                                        },
+                                        title: `\`Devenir une Cité-Etat :\``,
+                                        description: `
                                     Vous êtes devenus une Cité-Etat grâce à votre activité de jeu. Vous êtes sur la voie de devenir une puissance internationale mais il reste du chemin à faire.
                                     Ce passage au Rang de Cité-Etat débloque de nouveaux éléments de jeu tels que l'armée et les raids, ainsi que les ambassades et la création d\'organisations.\n
                                 `,
-                                fields: [
-                                    {
-                                        name: `> 🆕 Débloque :`,
-                                        value: codeBlock(
-                                            `• /armee\n` +
-                                            `• /assembler\n` +
-                                            `• /former\n` +
-                                            `• /ideologie\n` +
-                                            `• /raid\n` +
-                                            `• Création d'organisation`) + `\u200B`
-                                    },
-                                ],
-                                color: interaction.member.displayColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${Pays.devise}`
-                                },
-                            };
-                            salon = interaction.client.channels.cache.get(Pays.id_salon);
-                            salon.send({ embeds: [embed] });
+                                        fields: [
+                                            {
+                                                name: `> 🆕 Débloque :`,
+                                                value: codeBlock(
+                                                    `• /armee\n` +
+                                                    `• /assembler\n` +
+                                                    `• /former\n` +
+                                                    `• /ideologie\n` +
+                                                    `• /raid\n` +
+                                                    `• Création d'organisation`) + `\u200B`
+                                            },
+                                        ],
+                                        color: interaction.member.displayColor,
+                                        timestamp: new Date(),
+                                        footer: {
+                                            text: `${Pays.devise}`
+                                        },
+                                    };
+                                    salon = interaction.client.channels.cache.get(Pays.id_salon);
+                                    salon.send({ embeds: [embed] });
 
-                            embed = {
-                                author: {
-                                    name: `${Pays.rang} de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: `${Pays.drapeau}`,
-                                },
-                                title: `\`Breaking news :\``,
-                                fields: [{
-                                    name: `> :white_square_button: Nouveau rang :`,
-                                    value: `*Cité-Etat*` + `\u200B`
-                                }],
-                                color: 0x42E2B8,
-                                timestamp: new Date(),
-                                footer: {text: `${Pays.devise}`},
-                            };
+                                    embed = {
+                                        author: {
+                                            name: `${Pays.rang} de ${Pays.nom}`,
+                                            icon_url: interaction.member.displayAvatarURL()
+                                        },
+                                        thumbnail: {
+                                            url: `${Pays.drapeau}`,
+                                        },
+                                        title: `\`Breaking news :\``,
+                                        fields: [{
+                                            name: `> :white_square_button: Nouveau rang :`,
+                                            value: `*Cité-Etat*` + `\u200B`
+                                        }],
+                                        color: 0x42E2B8,
+                                        timestamp: new Date(),
+                                        footer: {text: `${Pays.devise}`},
+                                    };
 
-                            salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                            salon.send({ embeds: [embed] });
-                            break;
-                        case 32:
-                            sql = `UPDATE pays SET rang='Etat' WHERE id_joueur="${interaction.member.id}"`;
-                            connection.query(sql, async (err) => {if (err) {throw err;}})
+                                    salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+                                    salon.send({ embeds: [embed] });
+                                    break;
+                                case 32:
+                                    sql = `UPDATE pays SET rang='Etat' WHERE id_joueur="${interaction.member.id}"`;
+                                    connection.query(sql, async (err) => {if (err) {throw err;}})
 
-                            if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
-                            } else {
-                                let roleDirigent = interaction.guild.roles.cache.find(r => r.name === "👤 » Dirigent");
-                                interaction.member.roles.add(roleDirigent);
-                                let roleMaire = interaction.guild.roles.cache.find(r => r.name === "👤 » Maire");
-                                interaction.member.roles.remove(roleMaire);
-                            }
+                                    if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
+                                    } else {
+                                        let roleDirigent = interaction.guild.roles.cache.find(r => r.name === "👤 » Dirigent");
+                                        interaction.member.roles.add(roleDirigent);
+                                        let roleMaire = interaction.guild.roles.cache.find(r => r.name === "👤 » Maire");
+                                        interaction.member.roles.remove(roleMaire);
+                                    }
 
-                            embed = {
-                                author: {
-                                    name: `Etat de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: Pays.drapeau
-                                },
-                                title: `\`Devenir un Etat :\``,
-                                description: `
+                                    embed = {
+                                        author: {
+                                            name: `Etat de ${Pays.nom}`,
+                                            icon_url: interaction.member.displayAvatarURL()
+                                        },
+                                        thumbnail: {
+                                            url: Pays.drapeau
+                                        },
+                                        title: `\`Devenir un Etat :\``,
+                                        description: `
                                     Vous êtes devenus un Etat grâce à votre activité de jeu. Merci beaucoup pour votre implication dans Paz Nation.
                                     Ce passage au Rang d'Etat débloque de nouveaux éléments de jeu et donne la possibilité de changer de nom par rapport au territoire sur lequel vous vous êtes étendus.
                                     Choisissez un nom de région comme \`\`\`Alsace\`\`\` ou \`\`\`Prusse\`\`\`\n
                                 `,
-                                fields: [
-                                    {
-                                        name: `> 🆕 Débloque :`,
-                                        value: codeBlock(
-                                            `• Changement de forme de gouvernement`) + `\u200B`
-                                    },
-                                ],
-                                color: interaction.member.displayColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${Pays.devise}`
-                                },
-                            };
-                            salon = interaction.client.channels.cache.get(Pays.id_salon);
-                            salon.send({ embeds: [embed] });
+                                        fields: [
+                                            {
+                                                name: `> 🆕 Débloque :`,
+                                                value: codeBlock(
+                                                    `• Changement de forme de gouvernement`) + `\u200B`
+                                            },
+                                        ],
+                                        color: interaction.member.displayColor,
+                                        timestamp: new Date(),
+                                        footer: {
+                                            text: `${Pays.devise}`
+                                        },
+                                    };
+                                    salon = interaction.client.channels.cache.get(Pays.id_salon);
+                                    salon.send({ embeds: [embed] });
 
-                            embed = {
-                                author: {
-                                    name: `${Pays.rang} de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: `${Pays.drapeau}`,
-                                },
-                                title: `\`Breaking news :\``,
-                                fields: [{
-                                    name: `> :white_square_button: Nouveau rang :`,
-                                    value: `*Etat*` + `\u200B`
-                                }],
-                                color: 0x42E2B8,
-                                timestamp: new Date(),
-                                footer: {text: `${Pays.devise}`},
-                            };
+                                    embed = {
+                                        author: {
+                                            name: `${Pays.rang} de ${Pays.nom}`,
+                                            icon_url: interaction.member.displayAvatarURL()
+                                        },
+                                        thumbnail: {
+                                            url: `${Pays.drapeau}`,
+                                        },
+                                        title: `\`Breaking news :\``,
+                                        fields: [{
+                                            name: `> :white_square_button: Nouveau rang :`,
+                                            value: `*Etat*` + `\u200B`
+                                        }],
+                                        color: 0x42E2B8,
+                                        timestamp: new Date(),
+                                        footer: {text: `${Pays.devise}`},
+                                    };
 
-                            salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                            salon.send({ embeds: [embed] });
-                            break;
-                        case 122:
-                            sql = `UPDATE pays SET rang='Pays' WHERE id_joueur="${interaction.member.id}"`;
-                            connection.query(sql, async (err) => {if (err) {throw err;}})
+                                    salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
+                                    salon.send({ embeds: [embed] });
+                                    break;
+                                case 122:
+                                    sql = `UPDATE pays SET rang='Pays' WHERE id_joueur="${interaction.member.id}"`;
+                                    connection.query(sql, async (err) => {if (err) {throw err;}})
 
-                            if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
-                            } else {
-                                let roleChef = interaction.guild.roles.cache.find(r => r.name === "👤 » Chef d'état");
-                                interaction.member.roles.add(roleChef);
-                                let roleDirigent = interaction.guild.roles.cache.find(r => r.name === "👤 » Dirigent");
-                                interaction.member.roles.remove(roleDirigent);
-                            }
+                                    if (interaction.member.roles.cache.some(role => role.name === '🕊️ » Administrateur')) {
+                                    } else {
+                                        let roleChef = interaction.guild.roles.cache.find(r => r.name === "👤 » Chef d'état");
+                                        interaction.member.roles.add(roleChef);
+                                        let roleDirigent = interaction.guild.roles.cache.find(r => r.name === "👤 » Dirigent");
+                                        interaction.member.roles.remove(roleDirigent);
+                                    }
 
-                            embed = {
-                                author: {
-                                    name: `Pays de ${Pays.nom}`,
-                                    icon_url: interaction.member.displayAvatarURL()
-                                },
-                                thumbnail: {
-                                    url: Pays.drapeau
-                                },
-                                title: `\`Devenir une Päys :\``,
-                                description: `
+                                    embed = {
+                                        author: {
+                                            name: `Pays de ${Pays.nom}`,
+                                            icon_url: interaction.member.displayAvatarURL()
+                                        },
+                                        thumbnail: {
+                                            url: Pays.drapeau
+                                        },
+                                        title: `\`Devenir une Päys :\``,
+                                        description: `
                                     Vous êtes devenus une Pays grâce à votre activité de jeu. Vous êtes devenus une puissance internationale !
                                     Ce passage au Rang de Pays débloque de nouveaux éléments de jeuet donne la possibilité de changer de nom par rapport au territoire sur lequel vous vous êtes étendus.
                                     Choisissez un nom de pays comme \`\`\`France\`\`\` ou \`\`\`Allemagne\`\`\`\n
                                 `,
-                                fields: [
-                                    {
-                                        name: `> 🆕 Débloque :`,
-                                        value: codeBlock(
-                                            `• `) + `\u200B`
-                                    },
-                                ],
-                                color: interaction.member.displayColor,
-                                timestamp: new Date(),
-                                footer: {
-                                    text: `${Pays.devise}`
-                                },
-                            };
-                            salon = interaction.client.channels.cache.get(Pays.id_salon);
-                            salon.send({ embeds: [embed] });
-                            break;
+                                        fields: [
+                                            {
+                                                name: `> 🆕 Débloque :`,
+                                                value: codeBlock(
+                                                    `• `) + `\u200B`
+                                            },
+                                        ],
+                                        color: interaction.member.displayColor,
+                                        timestamp: new Date(),
+                                        footer: {
+                                            text: `${Pays.devise}`
+                                        },
+                                    };
+                                    salon = interaction.client.channels.cache.get(Pays.id_salon);
+                                    salon.send({ embeds: [embed] });
+                                    break;
+                            }
+                        }
+                    });
+                    const command = interaction.client.commands.get(interaction.commandName);
+
+                    if (!command) {
+                        console.error(`No command matching ${interaction.commandName} was found.`);
+                        return;
                     }
+
+                    try {
+                        await command.execute(interaction);
+                    } catch (error) {
+                        console.error(error);
+                        if (interaction.replied || interaction.deferred) {
+                            await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
+                        } else {
+                            await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+                        }
+                    }
+                } else {
+                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous êtes en vacances, vous ne pouvez pas utiliser de commandes.`);
+                    const bouton = new ButtonBuilder()
+                        .setLabel(`Sortir du mode Vacances`)
+                        .setEmoji(`🚪`)
+                        .setCustomId(`sortirvacances`)
+                        .setStyle(ButtonStyle.Success)
+
+                    const row = new ActionRowBuilder()
+                        .addComponents(bouton)
+                    interaction.reply({ content: reponse, components: [row] });
                 }
             });
-            const command = interaction.client.commands.get(interaction.commandName);
-
-            if (!command) {
-                console.error(`No command matching ${interaction.commandName} was found.`);
-                return;
-            }
-
-            try {
-                await command.execute(interaction);
-            } catch (error) {
-                console.error(error);
-                if (interaction.replied || interaction.deferred) {
-                    await interaction.followUp({ content: 'There was an error while executing this command!', ephemeral: true });
-                } else {
-                    await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
-                }
-            }
             //endregion
         } else if (interaction.isButton()) {
             //region Bouton
@@ -1095,14 +1109,6 @@ module.exports = {
                                 sql = sql + `;UPDATE ressources SET acier=acier-${const_acier} WHERE id_joueur='${interaction.member.id}'`
                             }
 
-                            if (need_beton === true) {
-                                sql = sql + `;UPDATE ressources SET beton=beton-${const_beton} WHERE id_joueur='${interaction.member.id}'`
-                            }
-
-                            if (need_bois === true) {
-                                sql = sql + `;UPDATE ressources SET bois=bois-${const_bois} WHERE id_joueur='${interaction.member.id}'`
-                            }
-
                             if (need_metaux === true) {
                                 sql = sql + `;UPDATE ressources SET metaux=metaux-${const_metaux} WHERE id_joueur='${interaction.member.id}'`
                             }
@@ -1124,34 +1130,6 @@ module.exports = {
                                     fields.push({
                                         name: `> ✅ Acier suffisant ✅ :`,
                                         value: codeBlock(`• Acier : ${const_acier.toLocaleString('en-US')}/${const_acier.toLocaleString('en-US')}\n`) + `\u200B`
-                                    })
-                                }
-                            }
-
-                            if (need_beton === true) {
-                                if (manque_beton === true) {
-                                    fields.push({
-                                        name: `> ⛔ Manque de béton ⛔ :`,
-                                        value: codeBlock(`• Béton : ${Ressources.beton.toLocaleString('en-US')}/${const_beton.toLocaleString('en-US')}\n`) + `\u200B`
-                                    })
-                                } else {
-                                    fields.push({
-                                        name: `> ✅ Béton suffisant ✅ :`,
-                                        value: codeBlock(`• Béton : ${const_beton.toLocaleString('en-US')}/${const_beton.toLocaleString('en-US')}\n`) + `\u200B`
-                                    })
-                                }
-                            }
-
-                            if (need_bois === true) {
-                                if (manque_bois === true) {
-                                    fields.push({
-                                        name: `> ⛔ Manque de bois ⛔ :`,
-                                        value: codeBlock(`• Bois : ${Ressources.bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
-                                    })
-                                } else {
-                                    fields.push({
-                                        name: `> ✅ Bois suffisant ✅ :`,
-                                        value: codeBlock(`• Bois : ${const_bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
                                     })
                                 }
                             }
@@ -1610,13 +1588,12 @@ module.exports = {
 
                     sql = `
                         SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
-                        SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
                         SELECT * FROM population WHERE id_joueur='${interaction.member.id}'
                     `;
                     connection.query(sql, async (err, results) => {if (err) {throw err;}
                         const Armee = results[0][0];
-                        const Pays = results[1][0];
-                        const Population = results[2][0];
+                        const Population = results[1][0];
+
                         const hommeArmee =
                             Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
                             Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
@@ -2598,14 +2575,8 @@ module.exports = {
                                 break;
                             case 'Equipement de support':
                                 //region Equipement de support
-                                need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
-                                if (const_acier > Ressources.acier) {
-                                    const_batiment = false;
-                                    manque_acier = true;
-                                }
                                 const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
@@ -2615,14 +2586,8 @@ module.exports = {
                                 break;
                             case 'Matériel d\'infanterie':
                                 //region Matériel d'infanterie
-                                need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
-                                if (const_acier > Ressources.acier) {
-                                    const_batiment = false;
-                                    manque_acier = true;
-                                }
                                 const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
@@ -2660,34 +2625,6 @@ module.exports = {
                                 fields.push({
                                     name: `> ✅ Acier suffisant ✅ :`,
                                     value: codeBlock(`• Acier : ${const_acier.toLocaleString('en-US')}/${const_acier.toLocaleString('en-US')}\n`) + `\u200B`
-                                })
-                            }
-                        }
-
-                        if (need_beton === true) {
-                            if (manque_beton === true) {
-                                fields.push({
-                                    name: `> ⛔ Manque de béton ⛔ :`,
-                                    value: codeBlock(`• Béton : ${Ressources.beton.toLocaleString('en-US')}/${const_beton.toLocaleString('en-US')}\n`) + `\u200B`
-                                })
-                            } else {
-                                fields.push({
-                                    name: `> ✅ Béton suffisant ✅ :`,
-                                    value: codeBlock(`• Béton : ${const_beton.toLocaleString('en-US')}/${const_beton.toLocaleString('en-US')}\n`) + `\u200B`
-                                })
-                            }
-                        }
-
-                        if (need_bois === true) {
-                            if (manque_bois === true) {
-                                fields.push({
-                                    name: `> ⛔ Manque de bois ⛔ :`,
-                                    value: codeBlock(`• Bois : ${Ressources.bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
-                                })
-                            } else {
-                                fields.push({
-                                    name: `> ✅ Bois suffisant ✅ :`,
-                                    value: codeBlock(`• Bois : ${const_bois.toLocaleString('en-US')}/${const_bois.toLocaleString('en-US')}\n`) + `\u200B`
                                 })
                             }
                         }
@@ -4606,11 +4543,7 @@ module.exports = {
                 //endregion
             }  else if (interaction.customId.includes('matiere_premiere') === true) {
                 //region Matières premières
-                const embed = menuConsommation(interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject).embed;
-                const row = menuConsommation(interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject).row;
-
-                interaction.message.edit({embeds: [embed], components: [row] })
-                interaction.deferUpdate()
+                menuConsommation("edit", interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject);
                 //endregion
             } else if (interaction.customId.includes('ressource_manufacture') === true) {
                 //region Ressources manufacturées
@@ -6088,6 +6021,18 @@ module.exports = {
                     interaction.deferUpdate()
                 });
                 //endregion
+            } else if (interaction.customId === "sortirvacances") {
+            //region Sortir de vacances
+                const sql = `
+                    UPDATE pays SET vacances=0 WHERE id_joueur='${interaction.member.id}';
+                `;
+                connection.query(sql, async(err) => {if (err) {throw err;}
+                    const reponse = codeBlock('md', `> Vous n'êtes plus en vacances, vous pouvez désormais utiliser des commandes.`);
+                    interaction.message.edit({ content: reponse, components: [] });
+                    interaction.deferUpdate()
+                    await vacancesCommandCooldown.addUser(interaction.member.id);
+                })
+            //endregion
             } else if (interaction.customId.includes('raid') === true) {
                 //region Raid
                 id_joueur = interaction.customId.slice(5);
@@ -7192,7 +7137,7 @@ module.exports = {
                     //endregion
                     //endregion
 
-                    if (interaction.values == 'acierie') {
+                    if (interaction.values === 'acierie') {
                         //region Acierie
 
                         const prod_acierie = Math.round(batimentObject.acierie.PROD_ACIERIE * eval(`gouvernementObject.${Pays.ideologie}.production`));
@@ -9524,9 +9469,59 @@ module.exports = {
                         menuIndustrie(interaction, connection)
                         //endregion
                         break;
+                    case 'options':
+                        //region Options
+                        const sql = `
+                            SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'
+                        `;
+                        connection.query(sql, async(err, results) => {if (err) {throw err;}
+                            const Pays = results[0];
+                            const vacances = Pays.vacances === 0 ? `Désactivé` : `Activé`
+
+                            const embed = {
+                                author: {
+                                    name: `${Pays.rang} de ${Pays.nom}`,
+                                    icon_url: interaction.member.displayAvatarURL()
+                                },
+                                thumbnail: {
+                                    url: Pays.drapeau
+                                },
+                                title: `\`Options de jeu\``,
+                                fields: [
+                                    {
+                                        name: `> 🏖️ Mode Vacances :`,
+                                        value: codeBlock(`• ${vacances}`) + `\u200B`
+                                    }
+                                ],
+                                color: interaction.member.displayColor,
+                                timestamp: new Date(),
+                                footer: {
+                                    text: Pays.devise
+                                },
+                            };
+
+                            const row = new ActionRowBuilder()
+                                .addComponents(
+                                    new StringSelectMenuBuilder()
+                                        .setCustomId('action-options')
+                                        .setPlaceholder(`Effectuer une action`)
+                                        .addOptions([
+                                            {
+                                                label: `Mode Vacances`,
+                                                emoji: `🏖️`,
+                                                description: `Votre cité est en pause. Vous êtes inactifs jusqu'à votre retour.`,
+                                                value: 'vacances',
+                                            },
+                                        ]),
+                                );
+
+                            interaction.reply({ embeds: [embed], components: [row] });
+                        });
+                        //endregion
+                        break;
                     case 'population':
                         //region Population
-                        menuPopulation(interaction, connection, armeeObject, populationObject, gouvernementObject, batimentObject, regionObject)
+                        menuPopulation(interaction, connection, armeeObject, batimentObject, gouvernementObject, populationObject, regionObject)
                         //endregion
                         break;
                     case 'territoire':
@@ -9542,10 +9537,7 @@ module.exports = {
                 switch (interaction.values[0]) {
                     case 'consommations':
                         //region Matières premières
-                        const embed = menuConsommation(interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject).embed;
-                        const row = menuConsommation(interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject).row;
-
-                        await interaction.reply({ embeds: [embed], components: [row] });
+                        menuConsommation("menu", interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject);
                         //endregion
                         break;
                     case 'industrie':
@@ -9749,7 +9741,32 @@ module.exports = {
                 }
                 //endregion
                 //endregion
-            } else if (interaction.customId == 'action-population') {
+            } else if (interaction.customId == 'action-options') {
+                //region Action Options
+                switch (interaction.values[0]) {
+                    case 'vacances':
+                        //region Vacances
+                        const userCooldowned = await vacancesCommandCooldown.getUser(interaction.member.id);
+
+                        if (userCooldowned) {
+                            const timeLeft = msToMinutes(userCooldowned.msLeft, false);
+                            const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous revenez de vacances ! Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant que vous puissiez partir à nouveau.`);
+                            await interaction.reply({ content: reponse, ephemeral: true });
+                        } else {
+                            const sql = `
+                                UPDATE pays SET vacances=1 WHERE id_joueur='${interaction.member.id}';
+                            `;
+                            connection.query(sql, async(err) => {if (err) {throw err;}
+                                const reponse = codeBlock('md', `> Vous êtes désormais en mode Vacances. Profitez bien de votre pause, rien ne bougera dans chez vous. Vous restez inactif jusqu'à votre retour.`);
+                                interaction.reply({ content: reponse});
+                                await vacancesCommandCooldown.addUser(interaction.member.id);
+                            })
+                        }
+                        //endregion
+                        break;
+                }
+                //endregion
+            }  else if (interaction.customId == 'action-population') {
                 //region Action Population
                 switch (interaction.values[0]) {
                 }

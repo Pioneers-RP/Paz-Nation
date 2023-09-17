@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { Client, Events, GatewayIntentBits, Partials, Collection} = require('discord.js');
+const { Client, GatewayIntentBits, Partials, Collection} = require('discord.js');
 //
 const dotenv = require('dotenv');
 dotenv.config();
@@ -8,10 +8,10 @@ dotenv.config();
 const mysql = require('mysql');
 //
 const connection = new mysql.createConnection({
-    host: 'eu02-sql.pebblehost.com',
-    user: 'customer_355631_test',
-    password: 'AETcK7VBES~fZKW@lF1r',
-    database: 'customer_355631_test',
+    host: process.env.HOST,
+    user: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
     multipleStatements: true
 })
 const client = new Client({

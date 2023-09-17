@@ -8,11 +8,9 @@
     "CONST_EOLIENNE_VERRE": 5
   },
   "equipement_support": {
-    "CONST_EQUIPEMENT_SUPPORT_ACIER": 0,
     "CONST_EQUIPEMENT_SUPPORT_METAUX": 500
   },
   "materiel_infanterie": {
-    "CONST_MATERIEL_INFANTERIE_ACIER": 0,
     "CONST_MATERIEL_INFANTERIE_METAUX": 140
   },
   "vehicule": {

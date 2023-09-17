@@ -44,10 +44,7 @@ module.exports = {
                 FROM territoire
                 WHERE id_joueur = '${joueur.id}'
             `;
-            connection.query(sql, async (err, results) => {
-                if (err) {
-                    throw err;
-                }
+            connection.query(sql, async (err, results) => {if (err) {throw err;}
                 const Armee = results[0][0];
                 const Pays = results[1][0];
                 const Territoire = results[2][0];
@@ -57,6 +54,9 @@ module.exports = {
                     await interaction.reply({content: reponse, ephemeral: true});
                 } else if (Pays.rang === 'Cité') {
                     const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas attaquer les cités.`);
+                    await interaction.reply({content: reponse, ephemeral: true});
+                } else if (Pays.vacances === 1) {
+                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas attaquer les joueurs en vacances.`);
                     await interaction.reply({content: reponse, ephemeral: true});
                 } else if (joueur.id === interaction.member.id) {
                     const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas vous attaquer vous-même.`);
@@ -71,7 +71,7 @@ module.exports = {
                             icon_url: joueur.displayAvatarURL()
                         },
                         thumbnail: {
-                            url: `${Pays.drapeau}`
+                            url: Pays.drapeau
                         },
                         title: `\`Lancer un raid\``,
                         fields: [
@@ -91,7 +91,7 @@ module.exports = {
                         color: 0xFF0000,
                         timestamp: new Date(),
                         footer: {
-                            text: `${Pays.devise}`
+                            text: Pays.devise
                         },
                     };
 
