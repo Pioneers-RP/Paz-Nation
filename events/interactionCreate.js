@@ -149,10 +149,10 @@ module.exports = {
                                         },
                                         title: `\`Devenir un Etat :\``,
                                         description: `
-                                    Vous êtes devenus un Etat grâce à votre activité de jeu. Merci beaucoup pour votre implication dans Paz Nation.
-                                    Ce passage au Rang d'Etat débloque de nouveaux éléments de jeu et donne la possibilité de changer de nom par rapport au territoire sur lequel vous vous êtes étendus.
-                                    Choisissez un nom de région comme \`\`\`Alsace\`\`\` ou \`\`\`Prusse\`\`\`\n
-                                `,
+                                            Vous êtes devenus un Etat grâce à votre activité de jeu. Merci beaucoup pour votre implication dans Paz Nation.
+                                            Ce passage au Rang d'Etat débloque de nouveaux éléments de jeu et donne la possibilité de changer de nom par rapport au territoire sur lequel vous vous êtes étendus.
+                                            Choisissez un nom de région comme \`\`\`Alsace\`\`\` ou \`\`\`Prusse\`\`\`\n
+                                        `,
                                         fields: [
                                             {
                                                 name: `> 🆕 Débloque :`,
@@ -287,7 +287,6 @@ module.exports = {
 
             if (interaction.customId.includes('construction') === true) {
                 //region Construction
-
                 id_joueur = interaction.customId.slice(13);
                 if (id_joueur === interaction.member.id) {
 
@@ -957,24 +956,20 @@ module.exports = {
                 //endregion
             } else if (interaction.customId.includes('assemblage') === true) {
                 //region Assemblage
-
                 id_joueur = interaction.customId.slice(11);
                 if (id_joueur === interaction.member.id) {
-
                     sql = `
+                        SELECT * FROM armee WHERE id_joueur=${interaction.member.id};
                         SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
                         SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
                     `;
                     connection.query(sql, async (err, results) => {if (err) {throw err;}
+                        const Armee = results[0][0];
                         const Pays = results[1][0];
                         const Ressources = results[2][0];
 
                         let manque_acier;
                         let const_acier;
-                        let manque_beton;
-                        let const_beton;
-                        let manque_bois;
-                        let const_bois;
                         let manque_metaux;
                         let const_metaux;
                         let manque_verre;
@@ -984,8 +979,6 @@ module.exports = {
                         let table;
                         let const_batiment = true;
                         let need_acier = false;
-                        let need_beton = false;
-                        let need_bois = false;
                         let need_metaux = false;
                         let need_verre = false;
 
@@ -1004,12 +997,12 @@ module.exports = {
                                 need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -1022,12 +1015,12 @@ module.exports = {
                                 table = 'ressources';
                                 need_acier = true;
 
-                                const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre);
                                 if (const_verre > Ressources.verre) {
                                     const_batiment = false;
                                     manque_verre = true;
@@ -1041,12 +1034,12 @@ module.exports = {
                                 need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -1060,12 +1053,12 @@ module.exports = {
                                 need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -1079,12 +1072,12 @@ module.exports = {
                                 need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -2521,10 +2514,6 @@ module.exports = {
 
                         let manque_acier;
                         let const_acier;
-                        let manque_beton;
-                        let const_beton;
-                        let manque_bois;
-                        let const_bois;
                         let manque_metaux;
                         let const_metaux;
                         let manque_verre;
@@ -2532,8 +2521,6 @@ module.exports = {
 
                         let const_batiment = true;
                         let need_acier = false;
-                        let need_beton = false;
-                        let need_bois = false;
                         let need_metaux = false;
                         let need_verre = false;
 
@@ -2544,12 +2531,12 @@ module.exports = {
                                 need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.avion.CONST_AVION_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.avion.CONST_AVION_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -2561,12 +2548,12 @@ module.exports = {
                                 need_acier = true;
                                 need_verre = true;
 
-                                const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_verre = Math.round(assemblageObject.eolienne.CONST_EOLIENNE_VERRE * nombre);
                                 if (const_verre > Ressources.verre) {
                                     const_batiment = false;
                                     manque_verre = true;
@@ -2577,7 +2564,7 @@ module.exports = {
                                 //region Equipement de support
                                 need_metaux = true;
 
-                                const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.equipement_support.CONST_EQUIPEMENT_SUPPORT_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -2588,7 +2575,7 @@ module.exports = {
                                 //region Matériel d'infanterie
                                 need_metaux = true;
 
-                                const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.materiel_infanterie.CONST_MATERIEL_INFANTERIE_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -2600,12 +2587,12 @@ module.exports = {
                                 need_acier = true;
                                 need_metaux = true;
 
-                                const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_acier = Math.round(assemblageObject.vehicule.CONST_VEHICULE_ACIER * nombre);
                                 if (const_acier > Ressources.acier) {
                                     const_batiment = false;
                                     manque_acier = true;
                                 }
-                                const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                                const_metaux = Math.round(assemblageObject.vehicule.CONST_VEHICULE_METAUX * nombre);
                                 if (const_metaux > Ressources.metaux) {
                                     const_batiment = false;
                                     manque_metaux = true;
@@ -4332,10 +4319,8 @@ module.exports = {
                         SELECT * FROM territoire WHERE id_joueur='${id_joueur}'
                     `;
                     connection.query(sql, async (err, results) => {if (err) {throw err;}
-                        const Diplomatie = results[0][0];
-                        const Pays = results[1][0];
-                        const Population = results[2][0];
-                        const Territoire = results[3][0];
+                        const Pays = results[0][0];
+                        const Territoire = results[1][0];
 
                         const explorateurCooldown = new CommandCooldown('explorateur', ms(`${eval(`biomeObject.${Territoire.region}.cooldown`)}min`));
                         const userCooldowned = await explorateurCooldown.getUser(interaction.member.id);
@@ -4367,7 +4352,7 @@ module.exports = {
                                 color: interaction.member.displayColor,
                                 timestamp: new Date(),
                                 footer: {
-                                    text: `${Pays.devise}`
+                                    text: Pays.devise
                                 },
                             };
                             await interaction.reply({embeds: [embedSuccess], components: []});
@@ -5281,10 +5266,6 @@ module.exports = {
                     const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
                     //endregion
 
-                    let Prod;
-                    let Conso;
-                    let Diff;
-
                     const embed = {
                         author: {
                             name: `${Pays.rang} de ${Pays.nom}`,
@@ -5560,7 +5541,7 @@ module.exports = {
                         color: interaction.member.displayColor,
                         timestamp: new Date(),
                         footer: {
-                            text: `${Pays.devise}`
+                            text: Pays.devise
                         },
                     };
                     const userCooldowned = await strategieCommandCooldown.getUser(interaction.member.id);
@@ -5571,7 +5552,7 @@ module.exports = {
                         choisir = true
                     } else {
                         choisir = false
-                    };
+                    }
 
                     const row = new ActionRowBuilder()
                         .addComponents(
@@ -5838,7 +5819,7 @@ module.exports = {
                         choisir = true
                     } else {
                         choisir = false
-                    };
+                    }
 
                     const row = new ActionRowBuilder()
                         .addComponents(
@@ -6163,7 +6144,6 @@ module.exports = {
                             ressource = 'bc';
                             break;
                     }
-                    ;
                     let pillage = chance.integer({min: 0, max: 10000});
                     if (eval(`RessourceB.${ressource}`) < pillage && ressource !== 'none') {
                         pillage = eval(`RessourceB.${ressource}`);
@@ -6202,7 +6182,7 @@ module.exports = {
                             color: 0x00cc00,
                             timestamp: new Date(),
                             footer: {
-                                text: `${PaysA.devise}`
+                                text: PaysA.devise
                             },
                         };
                         interaction.message.edit({embeds: [embedA], components: []});
@@ -7254,7 +7234,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'atelier_verre') {
+                    } else if (interaction.values === 'atelier_verre') {
                         //region Atelier de verre
                         const prod_atelier_verre = Math.round(batimentObject.atelier_verre.PROD_ATELIER_VERRE * eval(`gouvernementObject.${Pays.ideologie}.production`));
                         const conso_atelier_verre_eau = Math.round(batimentObject.atelier_verre.CONSO_ATELIER_VERRE_EAU * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
@@ -7369,7 +7349,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'carriere_sable') {
+                    } else if (interaction.values === 'carriere_sable') {
                         //region Carriere de sable
                         const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
 
@@ -7473,7 +7453,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'centrale_biomasse') {
+                    } else if (interaction.values === 'centrale_biomasse') {
                         //region Centrale biomasse
                         const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
                         const prod_centrale_biomasse = batimentObject.centrale_biomasse.PROD_CENTRALE_BIOMASSE
@@ -7582,7 +7562,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'centrale_charbon') {
+                    } else if (interaction.values === 'centrale_charbon') {
                         //region Centrale au charbon
                         const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
                         const prod_centrale_charbon = batimentObject.centrale_charbon.PROD_CENTRALE_CHARBON
@@ -7691,7 +7671,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'centrale_fioul') {
+                    } else if (interaction.values === 'centrale_fioul') {
                         //region Centrale au fioul
                         const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
                         const prod_centrale_fioul = batimentObject.centrale_fioul.PROD_CENTRALE_FIOUL
@@ -7800,7 +7780,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'champ') {
+                    } else if (interaction.values === 'champ') {
                         //region Champ
                         const coef_nourriture = eval(`regionObject.${Territoire.region}.nourriture`)
                         const prod_champ = Math.round(batimentObject.champ.PROD_CHAMP * eval(`gouvernementObject.${Pays.ideologie}.production`) * coef_nourriture);
@@ -7917,7 +7897,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'eolienne') {
+                    } else if (interaction.values === 'eolienne') {
                         //region Champ d'éolienne
                         const coef_eolienne = eval(`regionObject.${Territoire.region}.eolienne`)
                         const prod_eolienne = Math.round(batimentObject.eolienne.PROD_EOLIENNE * coef_eolienne);
@@ -8002,7 +7982,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'cimenterie') {
+                    } else if (interaction.values === 'cimenterie') {
                         //region Cimenterie
                         const prod_cimenterie = Math.round(batimentObject.cimenterie.PROD_CIMENTERIE * eval(`gouvernementObject.${Pays.ideologie}.production`));
                         const conso_cimenterie_eau = Math.round(batimentObject.cimenterie.CONSO_CIMENTERIE_EAU * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
@@ -8132,7 +8112,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'derrick') {
+                    } else if (interaction.values === 'derrick') {
                         //region Derrick
                         const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
 
@@ -8239,7 +8219,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'mine_charbon') {
+                    } else if (interaction.values === 'mine_charbon') {
                         //region Mine de charbon
                         const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
 
@@ -8343,7 +8323,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'mine_metaux') {
+                    } else if (interaction.values === 'mine_metaux') {
                         //region Mine de métaux
                         const coef_metaux = eval(`regionObject.${Territoire.region}.metaux`)
 
@@ -8450,7 +8430,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'station_pompage') {
+                    } else if (interaction.values === 'station_pompage') {
                         //region Station de pompage
                         const coef_eau = eval(`regionObject.${Territoire.region}.eau`)
 
@@ -8558,7 +8538,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'raffinerie') {
+                    } else if (interaction.values === 'raffinerie') {
                         //region Raffinerie
                         const prod_raffinerie = Math.round(batimentObject.raffinerie.PROD_RAFFINERIE * eval(`gouvernementObject.${Pays.ideologie}.production`));
                         const conso_raffinerie_petrole = Math.round(batimentObject.raffinerie.CONSO_RAFFINERIE_PETROLE * eval(`gouvernementObject.${Pays.ideologie}.consommation`));
@@ -8665,7 +8645,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'scierie') {
+                    } else if (interaction.values === 'scierie') {
                         //region Scierie
                         const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
 
@@ -8770,7 +8750,7 @@ module.exports = {
 
                         interaction.reply({embeds: [embed]})
                         //endregion
-                    } else if (interaction.values == 'usine_civile') {
+                    } else if (interaction.values === 'usine_civile') {
                         //region Usine civile
 
                         const prod_usine_civile = Math.round(batimentObject.usine_civile.PROD_USINE_CIVILE * eval(`gouvernementObject.${Pays.ideologie}.production`));
@@ -8987,9 +8967,8 @@ module.exports = {
                     }
                 })
                 //endregion
-            } else if (interaction.customId == 'action-armee') {
+            } else if (interaction.customId === 'action-armee') {
                 //region Action Armée
-                let userCooldowned;
                 switch (interaction.values[0]) {
                     case 'unite':
                         //region Mobiliser une unité

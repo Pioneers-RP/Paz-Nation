@@ -126,7 +126,7 @@ module.exports = {
                 });
                 break;
 
-                case 'start':
+            case 'start':
                     embed = {
                         author: {
                             name: `Bienvenue sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,

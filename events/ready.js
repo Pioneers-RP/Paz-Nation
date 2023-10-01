@@ -78,11 +78,9 @@ module.exports = {
         //region Production
         const autoUpdate = new CronJob(
             '0 0,10,20,30,40,50 * * * *',
-            //'* * * * * *',
             function autoUpdate() {
 
                 const sql = `SELECT * FROM pays WHERE vacances=0`;
-                //const sql = `SELECT * FROM pays WHERE id_joueur='764403931534065675'`;
                 connection.query(sql, async (err, results) => {
                     const arrayPays = Object.values(results);
                     arrayPays.forEach(chaquePays);

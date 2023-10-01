@@ -14,6 +14,7 @@ const connection = new mysql.createConnection({
     database: process.env.DATABASE,
     multipleStatements: true
 })
+
 const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,

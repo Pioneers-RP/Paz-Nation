@@ -1,5 +1,4 @@
 const {codeBlock, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
-
 function calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject) {
     const emplois_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
     const emplois_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
