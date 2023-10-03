@@ -28,3 +28,9 @@ yarn start
 ```
 yarn lint
 ```
+
+## Pour ajouter un Lib 
+
+```
+yarn add {Lib}
+```
