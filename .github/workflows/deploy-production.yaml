@@ -1,0 +1,151 @@
+name: MASTER
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - '.github/workflows/replicate-database.yaml'
+
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: jemoco/yousoon-server
+  EKS_CLUSTER_NAME: jemoco2
+  EKS_CLUSTER_NAMESPACE: yousoonapi-production
+  EKS_CLUSTER_SERVICE: server
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - uses: benjlevesque/short-sha@v1.2
+      id: image-tag
+  
+    - name: SonarQube Scan
+      uses: sonarsource/sonarqube-scan-action@master
+      continue-on-error: true
+      env:
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+      with:
+        args: >
+          -Dsonar.projectVersion=${{ steps.image-tag.outputs.sha }}
+
+    - name: SonarQube Quality Gate check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      # Force to fail step after specific time
+      timeout-minutes: 5
+      continue-on-error: true
+      env:
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        SONAR_TOKEN: ${{ secrets.SONARQUBE_TOKEN }}
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID__CICD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY__CICD }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: image-tag
+  
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
+          NODE_ENV: production
+        run: |
+          # Build a docker container and
+          # push it to ECR so that it can
+          # be deployed to EKS.
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg NODE_ENV=${NODE_ENV} --target ${NODE_ENV} .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [build, sonar]
+    environment: production
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID__CICD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY__CICD }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Setup kubeconfig
+        id: setup-kubeconfig
+        run: |
+          aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+
+      - uses: benjlevesque/short-sha@v1.2
+        id: image-tag
+
+      - name: Deploy k8s yaml
+        id: deploy-k8s-yaml
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
+
+        run: |
+          helm dependency build helm
+          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace -f helm/${{ env.EKS_CLUSTER_NAMESPACE }}.yaml \
+          --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
+          --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
+          --set "image.tag=${{ env.IMAGE_TAG }}" \
+          --set "secrets.APOLLO_KEY=${{ secrets.APOLLO_KEY }}" \
+          --set "secrets.APP_SECRET=${{ secrets.APP_SECRET }}" \
+          --set "secrets.AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID__YOUSOON }}" \
+          --set "secrets.AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY__YOUSOON }}" \
+          --set "secrets.BRANCH_IO_KEY=${{ secrets.BRANCH_IO_KEY }}" \
+          --set "secrets.DATABASE_URL=${{ secrets.DATABASE_URL }}?${{ vars.DATABASE_OPTIONS }}" \
+          --set "secrets.GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" \
+          --set "secrets.REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" \
+          --set "secrets.SENTRY_DSN=${{ secrets.SENTRY_DSN }}" \
+          --set "secrets.VPN_API_KEY=${{ secrets.VPN_API_KEY }}" \
+          --set "secrets.REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" \
+          --set "secrets.REDIS_URL=${{ secrets.REDIS_URL }}" \
+          ${{ env.EKS_CLUSTER_SERVICE }} helm
+          
+  notification:
+    runs-on: ubuntu-latest
+    needs: [sonar, deploy]
+
+    steps:
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: '#3278BD'
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_TITLE: Build terminé
+          SLACK_USERNAME: Github-bot
+          SLACK_MESSAGE: 'Deploy production OK: eu-west-1'
