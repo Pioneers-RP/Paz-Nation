@@ -1,6 +1,7 @@
 {
     "name": "paz-nation-bot",
     "version": "1.5.7",
+    "license":  "UNLICENSED",
     "main": "index.js",
     "dependencies": {
         "@sapphire/framework": "2.4.0",
