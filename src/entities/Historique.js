@@ -1,0 +1,66 @@
+"use strict";
+var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = (this && this.__metadata) || function (k, v) {
+    if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Historique = void 0;
+const typeorm_1 = require("typeorm");
+let Historique = class Historique {
+    idTrade;
+    idJoueur;
+    idSalon;
+    type;
+    ressource;
+    quantite;
+    prix;
+    prixU;
+};
+exports.Historique = Historique;
+__decorate([
+    (0, typeorm_1.PrimaryGeneratedColumn)({ type: "int", name: "id_trade" }),
+    __metadata("design:type", Number)
+], Historique.prototype, "idTrade", void 0);
+__decorate([
+    (0, typeorm_1.Column)("varchar", { name: "id_joueur", nullable: true, length: 255 }),
+    __metadata("design:type", String)
+], Historique.prototype, "idJoueur", void 0);
+__decorate([
+    (0, typeorm_1.Column)("varchar", { name: "id_salon", nullable: true, length: 255 }),
+    __metadata("design:type", String)
+], Historique.prototype, "idSalon", void 0);
+__decorate([
+    (0, typeorm_1.Column)("varchar", { name: "type", nullable: true, length: 22 }),
+    __metadata("design:type", String)
+], Historique.prototype, "type", void 0);
+__decorate([
+    (0, typeorm_1.Column)("varchar", { name: "ressource", nullable: true, length: 30 }),
+    __metadata("design:type", String)
+], Historique.prototype, "ressource", void 0);
+__decorate([
+    (0, typeorm_1.Column)("bigint", { name: "quantite", nullable: true }),
+    __metadata("design:type", String)
+], Historique.prototype, "quantite", void 0);
+__decorate([
+    (0, typeorm_1.Column)("bigint", { name: "prix", nullable: true }),
+    __metadata("design:type", String)
+], Historique.prototype, "prix", void 0);
+__decorate([
+    (0, typeorm_1.Column)("float", {
+        name: "prix_u",
+        nullable: true,
+        comment: "prix à l'unité",
+        precision: 12,
+    }),
+    __metadata("design:type", Number)
+], Historique.prototype, "prixU", void 0);
+exports.Historique = Historique = __decorate([
+    (0, typeorm_1.Index)("id_joueur", ["idJoueur"], {}),
+    (0, typeorm_1.Entity)("historique", { schema: "customer_355631_test" })
+], Historique);
+//# sourceMappingURL=Historique.js.map

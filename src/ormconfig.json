@@ -1,0 +1,13 @@
+[
+  {
+    "name": "default",
+    "type": "mariadb",
+    "host": "eu02-sql.pebblehost.com",
+    "port": 3306,
+    "username": "customer_355631_test",
+    "password": "AETcK7VBES~fZKW@lF1r",
+    "database": "",
+    "synchronize": false,
+    "entities": ["entities/*.js"]
+  }
+]
