@@ -48,7 +48,7 @@ const Trade_js_1 = require("./entities/Trade.js");
 const AppDataSource = new typeorm_1.DataSource({
     type: 'mariadb',
     host: process.env.HOST,
-    port: 3306,
+    port: process.env.PORT,
     username: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE,
@@ -81,6 +81,7 @@ const connection = new mysql_1.default.createConnection({
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE,
+    port: process.env.PORT,
     multipleStatements: true
 });
 const client = new discord_js_1.Client({

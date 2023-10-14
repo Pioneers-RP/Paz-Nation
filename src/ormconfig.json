@@ -6,7 +6,7 @@
     "port": 3306,
     "username": "customer_355631_test",
     "password": "AETcK7VBES~fZKW@lF1r",
-    "database": "",
+    "database": "customer_355631_test",
     "synchronize": false,
     "entities": ["entities/*.js"]
   }

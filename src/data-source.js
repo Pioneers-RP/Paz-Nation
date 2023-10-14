@@ -17,11 +17,11 @@ const Territoire_1 = require("./entities/Territoire");
 const Trade_1 = require("./entities/Trade");
 exports.AppDataSource = new typeorm_1.DataSource({
     type: "mariadb",
-    host: "eu02-sql.pebblehost.com",
-    port: 5432,
-    username: "test",
-    password: "test",
-    database: "test",
+    host: process.env.HOST,
+    port: process.env.PORT,
+    username: process.env.USER,
+    password: process.env.PASSWORD,
+    database: process.env.DATABASE,
     synchronize: true,
     logging: true,
     entities: [Armee_1.Armee, Batiments_1.Batiments, Diplomatie_1.Diplomatie, Historique_1.Historique, Notification_1.Notification, Population_1.Population, Prix_1.Prix, Processus_1.Processus, Qachat_1.Qachat, Qvente_1.Qvente, Ressources_1.Ressources, Territoire_1.Territoire, Trade_1.Trade],
