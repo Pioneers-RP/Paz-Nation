@@ -7,6 +7,7 @@
         "@sapphire/framework": "2.4.0",
         "@stdlib/assert-is-uri": "0.0.8",
         "@tsconfig/node17": "^17.1.1",
+        "@types/node": "^20.8.6",
         "canvas": "2.11.0",
         "chance": "1.1.8",
         "cron": "2.0.0",
@@ -21,12 +22,14 @@
         "pg": "^8.11.3",
         "standard-version": "^9.5.0",
         "tough-cookie": "4.1.2",
+        "ts-node": "^10.9.1",
+        "tsc": "^2.0.4",
         "typeorm": "^0.3.17",
         "typescript": "^5.2.2"
     },
     "type": "module",
     "scripts": {
-        "start": "node .",
+        "start": "ts-node src/index.ts",
         "lint": "eslint .",
         "release": "yarn standard-version",
         "release:minor": "yarn standard-version --release-as minor",
