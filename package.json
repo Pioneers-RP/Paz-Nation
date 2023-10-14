@@ -27,7 +27,6 @@
         "typeorm": "^0.3.17",
         "typescript": "^5.2.2"
     },
-    "type": "module",
     "scripts": {
         "start": "ts-node src/index.ts",
         "lint": "eslint .",

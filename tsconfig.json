@@ -1,11 +1,12 @@
 {
-  "extends": "@tsconfig/node17/tsconfig.json",
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "resolveJsonModule": true,
     "outDir": "./dist",
     "esModuleInterop": true
-  }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }
