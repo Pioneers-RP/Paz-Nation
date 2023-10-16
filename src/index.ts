@@ -2,24 +2,33 @@ import { readdirSync } from 'fs'
 import path from 'node:path';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
-dotenv.config();
-import { AppDataSource } from "./data-source.js"
-
-AppDataSource.initialize()
-    .then(() => {
-        console.log("Database initialized")
-    })
-    .catch((error) => console.log(error))
-
+ import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
-const connection = new mysql.createConnection({
+
+dotenv.config();
+
+// AppDataSource.initialize()
+//     .then(() => {
+//         console.log("Database initialized")
+//     })
+//     .catch((error) => console.log(error))
+
+console.log(process.env.HOST);
+console.log(process.env.USER);
+console.log(process.env.PASSWORD);
+console.log(process.env.DATABASE);
+console.log(process.env.TOKEN);
+console.log(process.env.PREFIX);
+
+const connection = mysql.createConnection({
     host: process.env.HOST,
     user: process.env.USER,
     password: process.env.PASSWORD,
     database: process.env.DATABASE,
-    port: process.env.PORT,
+    port: Number('3306'),
     multipleStatements: true
 })
+
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction],
@@ -84,5 +93,5 @@ process.on('warning', (...args: any[]) => {
 });
 
 client.login(process.env.TOKEN!).then(() => {
-    console.log(`Lancé sous le bot ${client.user.tag}`);
+    console.log(`Lancé sous le bot ${client.user?.tag}`);
 });
