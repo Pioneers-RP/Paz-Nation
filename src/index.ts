@@ -13,18 +13,16 @@ dotenv.config();
 //     })
 //     .catch((error) => console.log(error))
 
-console.log(process.env.HOST);
-console.log(process.env.USER);
-console.log(process.env.PASSWORD);
-console.log(process.env.DATABASE);
-console.log(process.env.TOKEN);
-console.log(process.env.PREFIX);
+console.log(process.env.DATABASE_HOST);
+console.log(process.env.DATABASE_USER);
+console.log(process.env.DATABASE_PASSWORD);
+console.log(process.env.DATABASE_DATABASE);
 
 const connection = mysql.createConnection({
-    host: process.env.HOST,
-    user: process.env.USER,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE,
+    host: process.env.DATABASE_HOST,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_DATABASE,
     port: Number('3306'),
     multipleStatements: true
 })

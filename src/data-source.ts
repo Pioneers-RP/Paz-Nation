@@ -15,11 +15,11 @@ import { Trade } from "./entities/Trade.js"
 
 export const AppDataSource = new DataSource({
     type: 'mariadb',
-    host: process.env.HOST,
-    port:  Number(process.env.PORT),
-    username: process.env.USER,
-    password: process.env.PASSWORD,
-    database: process.env.DATABASE,
+    host: process.env.DATABASE_HOST,
+    port:  Number(process.env.DATABASE_PORT),
+    username: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_DATABASE,
     entities: [
         Armee,
         Batiments,
