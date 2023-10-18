@@ -4,22 +4,22 @@ import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 @Entity("qachat", { schema: "customer_355631_test" })
 export class Qachat {
   @PrimaryGeneratedColumn({ type: "int", name: "id_achat" })
-  idAchat: number;
+  idAchat: number | null = null;
 
   @Column("varchar", { name: "id_joueur", nullable: true, length: 255 })
-  idJoueur: string | null;
+  idJoueur: string | null = null;
 
   @Column("varchar", { name: "id_salon", nullable: true, length: 255 })
-  idSalon: string | null;
+  idSalon: string | null = null;
 
   @Column("varchar", { name: "ressource", nullable: true, length: 30 })
-  ressource: string | null;
+  ressource: string | null = null;
 
   @Column("bigint", { name: "quantite", nullable: true })
-  quantite: string | null;
+  quantite: string | null = null;
 
   @Column("bigint", { name: "prix", nullable: true })
-  prix: string | null;
+  prix: string | null = null;
 
   @Column("float", {
     name: "prix_u",
@@ -27,5 +27,5 @@ export class Qachat {
     comment: "prix à l'unité",
     precision: 12,
   })
-  prixU: number | null;
+  prixU: number | null = null;
 }

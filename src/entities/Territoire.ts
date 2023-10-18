@@ -3,22 +3,22 @@ import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 @Entity("territoire", { schema: "customer_355631_test" })
 export class Territoire {
   @PrimaryGeneratedColumn({ type: "int", name: "id_pays" })
-  idPays: number;
+  idPays: number | null = null;
 
   @Column("varchar", { name: "id_joueur", nullable: true, length: 255 })
-  idJoueur: string | null;
+  idJoueur: string | null = null;
 
   @Column("varchar", { name: "region", nullable: true, length: 255 })
-  region: string | null;
+  region: string | null = null;
 
   @Column("int", { name: "T_total", nullable: true })
-  tTotal: number | null;
+  tTotal: number | null = null;
 
   @Column("int", { name: "T_libre", nullable: true })
-  tLibre: number | null;
+  tLibre: number | null = null;
 
   @Column("int", { name: "T_occ", nullable: true })
-  tOcc: number | null;
+  tOcc: number | null = null;
 
   @Column("decimal", {
     name: "cg",
@@ -26,53 +26,53 @@ export class Territoire {
     scale: 2,
     default: () => "'79.05'",
   })
-  cg: string;
+  cg: string | null = null;
 
   @Column("int", { name: "T_national", default: () => "'16000'" })
-  tNational: number;
+  tNational: number | null = null;
 
   @Column("int", { name: "T_controle", default: () => "'0'" })
-  tControle: number;
+  tControle: number | null = null;
 
   @Column("int", { name: "hexagone", default: () => "'1'" })
-  hexagone: number;
+  hexagone: number | null = null;
 
   @Column("int", { name: "desert", nullable: true })
-  desert: number | null;
+  desert: number | null = null;
 
   @Column("int", { name: "foret", nullable: true })
-  foret: number | null;
+  foret: number | null = null;
 
   @Column("int", { name: "jungle", nullable: true })
-  jungle: number | null;
+  jungle: number | null = null;
 
   @Column("int", { name: "lac", nullable: true })
-  lac: number | null;
+  lac: number | null = null;
 
   @Column("int", { name: "mangrove", nullable: true })
-  mangrove: number | null;
+  mangrove: number | null = null;
 
   @Column("int", { name: "prairie", nullable: true })
-  prairie: number | null;
+  prairie: number | null = null;
 
   @Column("int", { name: "rocheuses", nullable: true })
-  rocheuses: number | null;
+  rocheuses: number | null = null;
 
   @Column("int", { name: "savane", nullable: true })
-  savane: number | null;
+  savane: number | null = null;
 
   @Column("int", { name: "steppe", nullable: true })
-  steppe: number | null;
+  steppe: number | null = null;
 
   @Column("int", { name: "taiga", nullable: true })
-  taiga: number | null;
+  taiga: number | null = null;
 
   @Column("int", { name: "toundra", nullable: true })
-  toundra: number | null;
+  toundra: number | null = null;
 
   @Column("int", { name: "ville", nullable: true })
-  ville: number | null;
+  ville: number | null = null;
 
   @Column("int", { name: "volcan", nullable: true })
-  volcan: number | null;
+  volcan: number | null = null;
 }

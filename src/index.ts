@@ -2,21 +2,15 @@ import { readdirSync } from 'fs'
 import path from 'node:path';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
- import { AppDataSource } from "./data-source"
+import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
 
 dotenv.config();
 
-// AppDataSource.initialize()
-//     .then(() => {
-//         console.log("Database initialized")
-//     })
-//     .catch((error) => console.log(error))
-
-console.log(process.env.DATABASE_HOST);
-console.log(process.env.DATABASE_USER);
-console.log(process.env.DATABASE_PASSWORD);
-console.log(process.env.DATABASE_DATABASE);
+AppDataSource.initialize()
+    .then(() => {
+        console.log("Database initialized")})
+    .catch((error) => console.log(error))
 
 const connection = mysql.createConnection({
     host: process.env.DATABASE_HOST,
@@ -26,6 +20,15 @@ const connection = mysql.createConnection({
     port: Number('3306'),
     multipleStatements: true
 })
+
+connection.connect(function(err) {
+    if (err) {
+        console.error('Il y a eu une erreur en se connectant à la base de données ' + err.stack);
+        return;
+    }
+
+    console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
+});
 
 const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
@@ -40,7 +43,7 @@ const commandFolders = readdirSync(foldersPath);
 async function loadCommands() {
     for (const folder of commandFolders) {
         const commandsPath = path.join(foldersPath, folder);
-        const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.ts'));
+        const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
         for (const file of commandFiles) {
             const filePath = path.join(commandsPath, file);
             const command = await import(filePath);
@@ -60,7 +63,7 @@ loadCommands().catch((error) => {
 });
 
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.ts'));
+const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
 
 async function loadEvents() {
     for (const file of eventFiles) {
