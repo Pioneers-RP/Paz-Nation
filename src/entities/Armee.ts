@@ -65,5 +65,4 @@ export class Armee {
     this.victoire = 0;
     this.defaite = 0;
   }
-
 }

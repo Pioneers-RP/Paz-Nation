@@ -1,25 +1,11 @@
-import { DataSource } from 'typeorm';
-import { Armee } from './entities/Armee'; // Assurez-vous que le chemin est correct
+import { AppDataSource } from '../src/data-source';
+import { Armee } from '../src/entities/Armee'; // Assurez-vous que le chemin est correct
 import dotenv from 'dotenv';
 dotenv.config();
 
-const dataSource = new DataSource({
-    type: 'mariadb',
-    host: process.env.DATABASE_HOST ?? 'localhost',
-    port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 3306,
-    username: process.env.DATABASE_USER ?? 'root',
-    password: process.env.DATABASE_PASSWORD ?? 'password',
-    database: process.env.DATABASE_DATABASE ?? 'database',
-    entities: [
-      Armee
-    ],
-    synchronize: true,
-    multipleStatements: true,
-});
-
 async function main() {
   try {
-    const connection = await dataSource.connect();
+    const connection = await AppDataSource.connect();
     const armeeRepository = connection.getRepository(Armee);
 
     let armee = await armeeRepository.findOneBy({ idJoueur: "175618172743974912" });
