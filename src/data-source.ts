@@ -12,28 +12,30 @@ import { Qvente } from "./entities/Qvente"
 import { Ressources } from "./entities/Ressources"
 import { Territoire } from "./entities/Territoire"
 import { Trade } from "./entities/Trade"
+import dotenv from 'dotenv';
+dotenv.config();
 
 export const AppDataSource = new DataSource({
     type: 'mariadb',
-    host: process.env.DATABASE_HOST,
-    port:  Number(process.env.DATABASE_PORT),
-    username: process.env.DATABASE_USER,
-    password: process.env.DATABASE_PASSWORD,
-    database: process.env.DATABASE_DATABASE,
+    host: process.env.DATABASE_HOST ?? 'localhost',
+    port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 3306,
+    username: process.env.DATABASE_USER ?? 'root',
+    password: process.env.DATABASE_PASSWORD ?? 'password',
+    database: process.env.DATABASE_DATABASE ?? 'database',
     entities: [
         Armee,
-        Batiments,
-        Diplomatie,
-        Historique,
-        Notification,
-        Population,
-        Prix,
-        Processus,
-        Qachat,
-        Qvente,
-        Ressources,
-        Territoire,
-        Trade,
+        // Batiments,
+        // Diplomatie,
+        // Historique,
+        // Notification,
+        // Population,
+        // Prix,
+        // Processus,
+        // Qachat,
+        // Qvente,
+        // Ressources,
+        // Territoire,
+        // Trade,
     ],
     synchronize: true,
     logging: false,
