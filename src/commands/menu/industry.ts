@@ -1,12 +1,12 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { menuIndustrie } = require("../../fonctions/functions");
+import {SlashCommandBuilder} from 'discord.js';
+import {menuIndustrie} from "../../fonctions/functions";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('industrie')
         .setDescription(`Voir vos industries`),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
         const { connection } = require('../../index.ts');
 
         menuIndustrie(interaction, connection)

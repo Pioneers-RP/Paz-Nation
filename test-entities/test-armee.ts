@@ -5,7 +5,7 @@ dotenv.config();
 
 async function main() {
   try {
-    const connection = await AppDataSource.connect();
+    const connection = await AppDataSource.initialize();
     const armeeRepository = connection.getRepository(Armee);
 
     let armee = await armeeRepository.findOneBy({ idJoueur: "175618172743974912" });

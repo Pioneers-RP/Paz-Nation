@@ -1,17 +1,13 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm";
 
-@Entity()
+@Index("id_joueur", ["idJoueur"], {})
+@Entity("batiments", { schema: "customer_355631_test" })
 export class Batiments {
   @PrimaryGeneratedColumn({ type: "int", name: "id_pays" })
-  idPays: number | null = null;
+  idPays: number | null;
 
-  @Column('varchar', {
-    name: 'id_joueur',
-    nullable: true, // Champ non obligatoire
-    unique: true,
-    length: 255,
-  })
-  idJoueur: string | null = null;
+  @Column('varchar', {name: 'id_joueur', nullable: true, unique: true, length: 255,})
+  idJoueur: string | null;
 
   @Column("int", { name: "deja_prod", default: () => "'1'" })
   dejaProd: number;
@@ -93,5 +89,4 @@ export class Batiments {
     this.scierie = 0;
     this.usineCivile = 0;
   }
-
 }
