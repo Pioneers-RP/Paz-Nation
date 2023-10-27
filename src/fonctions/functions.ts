@@ -1,21 +1,22 @@
-const {codeBlock, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle} = require("discord.js");
-function calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject) {
-    const emplois_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * Batiment.acierie;
-    const emplois_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * Batiment.atelier_verre;
-    const emplois_carriere_sable = batimentObject.carriere_sable.EMPLOYES_CARRIERE_SABLE * Batiment.carriere_sable;
-    const emplois_centrale_biomasse = batimentObject.centrale_biomasse.EMPLOYES_CENTRALE_BIOMASSE * Batiment.centrale_biomasse;
-    const emplois_centrale_charbon = batimentObject.centrale_charbon.EMPLOYES_CENTRALE_CHARBON * Batiment.centrale_charbon;
-    const emplois_centrale_fioul = batimentObject.centrale_fioul.EMPLOYES_CENTRALE_FIOUL * Batiment.centrale_fioul;
-    const emplois_champ = batimentObject.champ.EMPLOYES_CHAMP * Batiment.champ;
-    const emplois_cimenterie = batimentObject.cimenterie.EMPLOYES_CIMENTERIE * Batiment.cimenterie;
-    const emplois_derrick = batimentObject.derrick.EMPLOYES_DERRICK * Batiment.derrick;
-    const emplois_eolienne = batimentObject.eolienne.EMPLOYES_EOLIENNE * Batiment.eolienne;
-    const emplois_mine_charbon = batimentObject.mine_charbon.EMPLOYES_MINE_CHARBON * Batiment.mine_charbon;
-    const emplois_mine_metaux = batimentObject.mine_metaux.EMPLOYES_MINE_METAUX * Batiment.mine_metaux;
-    const emplois_station_pompage = batimentObject.station_pompage.EMPLOYES_STATION_POMPAGE * Batiment.station_pompage;
-    const emplois_raffinerie = batimentObject.raffinerie.EMPLOYES_RAFFINERIE * Batiment.raffinerie;
-    const emplois_scierie = batimentObject.scierie.EMPLOYES_SCIERIE * Batiment.scierie;
-    const emplois_usine_civile = batimentObject.usine_civile.EMPLOYES_USINE_CIVILE * Batiment.usine_civile;
+import {codeBlock, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle} from "discord.js";
+
+export function calculerEmploi(armee: object, batiment: any, population: any, armeeObject: any, batimentObject: any) {
+    const emplois_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * batiment.acierie;
+    const emplois_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * batiment.atelier_verre;
+    const emplois_carriere_sable = batimentObject.carriere_sable.EMPLOYES_CARRIERE_SABLE * batiment.carriere_sable;
+    const emplois_centrale_biomasse = batimentObject.centrale_biomasse.EMPLOYES_CENTRALE_BIOMASSE * batiment.centrale_biomasse;
+    const emplois_centrale_charbon = batimentObject.centrale_charbon.EMPLOYES_CENTRALE_CHARBON * batiment.centrale_charbon;
+    const emplois_centrale_fioul = batimentObject.centrale_fioul.EMPLOYES_CENTRALE_FIOUL * batiment.centrale_fioul;
+    const emplois_champ = batimentObject.champ.EMPLOYES_CHAMP * batiment.champ;
+    const emplois_cimenterie = batimentObject.cimenterie.EMPLOYES_CIMENTERIE * batiment.cimenterie;
+    const emplois_derrick = batimentObject.derrick.EMPLOYES_DERRICK * batiment.derrick;
+    const emplois_eolienne = batimentObject.eolienne.EMPLOYES_EOLIENNE * batiment.eolienne;
+    const emplois_mine_charbon = batimentObject.mine_charbon.EMPLOYES_MINE_CHARBON * batiment.mine_charbon;
+    const emplois_mine_metaux = batimentObject.mine_metaux.EMPLOYES_MINE_METAUX * batiment.mine_metaux;
+    const emplois_station_pompage = batimentObject.station_pompage.EMPLOYES_STATION_POMPAGE * batiment.station_pompage;
+    const emplois_raffinerie = batimentObject.raffinerie.EMPLOYES_RAFFINERIE * batiment.raffinerie;
+    const emplois_scierie = batimentObject.scierie.EMPLOYES_SCIERIE * batiment.scierie;
+    const emplois_usine_civile = batimentObject.usine_civile.EMPLOYES_USINE_CIVILE * batiment.usine_civile;
     const emploisTotaux =
         emplois_acierie + emplois_atelier_verre + emplois_carriere_sable +
         emplois_centrale_biomasse + emplois_centrale_charbon + emplois_centrale_fioul +
@@ -25,27 +26,27 @@ function calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject
 
     return {
         emploisTotaux: emploisTotaux,
-        emploies: Population.jeune + Population.adulte - calculerSoldat(Armee, armeeObject),
-        efficacite: Math.min((parseFloat(Population.jeune + Population.adulte - calculerSoldat(Armee, armeeObject))/emploisTotaux).toFixed(4), 1),
+        emploies: population.jeune + population.adulte - calculerSoldat(armee, armeeObject),
+        efficacite: Math.min(Number((parseFloat(String(population.jeune + population.adulte - calculerSoldat(armee, armeeObject))) / emploisTotaux).toFixed(4)), 1),
     };
 }
-function calculerSoldat(Armee, armeeObject) {
-    return Armee.unite * eval(`armeeObject.${Armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
-        Armee.unite * eval(`armeeObject.${Armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
-        Armee.unite * eval(`armeeObject.${Armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
-        Armee.unite * eval(`armeeObject.${Armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
-        (Armee.aviation * armeeObject.aviation.homme) +
-        (Armee.infanterie * armeeObject.infanterie.homme) +
-        (Armee.mecanise * armeeObject.mecanise.homme) +
-        (Armee.support * armeeObject.support.homme);
+export function calculerSoldat(armee: any, armeeObject: any) {
+    return armee.unite * eval(`armeeObject.${armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
+        armee.unite * eval(`armeeObject.${armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
+        armee.unite * eval(`armeeObject.${armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
+        armee.unite * eval(`armeeObject.${armee.strategie}.support`) * eval(`armeeObject.support.homme`) +
+        (armee.aviation * armeeObject.aviation.homme) +
+        (armee.infanterie * armeeObject.infanterie.homme) +
+        (armee.mecanise * armeeObject.mecanise.homme) +
+        (armee.support * armeeObject.support.homme);
 }
 
-function menuArmee(interaction, connection, armeeObject) {
+export function menuArmee(interaction: any, connection: any, armeeObject: any) {
     const sql = `
         SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'
     `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Armee = results[0][0];
         const Pays = results[1][0];
         const homme =
@@ -131,12 +132,12 @@ function menuArmee(interaction, connection, armeeObject) {
     });
 }
 
-function menuDiplomatie(interaction, connection) {
+export function menuDiplomatie(interaction: any, connection: any) {
     const sql = `
         SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
     `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Diplomatie = results[0][0];
         const Pays = results[1][0];
 
@@ -200,7 +201,7 @@ function menuDiplomatie(interaction, connection) {
         await interaction.reply({ embeds: [embed], components: components });
     });
 }
-function menuEconomie(interaction, connection, armeeObject, batimentObject) {
+export function menuEconomie(interaction: any, connection: any, armeeObject: any, batimentObject: any) {
     let sql = `
         SELECT *
         FROM armee
@@ -215,7 +216,7 @@ function menuEconomie(interaction, connection, armeeObject, batimentObject) {
         FROM population
         WHERE id_joueur = '${interaction.member.id}'
     `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Armee = results[0][0];
         const Batiment = results[1][0];
         const Pays = results[2][0];
@@ -302,10 +303,9 @@ function menuEconomie(interaction, connection, armeeObject, batimentObject) {
     });
 }
 
-
-function menuGouvernement(interaction, connection) {
+export function menuGouvernement(interaction: any, connection: any) {
     const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[]) => {if (err) {throw err;}
         const Pays = results[0];
 
         const embed = {
@@ -387,12 +387,12 @@ function menuGouvernement(interaction, connection) {
     });
 }
 
-function menuIndustrie(interaction, connection) {
+export function menuIndustrie(interaction: any, connection: any) {
     const sql = `
             SELECT * FROM batiments WHERE id_joueur=${interaction.member.id};
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id}
         `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Batiment = results[0][0];
         const Pays = results[1][0];
 
@@ -538,7 +538,7 @@ function menuIndustrie(interaction, connection) {
     });
 }
 
-function menuPopulation(interaction, connection, armeeObject, batimentObject, gouvernementObject, populationObject, regionObject) {
+export function menuPopulation(interaction: any, connection: any, armeeObject: any, batimentObject: any, gouvernementObject: any, populationObject: any, regionObject: any) {
     const sql = `
             SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -547,7 +547,7 @@ function menuPopulation(interaction, connection, armeeObject, batimentObject, go
             SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
             SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
         `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Armee = results[0][0];
         const Batiment = results[1][0];
         const Pays = results[2][0];
@@ -703,13 +703,13 @@ function menuPopulation(interaction, connection, armeeObject, batimentObject, go
     });
 }
 
-function menuTerritoire(interaction, connection, biomeObject) {
+export function menuTerritoire(interaction: any, connection: any, biomeObject: any) {
     const sql = `
         SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}'
     `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Diplomatie = results[0][0];
         const Pays = results[1][0];
         const Territoire = results[2][0];
@@ -780,7 +780,7 @@ function menuTerritoire(interaction, connection, biomeObject) {
     });
 }
 
-function menuConsommation(mode, interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject) {
+export function menuConsommation(mode: 'menu' | 'edit', interaction: any, connection: any, armeeObject: any, batimentObject: any, gouvernementObject: any, populationObject: any, regionObject: any) {
     const sql = `
         SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -789,7 +789,7 @@ function menuConsommation(mode, interaction, connection, armeeObject , batimentO
         SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
     `;
-    connection.query(sql, async(err, results) => {if (err) {throw err;}
+    connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
         const Armee = results[0][0];
         const Batiment = results[1][0];
         const Pays = results[2][0];
@@ -875,7 +875,7 @@ function menuConsommation(mode, interaction, connection, armeeObject , batimentO
         const coef_petrole = eval(`regionObject.${Territoire.region}.petrole`)
         const coef_sable = eval(`regionObject.${Territoire.region}.sable`)
         //endregion
-        function convertMillisecondsToTime(milliseconds) {
+        function convertMillisecondsToTime(milliseconds: number) {
             const seconds = Math.floor(milliseconds / 1000);
             const hours = Math.floor(seconds / 3600);
             return `${hours}h`;
@@ -1136,14 +1136,15 @@ function menuConsommation(mode, interaction, connection, armeeObject , batimentO
                     .setStyle(ButtonStyle.Primary)
             )
 
-        if (mode === "menu") {
+        if (mode === 'menu') {
             await interaction.reply({ embeds: [embed], components: [row] });
-        } else if (mode === "edit") {
+        } else {
             interaction.message.edit({embeds: [embed], components: [row] })
             interaction.deferUpdate()
         }
     })
 }
+
 module.exports = {
     calculerEmploi,
     calculerSoldat,

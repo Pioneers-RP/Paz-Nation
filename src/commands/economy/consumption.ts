@@ -1,7 +1,7 @@
-const { readFileSync } = require('fs');
-const { SlashCommandBuilder } = require("discord.js");
-const { menuConsommation } = require("../../fonctions/functions.js");
-const { connection } = require('../../index.ts');
+import {readFileSync} from 'fs';
+import {SlashCommandBuilder} from "discord.js";
+import {menuConsommation} from "../../fonctions/functions";
+import {connection} from '../../index';
 const armeeObject = JSON.parse(readFileSync('src/data/armee.json', 'utf-8'));
 const batimentObject = JSON.parse(readFileSync('src/data/batiment.json', 'utf-8'));
 const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
@@ -13,8 +13,8 @@ module.exports = {
         .setName('consommation')
         .setDescription(`Affiche votre consommation de ressource`),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
 
-        menuConsommation("menu", interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject);
+        menuConsommation('menu', interaction, connection, armeeObject , batimentObject, gouvernementObject, populationObject, regionObject);
     }
 };

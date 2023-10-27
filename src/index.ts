@@ -6,13 +6,11 @@ import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
 
 dotenv.config();
-
-AppDataSource.initialize()
+export const connect = AppDataSource.initialize()
     .then(() => {
-        console.log("Database initialized")})
+        console.log("Database initialized with TypeORM")})
     .catch((error) => console.log(error))
-
-const connection = mysql.createConnection({
+export const connection = mysql.createConnection({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
     password: process.env.DATABASE_PASSWORD,
@@ -23,11 +21,11 @@ const connection = mysql.createConnection({
 
 connection.connect(function(err) {
     if (err) {
-        console.error('Il y a eu une erreur en se connectant à la base de données ' + err.stack);
+        console.error('There was an error connecting to the Database with MySQL ' + err.stack);
         return;
     }
 
-    console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
+    console.log('Database initialized with MySQL under ID : ' + connection.threadId);
 });
 
 const client = new Client({
@@ -43,7 +41,7 @@ const commandFolders = readdirSync(foldersPath);
 async function loadCommands() {
     for (const folder of commandFolders) {
         const commandsPath = path.join(foldersPath, folder);
-        const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.js'));
+        const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.js') || file.endsWith('.ts'));
         for (const file of commandFiles) {
             const filePath = path.join(commandsPath, file);
             const command = await import(filePath);
@@ -52,7 +50,7 @@ async function loadCommands() {
                 client.commands.set(command.data.name, command);
             } else {
                 console.log(
-                    `[ATTENTION] La commande à l'emplacement ${filePath} ne contient pas les propriétés "data" ou "execute" requises.`
+                    `[WARNING] The command at the path ${filePath} doesn't contain any "data" or "execute" properties needed .`
                 );
             }
         }
@@ -81,18 +79,18 @@ loadEvents().catch((error) => {
 });
 
 process.on('exit', (code) => {
-    console.log(`Le bot s'est arrêté avec le code : ${code} !`);
+    console.log(`Bot crashed with code : ${code} !`);
 });
 process.on('uncaughtException', (err, origin) => {
-    console.log(`ERREUR_NON_CAPTURÉE : ${err}`, `Origine : ${origin}`);
+    console.log(`Uncaught Exception : ${err}`, `Origine : ${origin}`);
 });
 process.on('unhandledRejection', (reason, promise) => {
-    console.log(`REJET_NON_GÉRÉ : ${reason}\n-----\n`, promise);
+    console.log(`Unhandled Rejection : ${reason}\n-----\n`, promise);
 });
-process.on('warning', (...args: any[]) => {
+process.on('Warning', (...args: any[]) => {
     console.log(...args);
 });
 
 client.login(process.env.TOKEN!).then(() => {
-    console.log(`Lancé sous le bot ${client.user?.tag}`);
+    console.log(`Bot launched under : ${client.user?.tag}`);
 });

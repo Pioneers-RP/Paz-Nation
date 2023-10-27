@@ -1,16 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 
-@Entity()
+@Index("id_joueur", ["idJoueur"], {})
+@Entity("armee", { schema: "customer_355631_test" })
 export class Armee {
   @PrimaryGeneratedColumn({ type: 'int', name: 'id_pays' })
   idPays: number | null;
 
-  @Column('varchar', {
-    name: 'id_joueur',
-    nullable: true, // Champ non obligatoire
-    unique: true,
-    length: 255,
-  })
+  @Column('varchar', {name: 'id_joueur', nullable: true, unique: true, length: 255})
   idJoueur: string | null;
 
   @Column({ name: 'strategie', default: () => "'defense'" })

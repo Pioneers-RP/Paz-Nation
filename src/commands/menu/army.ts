@@ -1,6 +1,6 @@
-const { SlashCommandBuilder } = require('discord.js');
-const { menuArmee } = require('../../fonctions/functions.js');
-const { readFileSync } = require('fs');
+import {SlashCommandBuilder} from 'discord.js';
+import {menuArmee} from '../../fonctions/functions';
+import {readFileSync} from 'fs';
 const armeeObject = JSON.parse(readFileSync('src/data/armee.json', 'utf-8'));
 
 module.exports = {
@@ -8,7 +8,7 @@ module.exports = {
         .setName('armee')
         .setDescription(`Menu de votre armée`),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
         const { connection } = require("../../index");
 
         menuArmee(interaction, connection, armeeObject)
