@@ -40,6 +40,7 @@ service:
   enabled: false
   type: ClusterIP
   port: 80
+  targetPort: 3000
 
 ingress:
   enabled: false
