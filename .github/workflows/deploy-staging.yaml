@@ -10,8 +10,9 @@ env:
   AWS_REGION: eu-west-1
   ECR_REPOSITORY: jemoco/paznation-server
   EKS_CLUSTER_NAME: jemoco2
-  EKS_CLUSTER_NAMESPACE: paznation-staging
   EKS_CLUSTER_SERVICE: paznation
+  APPLICATION: paznation
+  ENV: staging
   NODE_ENV: development
 
 concurrency:
@@ -126,10 +127,12 @@ jobs:
 
         run: |
           helm dependency build charts
-          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace \
+          helm upgrade --install --wait --namespace=${{ env.APPLICATION }}-${{ env.ENV }} --create-namespace -f charts/values-${{ env.ENV }}.yaml \
           --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
+          --set "rootPassword=${{ secrets.MYSQL_ROOTPASSWORD }}" \
+          --set "auth.password=${{ secrets.MYSQL_PASSWORD }}" \
           ${{ env.EKS_CLUSTER_SERVICE }} charts
 
   notification:
