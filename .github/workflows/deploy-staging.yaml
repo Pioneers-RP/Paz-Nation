@@ -133,7 +133,6 @@ jobs:
           --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
-          --set "mariadb.auth.rootPassword=${{ secrets.MYSQL_ROOTPASSWORD }}" \
           --set "mariadb.auth.password=${{ secrets.MYSQL_PASSWORD }}" \
           ${{ env.EKS_CLUSTER_SERVICE }} charts
 

@@ -11,3 +11,4 @@ data:
   HOST: {{ .Values.mariadb.auth.host | quote }}
   USER: {{ .Values.mariadb.auth.username | quote }}
   DATABASE: {{ .Values.mariadb.auth.database | quote }}  
+  PORT: {{ .Values.mariadb.auth.port | quote }}  

@@ -111,11 +111,8 @@ discord:
 
 mariadb:
   auth:
-    rootPassword: GHASecret
-    database: paznation
+    host: mariadb.mariadb
+    database: paznation-staging
     username: paznation
     password: GHASecret
-    host: paznation-mariadb
-  primary:
-    persistence:
-      enabled: true
+    port: 3306
