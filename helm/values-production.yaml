@@ -112,7 +112,7 @@ discord:
 mariadb:
   auth:
     host: mariadb.mariadb
-    database: paznation-staging
+    database: paznation-production
     username: paznation
     password: GHASecret
     port: 3306
