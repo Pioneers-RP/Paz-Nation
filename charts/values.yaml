@@ -115,7 +115,7 @@ mariadb:
     database: paznation
     username: paznation
     password: GHASecret
-    host: paznation-mysql
+    host: paznation-mariadb
   primary:
     persistence:
       enabled: true
