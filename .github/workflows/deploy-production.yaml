@@ -123,7 +123,7 @@ jobs:
 
         run: |
           helm dependency build charts
-          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace -f charts/${{ env.EKS_CLUSTER_NAMESPACE }}.yaml \
+          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace \
           --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
