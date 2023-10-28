@@ -27,7 +27,7 @@ FROM sources AS development
 RUN yarn install --immutable
 
 FROM sources AS production
-# Installation des dépendances nécessaires pour la production
-RUN yarn workspaces focus --production
 # Paramètre NODE_ENV sur production
 ENV NODE_ENV=production
+# Installation des dépendances nécessaires pour la production
+RUN yarn workspaces focus --production

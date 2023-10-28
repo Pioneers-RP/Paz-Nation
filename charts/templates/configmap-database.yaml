@@ -8,6 +8,6 @@ metadata:
     labels:
       {{- include "charts.labels" . | nindent 4 }}
 data:
-  HOST: {{ .Values.mysql.auth.host | quote }}
-  USER: {{ .Values.mysql.auth.username | quote }}
-  DATABASE: {{ .Values.mysql.auth.database | quote }}  
+  HOST: {{ .Values.mariadb.auth.host | quote }}
+  USER: {{ .Values.mariadb.auth.username | quote }}
+  DATABASE: {{ .Values.mariadb.auth.database | quote }}  

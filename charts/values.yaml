@@ -109,12 +109,13 @@ discord:
   NBR_FULL_SANS_LOGO: '5'
   NBR_SIMPLE_LOGO: '39'
 
-mysql:
+mariadb:
   rootPassword: GHASecret
   auth:
     database: paznation
     username: paznation
     password: GHASecret
     host: paznation-mysql
-  persistence:
-    enabled: true
+  primary:
+    persistence:
+      enabled: true

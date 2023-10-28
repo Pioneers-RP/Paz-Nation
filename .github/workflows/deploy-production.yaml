@@ -10,10 +10,10 @@ env:
   AWS_REGION: eu-west-1
   ECR_REPOSITORY: jemoco/paznation-server
   EKS_CLUSTER_NAME: jemoco2
-  APPLICATION: paznation
-  ENV: staging
   EKS_CLUSTER_SERVICE: paznation
-  NODE_ENV: development
+  APPLICATION: paznation
+  ENV: production
+  NODE_ENV: production
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -121,7 +121,6 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
-
         run: |
           helm dependency build charts
           helm upgrade --install --wait --namespace=${{ env.APPLICATION }}-${{ env.ENV }} --create-namespace \
@@ -134,7 +133,7 @@ jobs:
           
   notification:
     runs-on: ubuntu-latest
-    needs: [sonar, deploy]
+    needs: [deploy]
 
     steps:
       - name: Slack Notification
