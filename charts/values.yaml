@@ -110,8 +110,8 @@ discord:
   NBR_SIMPLE_LOGO: '39'
 
 mariadb:
-  rootPassword: GHASecret
   auth:
+    rootPassword: GHASecret
     database: paznation
     username: paznation
     password: GHASecret
