@@ -4,16 +4,18 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - master
-    paths-ignore:
-      - '.github/workflows/replicate-database.yaml'
+      - main
 
 env:
   AWS_REGION: eu-west-1
-  ECR_REPOSITORY: jemoco/yousoon-server
+  ECR_REPOSITORY: jemoco/paznation-server
   EKS_CLUSTER_NAME: jemoco2
-  EKS_CLUSTER_NAMESPACE: yousoonapi-production
-  EKS_CLUSTER_SERVICE: server
+  EKS_CLUSTER_NAMESPACE: paznation-production
+  EKS_CLUSTER_SERVICE: paznation
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 jobs:
   sonar:
@@ -21,7 +23,10 @@ jobs:
 
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@main
+      with:
+        fetch-depth: 0
+        ref: ${{ env.ENV }}
 
     - uses: benjlevesque/short-sha@v1.2
       id: image-tag
@@ -116,24 +121,12 @@ jobs:
           IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
 
         run: |
-          helm dependency build helm
-          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace -f helm/${{ env.EKS_CLUSTER_NAMESPACE }}.yaml \
+          helm dependency build charts
+          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace -f charts/${{ env.EKS_CLUSTER_NAMESPACE }}.yaml \
           --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
-          --set "secrets.APOLLO_KEY=${{ secrets.APOLLO_KEY }}" \
-          --set "secrets.APP_SECRET=${{ secrets.APP_SECRET }}" \
-          --set "secrets.AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID__YOUSOON }}" \
-          --set "secrets.AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY__YOUSOON }}" \
-          --set "secrets.BRANCH_IO_KEY=${{ secrets.BRANCH_IO_KEY }}" \
-          --set "secrets.DATABASE_URL=${{ secrets.DATABASE_URL }}?${{ vars.DATABASE_OPTIONS }}" \
-          --set "secrets.GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" \
-          --set "secrets.REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" \
-          --set "secrets.SENTRY_DSN=${{ secrets.SENTRY_DSN }}" \
-          --set "secrets.VPN_API_KEY=${{ secrets.VPN_API_KEY }}" \
-          --set "secrets.REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" \
-          --set "secrets.REDIS_URL=${{ secrets.REDIS_URL }}" \
-          ${{ env.EKS_CLUSTER_SERVICE }} helm
+          ${{ env.EKS_CLUSTER_SERVICE }} charts
           
   notification:
     runs-on: ubuntu-latest
