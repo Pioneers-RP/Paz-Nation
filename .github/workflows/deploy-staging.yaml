@@ -131,7 +131,7 @@ jobs:
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
           ${{ env.EKS_CLUSTER_SERVICE }} charts
-          
+
   notification:
     runs-on: ubuntu-latest
     needs: [sonar, deploy]

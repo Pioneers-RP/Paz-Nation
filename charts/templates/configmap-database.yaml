@@ -8,7 +8,6 @@ metadata:
     labels:
       {{- include "charts.labels" . | nindent 4 }}
 data:
-    HOST: {{ .Values.database.HOST | quote }}
-    USER: {{ .Values.database.USER | quote }}
-    DATABASE: {{ .Values.database.DATABASE | quote }}
-    
+  HOST: {{ .Values.database.HOST | quote }}
+  USER: {{ .Values.database.USER | quote }}
+  DATABASE: {{ .Values.database.DATABASE | quote }}  
