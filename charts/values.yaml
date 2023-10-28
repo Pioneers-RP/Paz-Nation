@@ -110,11 +110,11 @@ discord:
   NBR_SIMPLE_LOGO: '39'
 
 mysql:
-  rootPassword: Secret
+  rootPassword: GHASecret
   auth:
     database: paznation
     username: paznation
-    password: Secret
+    password: GHASecret
     host: paznation-mysql
   persistence:
     enabled: true
