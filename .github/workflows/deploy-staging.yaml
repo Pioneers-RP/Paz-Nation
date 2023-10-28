@@ -129,7 +129,7 @@ jobs:
           IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
         run: |
           helm dependency build charts
-          helm upgrade --install --wait --namespace=${{ env.APPLICATION }}-${{ env.ENV }} --create-namespace \
+          helm upgrade --install --wait --namespace=${{ env.APPLICATION }}-${{ env.ENV }} --create-namespace -f helm/values-${{ env.ENV }}.yaml \
           --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
