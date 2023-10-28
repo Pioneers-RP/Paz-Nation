@@ -114,3 +114,8 @@ discord:
   NBR_FULL_AVEC_LOGO: '2'
   NBR_FULL_SANS_LOGO: '5'
   NBR_SIMPLE_LOGO: '39'
+
+mysql:
+  mysqlRootPassword: paznation
+  persistence:
+    enabled: true
