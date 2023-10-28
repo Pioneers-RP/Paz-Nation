@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "charts.fullname" . }}-discord
+  labels:
+    draft: {{ default "draft-app" .Values.draft }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
+    labels:
+      {{- include "charts.labels" . | nindent 4 }}
+data:
+  CLIENT_ID: {{ .Values.discord.CLIENT_ID | quote }}
+  GUILD_ID: {{ .Values.discord.GUILD_ID | quote }}
+  URL_LOGO: {{ .Values.discord.URL_LOGO | quote }}
+  NBR_FULL_AVEC_LOGO: {{ .Values.discord.NBR_FULL_AVEC_LOGO | quote }}
+  NBR_FULL_SANS_LOGO: {{ .Values.discord.NBR_FULL_SANS_LOGO | quote }}
+  NBR_SIMPLE_LOGO: {{ .Values.discord.NBR_SIMPLE_LOGO | quote }}
+  {{- with .Values.discord.salons }}
+    {{- toYaml . | nindent 2 }}
+  {{- end }}

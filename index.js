@@ -34,6 +34,8 @@ connection.connect(function(err) {
     }
 
     console.log('Connecté à la base de donnée sous l\'id: ' + connection.threadId);
+    // Check if the bot is healthy
+    fs.closeSync(fs.openSync('/tmp/healthy', 'w'));
 });
 
 
