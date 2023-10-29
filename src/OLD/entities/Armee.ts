@@ -3,7 +3,7 @@ import { Entity, PrimaryGeneratedColumn, Column, Index } from 'typeorm';
 @Index("id_joueur", ["idJoueur"], {})
 @Entity("armee", { schema: "customer_355631_test" })
 export class Armee {
-  @PrimaryGeneratedColumn({ type: 'int', name: 'id_pays' })
+  @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
   idPays: number | null;
 
   @Column('varchar', {name: 'id_joueur', nullable: true, unique: true, length: 255})

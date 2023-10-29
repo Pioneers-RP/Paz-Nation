@@ -1,7 +1,10 @@
-import {BaseEntity, Column, Entity} from "typeorm";
+import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity("prix", { schema: "customer_355631_test" })
 export class Prix extends BaseEntity {
+  @PrimaryGeneratedColumn({ type: 'int', name: 'id' })
+  id!: number;
+  
   @Column("float", { name: "acier", nullable: true, precision: 12 })
   acier: number | null = null;
 
