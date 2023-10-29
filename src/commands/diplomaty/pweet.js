@@ -17,7 +17,7 @@ module.exports = {
     async execute(interaction) {
         let sql;
         let reponse;
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
         const pweet = interaction.options.getString('pweet');
         const image = interaction.options.getString('url');
         const salon_pweeter = interaction.client.channels.cache.get(process.env.SALON_PWEETER);

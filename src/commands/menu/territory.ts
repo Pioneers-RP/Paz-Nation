@@ -9,7 +9,7 @@ module.exports = {
         .setDescription(`Vue globale de votre territoire`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         menuTerritoire(interaction, connection, biomeObject)
     },

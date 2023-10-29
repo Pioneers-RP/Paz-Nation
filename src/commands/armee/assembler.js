@@ -24,7 +24,7 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
         const BatimentChoisi = interaction.options.getString('materiel');
         const nombre = interaction.options.getInteger('nombre');
 

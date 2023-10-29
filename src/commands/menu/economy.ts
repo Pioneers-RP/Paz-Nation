@@ -10,7 +10,7 @@ module.exports = {
         .setDescription(`Consultez votre économie`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         menuEconomie(interaction, connection, armeeObject, batimentObject);
     },

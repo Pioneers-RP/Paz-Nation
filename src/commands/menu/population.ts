@@ -13,7 +13,7 @@ module.exports = {
         .setDescription(`Menu de votre population`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         menuPopulation(interaction, connection, armeeObject, batimentObject, gouvernementObject, populationObject, regionObject)
     },

@@ -23,7 +23,7 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
         const uniteChoisi = interaction.options.getString('unité');
         const nombre = interaction.options.getInteger('nombre');
 

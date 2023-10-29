@@ -21,7 +21,7 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
         const joueur = interaction.options.getUser('joueur');
         const nombre = interaction.options.getInteger('nombre');
         let sql;

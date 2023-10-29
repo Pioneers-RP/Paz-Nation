@@ -37,7 +37,7 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
         const batiment = interaction.options.getString('batiment');
         const nombre = interaction.options.getInteger('nombre');
 

@@ -1,5 +1,5 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, Events, ModalBuilder, AttachmentBuilder, PermissionFlagsBits, TextInputBuilder, TextInputStyle, StringSelectMenuBuilder, ThreadAutoArchiveDuration, codeBlock} = require('discord.js');
-const { connection, client } = require('../index.ts');
+const { connection, client } = require('../index');
 const { menuArmee, menuConsommation, menuEconomie, menuDiplomatie, menuGouvernement, menuIndustrie, menuPopulation, menuTerritoire,
     calculerEmploi,
 } = require("../fonctions/functions");

@@ -8,7 +8,7 @@ module.exports = {
         .setDescription(`Affiche vos réserves`),
 
     async execute(interaction) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         const sql = `
             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';

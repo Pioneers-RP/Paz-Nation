@@ -7,7 +7,7 @@ module.exports = {
         .setDescription(`Menu du gouvernement`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         menuGouvernement(interaction, connection);
     },

@@ -42,7 +42,7 @@ module.exports = {
                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous avez déjà changé votre idéologie récemment. Il reste ${timeLeft.days}j ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir la changer à nouveau.`);
                 await interaction.reply({ content: reponse, ephemeral: true });
             } else {
-                const { connection } = require('../../index.ts');
+                const { connection } = require('../../index');
                 const ideologie = interaction.options.getString('ideologie');
                 const discours = interaction.options.getString('discours');
                 const salon_annonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);

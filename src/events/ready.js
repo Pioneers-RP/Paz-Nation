@@ -1,6 +1,6 @@
 const { ActivityType, Events, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
 const { readFileSync, writeFileSync } = require('fs');
-const { connection } = require('../index.ts');
+const { connection } = require('../index');
 const { globalBox } = require('global-box');
 const box = globalBox();
 const Chance = require('chance');

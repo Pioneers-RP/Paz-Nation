@@ -7,7 +7,7 @@ module.exports = {
         .setDescription(`Voir vos industries`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         menuIndustrie(interaction, connection)
     },

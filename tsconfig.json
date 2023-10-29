@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "target": "ES2018",
     "module": "commonjs",
     "strict": true,
@@ -11,7 +12,10 @@
     "types": ["node"],
     "lib": ["es6", "dom"],
     "moduleResolution": "node",
-    "experimentalDecorators": true, // Assurez-vous que cette option est activée
-    "emitDecoratorMetadata": true // Assurez-vous que cette option est activée
-  }
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+  "include": [
+    "src/**/*" // Cette ligne inclut tous les fichiers .ts et .js dans le dossier src
+  ]
 }

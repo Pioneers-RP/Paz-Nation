@@ -3,6 +3,16 @@
     "version": "1.5.7",
     "license": "UNLICENSED",
     "main": "dist/index.js",
+    "scripts": {
+        "start:dev": "NODE_ENV=development ts-node src/index.ts",
+        "start": "NODE_ENV=production node dist/index.js",
+        "build": "tsc",
+        "build:js": "cp src/**/*.js dist/",
+        "lint": "eslint . --ext .ts,.js",
+        "release": "yarn standard-version",
+        "release:minor": "yarn standard-version --release-as minor",
+        "release:major": "yarn standard-version --release-as major"
+    },
     "dependencies": {
         "@discordjs/builders": "^1.6.5",
         "@nestjs/common": "^9.0.0",
@@ -38,13 +48,6 @@
         "ts-node": "10.9.1",
         "tsc": "2.0.4",
         "typescript": "5.2.2"
-    },
-    "scripts": {
-        "start": "ts-node src/index.ts",
-        "lint": "eslint . --ext .ts,.js",
-        "release": "yarn standard-version",
-        "release:minor": "yarn standard-version --release-as minor",
-        "release:major": "yarn standard-version --release-as major"
     },
     "repository": "https://github.com/Paz-Nation/Paz-Nation.git",
     "author": "Subcher <zazarpikou@gmail.com>"

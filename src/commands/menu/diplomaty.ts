@@ -7,7 +7,7 @@ module.exports = {
         .setDescription(`Consultez votre diplomatie`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         menuDiplomatie(interaction, connection);
     },

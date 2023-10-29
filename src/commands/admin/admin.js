@@ -50,7 +50,7 @@ module.exports = {
 
     async execute(interaction) {
         let channelName;
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
         let embed;
 
         switch (interaction.options.getSubcommand()) {

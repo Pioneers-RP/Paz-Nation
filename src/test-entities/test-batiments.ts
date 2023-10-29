@@ -1,6 +1,6 @@
-import { AppDataSource } from '../src/data-source';
+import { AppDataSource } from '../data-source';
 import dotenv from 'dotenv';
-import { Batiments } from '../src/entities/Batiments';
+import { Batiments } from '../entities/Batiments';
 dotenv.config();
 
 async function main() {

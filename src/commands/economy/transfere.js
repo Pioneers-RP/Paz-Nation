@@ -15,7 +15,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         const user = interaction.options.getUser('joueur');
         const montant = interaction.options.getInteger('montant');

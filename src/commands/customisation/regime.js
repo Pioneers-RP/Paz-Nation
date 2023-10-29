@@ -29,7 +29,7 @@ module.exports = {
 
     async execute(interaction) {
         let reponse;
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         if (
             interaction.member.roles.cache.some(role => role.name === "👤 » Dirigent") ||

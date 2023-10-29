@@ -38,7 +38,7 @@ module.exports = {
             .setRequired(true)),
 
     async execute(interaction) {
-        const { connection } = require('../../index.ts');
+        const { connection } = require('../../index');
 
         const sql = `
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
