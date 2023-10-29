@@ -1,4 +1,4 @@
-import { readdirSync } from 'fs'
+import { readdirSync, writeFile } from 'fs'
 import path from 'node:path';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
@@ -10,6 +10,7 @@ export const connect = AppDataSource.initialize()
     .then(() => {
         console.log("Database initialized with TypeORM")})
     .catch((error) => console.log(error))
+
 export const connection = mysql.createConnection({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
@@ -93,4 +94,12 @@ process.on('Warning', (...args: any[]) => {
 
 client.login(process.env.TOKEN!).then(() => {
     console.log(`Bot launched under : ${client.user?.tag}`);
+    // Check if the bot is healthy
+    writeFile('/tmp/healthy', 'OK', (err) => {
+        if (err) {
+        console.error('Failed to create health check file:', err);
+        } else {
+        console.log('Health check file created successfully.');
+        }
+    });
 });
