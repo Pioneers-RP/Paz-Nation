@@ -94,12 +94,4 @@ process.on('Warning', (...args: any[]) => {
 
 client.login(process.env.TOKEN!).then(() => {
     console.log(`Bot launched under : ${client.user?.tag}`);
-    // Check if the bot is healthy
-    writeFile('/tmp/healthy', 'OK', (err) => {
-        if (err) {
-        console.error('Failed to create health check file:', err);
-        } else {
-        console.log('Health check file created successfully.');
-        }
-    });
 });
