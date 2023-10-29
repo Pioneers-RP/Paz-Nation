@@ -3,7 +3,7 @@ const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
 const { readFileSync } = require('fs');
 const {msToMinutes, CommandCooldown} = require("discord-command-cooldown");
 const ms = require("ms");
-const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
 const raidCommandCooldown = new CommandCooldown('raid', ms('1d'));
 
 module.exports = {

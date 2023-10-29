@@ -3,7 +3,7 @@ const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
 const ideologieCommandCooldown = new CommandCooldown('ideologie', ms('7d'));
 const { readFileSync } = require("fs");
-const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

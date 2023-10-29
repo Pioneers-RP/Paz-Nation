@@ -1,7 +1,7 @@
 import {SlashCommandBuilder} from 'discord.js';
 import {menuTerritoire} from "../../fonctions/functions";
 import {readFileSync} from "fs";
-const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

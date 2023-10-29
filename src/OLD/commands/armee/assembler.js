@@ -1,6 +1,6 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} = require('discord.js');
 const { readFileSync } = require('fs');
-const assemblageObject = JSON.parse(readFileSync('src/data/assemblage.json', 'utf-8'));
+const assemblageObject = JSON.parse(readFileSync('src/OLD/data/assemblage.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

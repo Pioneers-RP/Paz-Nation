@@ -4,7 +4,7 @@ const ms = require("ms");
 const { setTimeout: wait } = require("node:timers/promises");
 const { readFileSync } = require("fs");
 
-const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

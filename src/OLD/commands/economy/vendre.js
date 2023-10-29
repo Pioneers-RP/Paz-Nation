@@ -2,7 +2,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeB
 const { readFileSync } = require('fs');
 const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
 const ms = require('ms');
-const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

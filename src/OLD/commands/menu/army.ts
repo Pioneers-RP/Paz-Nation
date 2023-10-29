@@ -1,7 +1,7 @@
 import {SlashCommandBuilder} from 'discord.js';
 import {menuArmee} from '../../fonctions/functions';
 import {readFileSync} from 'fs';
-const armeeObject = JSON.parse(readFileSync('src/data/armee.json', 'utf-8'));
+const armeeObject = JSON.parse(readFileSync('src/OLD/data/armee.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()
