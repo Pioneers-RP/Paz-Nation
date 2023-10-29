@@ -38,4 +38,4 @@ RUN yarn workspaces focus --production
 # Compilation du TypeScript en JavaScript
 RUN yarn build
 # Commande pour démarrer l'application en mode de production
-CMD ["node", "dist/main"] # Assurez-vous que le point d'entrée correspond à votre fichier compilé
+CMD ["node", "dist/main"]
