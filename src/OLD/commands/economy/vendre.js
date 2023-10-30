@@ -62,7 +62,7 @@ module.exports = {
                 const ressource = interaction.options.getString('ressource');
                 const quantite = interaction.options.getInteger('quantité');
                 const prix_u = interaction.options.getNumber('prix');
-                const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
+                const jsonPrix = JSON.parse(readFileSync('OLD/data/prix.json', 'utf-8'));
 
                 function offre(prixMoyen, pourcentage, emoji) {
                     const prix = Math.round(quantite * prix_u);

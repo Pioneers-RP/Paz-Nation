@@ -3362,7 +3362,7 @@ module.exports = {
                         if (res === 'eolienne') {
                             prixMoyen = 'Pas de prix moyen'
                         } else {
-                            const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
+                            const jsonPrix = JSON.parse(readFileSync('OLD/data/prix.json', 'utf-8'));
                             prixMoyen = eval(`jsonPrix.${res}`)
                         }
                         const offre = {

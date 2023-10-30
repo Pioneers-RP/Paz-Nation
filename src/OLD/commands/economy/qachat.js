@@ -39,7 +39,7 @@ module.exports = {
 
             const ressource = interaction.options.getString('ressource');
             const quantite = interaction.options.getInteger('quantité');
-            const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
+            const jsonPrix = JSON.parse(readFileSync('OLD/data/prix.json', 'utf-8'));
             function offre(prix_moyen, emoji) {
 
                 const prix_achat = parseFloat((prix_moyen * 1.3).toFixed(2));
