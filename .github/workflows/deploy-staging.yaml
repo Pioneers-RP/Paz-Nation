@@ -149,6 +149,7 @@ jobs:
 
   notification:
     runs-on: ubuntu-latest
+    if: ${{ always() }}
     needs: [deploy]
 
     steps:
