@@ -3,11 +3,11 @@ name: DEVELOP
 on:
   workflow_dispatch:
     inputs:
-      Disable:
-        description: Disable ?
+      Enable:
+        description: Enable ?
         required: true
         type: boolean
-        default: false
+        default: true
   push:
     branches:
       - staging
@@ -20,7 +20,7 @@ env:
   APPLICATION: paznation
   ENV: staging
   NODE_ENV: development
-  DISABLE: ${{ github.event.inputs.Disable == 'true' && '1' || '0' }}
+  ENABLE: ${{ github.event.inputs.Enable == 'true' && '1' || '0' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -29,7 +29,7 @@ concurrency:
 jobs:
   sonar:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' && github.event.inputs.Disable == 'false'}}
+    if: ${{ github.event_name != 'workflow_dispatch' }}
 
     steps:
     - name: Checkout
@@ -62,7 +62,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name != 'workflow_dispatch' && github.event.inputs.Disable == 'false'}}
+    if: ${{ github.event_name != 'workflow_dispatch' }}
 
     steps:
       - name: Checkout
@@ -144,7 +144,7 @@ jobs:
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
           --set "mariadb.auth.password=${{ secrets.MYSQL_PASSWORD }}" \
-          --set "replicaCount="${{ env.DISABLE }} \
+          --set "replicaCount="${{ env.ENABLE }} \
           ${{ env.EKS_CLUSTER_SERVICE }} helm
 
   notification:
