@@ -22,8 +22,6 @@ env:
   NODE_ENV: development
   ENABLE: ${{ github.event.inputs.Enable }}
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
 
 jobs:
   sonar:
