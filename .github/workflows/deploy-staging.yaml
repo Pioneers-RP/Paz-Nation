@@ -2,10 +2,16 @@ name: DEVELOP
 
 on:
   workflow_dispatch:
+    inputs:
+      Enable:
+        description: Enable ?
+        required: true
+        type: boolean
+        default: true
   push:
     branches:
       - staging
-
+      
 env:
   AWS_REGION: eu-west-1
   ECR_REPOSITORY: jemoco/paznation-server
@@ -14,6 +20,7 @@ env:
   APPLICATION: paznation
   ENV: staging
   NODE_ENV: development
+  ENABLE: ${{ github.event.inputs.Enable }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -134,6 +141,7 @@ jobs:
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
           --set "mariadb.auth.password=${{ secrets.MYSQL_PASSWORD }}" \
+          --set "replicaCount="${{ env.ENABLE }}
           ${{ env.EKS_CLUSTER_SERVICE }} helm
 
   notification:
