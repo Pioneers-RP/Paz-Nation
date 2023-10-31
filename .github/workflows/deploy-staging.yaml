@@ -141,7 +141,7 @@ jobs:
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
           --set "mariadb.auth.password=${{ secrets.MYSQL_PASSWORD }}" \
-          --set "replicaCount="${{ env.ENABLE }}
+          --set "replicaCount="${{ env.ENABLE }} \
           ${{ env.EKS_CLUSTER_SERVICE }} helm
 
   notification:
