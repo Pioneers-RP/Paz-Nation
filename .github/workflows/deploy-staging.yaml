@@ -99,12 +99,10 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG --build-arg NODE_ENV=${NODE_ENV} --target ${NODE_ENV} .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-  switch:
-    runs-on: ubuntu-latest
-
   deploy:
     runs-on: ubuntu-latest
-    needs: [build, sonar, switch]
+    if: ${{ always() }}
+    needs: [build, sonar]
     environment: staging
 
     steps:
