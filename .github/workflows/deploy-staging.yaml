@@ -131,6 +131,8 @@ jobs:
       - uses: benjlevesque/short-sha@v1.2
         id: image-tag
 
+      - run: echo ${{ env.ENABLE }}
+
       - name: Deploy k8s yaml
         id: deploy-k8s-yaml
         env:
