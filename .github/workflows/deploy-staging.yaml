@@ -29,7 +29,7 @@ concurrency:
 jobs:
   sonar:
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.Disable }}
+    if: ${{ github.event_name != 'workflow_dispatch' && github.event.inputs.Disable == 'false'}}
 
     steps:
     - name: Checkout
@@ -62,7 +62,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.Disable }}
+    if: ${{ github.event_name != 'workflow_dispatch' && github.event.inputs.Disable == 'false'}}
 
     steps:
       - name: Checkout
