@@ -29,7 +29,7 @@ concurrency:
 jobs:
   sonar:
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.Enable == true }}
+    if: ${{ env.ENABLE == '1' }}
 
     steps:
     - name: Checkout
@@ -62,7 +62,7 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    if: ${{ github.event.inputs.Enable == true }}
+    if: ${{ env.ENABLE == '1' }}
 
     steps:
       - name: Checkout
