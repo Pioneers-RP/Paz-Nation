@@ -3,11 +3,11 @@ name: DEVELOP
 on:
   workflow_dispatch:
     inputs:
-      Enable:
-        description: Enable ?
+      Disable:
+        description: Disable ?
         required: true
         type: boolean
-        default: true
+        default: false
   push:
     branches:
       - staging
@@ -20,7 +20,7 @@ env:
   APPLICATION: paznation
   ENV: staging
   NODE_ENV: development
-  ENABLE: ${{ github.event.inputs.Enable == 'true' && '1' || '0' }}
+  ENABLE: ${{ github.event.inputs.Disable == 'true' && '0' || '1' }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
