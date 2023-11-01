@@ -3,14 +3,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const AppDataSource = new DataSource({
-    // type: 'mariadb',
-    type: "sqlite",
-    // host: process.env.DATABASE_HOST ?? 'localhost',
-    // port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 3306,
-    // username: process.env.DATABASE_USER ?? 'root',
-    // password: process.env.DATABASE_PASSWORD ?? 'password',
-    // database: process.env.DATABASE_DATABASE ?? 'database',
-    database: __dirname+`/data/paznation.sqlite`,
+    type: 'mariadb',
+    host: process.env.DATABASE_HOST ?? 'localhost',
+    port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 3306,
+    username: process.env.DATABASE_USER ?? 'root',
+    password: process.env.DATABASE_PASSWORD ?? 'password',
+    database: process.env.DATABASE_DATABASE ?? 'database',
     entities: [
         __dirname + "/entities/*Armee.ts", // Au final essayer de remplacer seulement avec *
         __dirname + "/entities/*Batiments.ts",
@@ -26,6 +24,6 @@ export const AppDataSource = new DataSource({
         __dirname + "/entities/*Trade.ts"
     ],
     synchronize: true,
-    // multipleStatements: true,
+    multipleStatements: true,
     logging: false,
 });

@@ -20,3 +20,14 @@ services:
       PMA_PASSWORD: root
     ports:
       - "8080:80"
+
+  server:
+      build:
+        context: .
+        dockerfile: Dockerfile
+        target: development
+      container_name: bot
+      env_file:
+        - .env 
+      volumes:
+        - ./src:/app
