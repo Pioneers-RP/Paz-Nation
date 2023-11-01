@@ -26,8 +26,10 @@ services:
         context: .
         dockerfile: Dockerfile
         target: development
-      container_name: bot
+      container_name: server
       env_file:
-        - .env 
+        - .env
+      ports:
+        - "5678:5678" #debug
       volumes:
         - ./src:/app

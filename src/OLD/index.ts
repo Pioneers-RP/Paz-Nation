@@ -4,8 +4,8 @@ import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
 import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
-
 dotenv.config();
+
 export const connect = AppDataSource.initialize()
     .then(() => {
         console.log("Database initialized with TypeORM")})
@@ -93,5 +93,6 @@ process.on('Warning', (...args: any[]) => {
 });
 
 client.login(process.env.TOKEN!).then(() => {
+    console.log("Starting bot vs3...")
     console.log(`Bot launched under : ${client.user?.tag}`);
 });
