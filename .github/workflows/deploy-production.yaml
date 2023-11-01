@@ -1,4 +1,4 @@
-name: MASTER
+name: MAIN
 
 on:
   workflow_dispatch:
