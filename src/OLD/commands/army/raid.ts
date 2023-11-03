@@ -4,7 +4,7 @@ import {readFileSync} from 'fs';
 import {msToMinutes, CommandCooldown} from "discord-command-cooldown";
 import ms from "ms";
 import {failReply} from "../../fonctions/functions";
-const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
 const raidCommandCooldown = new CommandCooldown('raid', ms('1d'));
 
 module.exports = {

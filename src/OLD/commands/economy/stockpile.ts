@@ -1,6 +1,6 @@
 import {SlashCommandBuilder, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} from 'discord.js';
 import {readFileSync} from 'fs';
-const regionObject = JSON.parse(readFileSync('src/data/region.json', 'utf-8'));
+const regionObject = JSON.parse(readFileSync('src/OLD/data/region.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

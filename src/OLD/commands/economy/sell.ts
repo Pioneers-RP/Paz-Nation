@@ -2,7 +2,7 @@ import {ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeB
 import {readFileSync} from 'fs';
 import {CommandCooldown, msToMinutes} from 'discord-command-cooldown';
 import ms from 'ms';
-const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

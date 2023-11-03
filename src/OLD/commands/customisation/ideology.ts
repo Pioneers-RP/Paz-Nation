@@ -4,7 +4,7 @@ import ms from 'ms';
 const ideologieCommandCooldown = new CommandCooldown('ideologie', ms('7d'));
 import {readFileSync} from "fs";
 import {failReply} from "../../fonctions/functions";
-const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

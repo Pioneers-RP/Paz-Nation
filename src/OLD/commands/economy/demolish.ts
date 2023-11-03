@@ -1,8 +1,8 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} from 'discord.js';
 import {readFileSync} from 'fs';
 import {failReply} from "../../fonctions/functions";
-const batimentObject = JSON.parse(readFileSync('src/data/batiment.json', 'utf-8'));
-const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
+const batimentObject = JSON.parse(readFileSync('src/OLD/data/batiment.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()

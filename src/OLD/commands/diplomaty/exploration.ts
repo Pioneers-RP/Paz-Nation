@@ -4,7 +4,7 @@ import ms from "ms";
 import {readFileSync} from "fs";
 import {convertMillisecondsToTime, failReply} from "../../fonctions/functions";
 
-const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()
