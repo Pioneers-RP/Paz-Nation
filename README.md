@@ -17,6 +17,8 @@ yarn
 
 La commande va installer les dépendences (**node_modules**) nécessaires 
 
+Si la commande *yarn* n'est pas reconnue, elle est disponible ici : https://classic.yarnpkg.com/en/docs/install#mac-stable
+
 ## Pour lancer l'application on local
 
 ```
@@ -34,3 +36,4 @@ yarn lint
 ```
 yarn add {Lib}
 ```
+

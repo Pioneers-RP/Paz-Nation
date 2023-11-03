@@ -1,27 +1,42 @@
-name: DEVELOP
+name: STAGING
 
 on:
   workflow_dispatch:
+    inputs:
+      Enable:
+        description: Enable ?
+        required: true
+        type: boolean
+        default: false
   push:
     branches:
-      - develop
-    paths-ignore:
-      - '.github/workflows/replicate-database.yaml'
-
+      - staging
+      
 env:
   AWS_REGION: eu-west-1
-  ECR_REPOSITORY: jemoco/yousoon-server
+  ECR_REPOSITORY: jemoco/paznation-server
   EKS_CLUSTER_NAME: jemoco2
-  EKS_CLUSTER_NAMESPACE: yousoonapi-staging
-  EKS_CLUSTER_SERVICE: server
+  EKS_CLUSTER_SERVICE: paznation
+  APPLICATION: paznation
+  ENV: staging
+  NODE_ENV: development
+  ENABLE: ${{ github.event.inputs.Enable == 'true' && '1' || '0' }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 
 jobs:
   sonar:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' }}
 
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@main
+      with:
+        fetch-depth: 0
+        ref: staging
 
     - uses: benjlevesque/short-sha@v1.2
       id: image-tag
@@ -47,10 +62,14 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name != 'workflow_dispatch' }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+          ref: staging
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -72,7 +91,7 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
-          NODE_ENV: development
+          NODE_ENV: ${{ env.NODE_ENV }}
         run: |
           # Build a docker container and
           # push it to ECR so that it can
@@ -82,12 +101,16 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
+    if: ${{ always() }}
     needs: [build, sonar]
     environment: staging
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@main
+        with:
+          fetch-depth: 0
+          ref: staging
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -108,36 +131,28 @@ jobs:
       - uses: benjlevesque/short-sha@v1.2
         id: image-tag
 
+      - run: echo ${{ env.ENABLE }}
+
       - name: Deploy k8s yaml
         id: deploy-k8s-yaml
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
-
         run: |
           helm dependency build helm
-          helm upgrade --install --wait --namespace=${{ env.EKS_CLUSTER_NAMESPACE }} --create-namespace -f helm/${{ env.EKS_CLUSTER_NAMESPACE }}.yaml \
+          helm upgrade --install --wait --namespace=${{ env.APPLICATION }}-${{ env.ENV }} --create-namespace -f helm/values-${{ env.ENV }}.yaml \
           --set "nameOverride=${{ env.EKS_CLUSTER_SERVICE }}" \
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
-          --set "secrets.APOLLO_KEY=${{ secrets.APOLLO_KEY }}" \
-          --set "secrets.APP_SECRET=${{ secrets.APP_SECRET }}" \
-          --set "secrets.AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID__YOUSOON }}" \
-          --set "secrets.AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY__YOUSOON }}" \
-          --set "secrets.BRANCH_IO_KEY=${{ secrets.BRANCH_IO_KEY }}" \
-          --set "secrets.DATABASE_URL=${{ secrets.DATABASE_URL }}?${{ vars.DATABASE_OPTIONS }}" \
-          --set "secrets.GOOGLE_CLOUD_API_KEY=${{ secrets.GOOGLE_CLOUD_API_KEY }}" \
-          --set "secrets.REFRESH_TOKEN_SECRET=${{ secrets.REFRESH_TOKEN_SECRET }}" \
-          --set "secrets.SENTRY_DSN=${{ secrets.SENTRY_DSN }}" \
-          --set "secrets.VPN_API_KEY=${{ secrets.VPN_API_KEY }}" \
-          --set "secrets.REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}" \
-          --set "secrets.REDIS_URL=${{ secrets.REDIS_URL }}" \
+          --set "mariadb.auth.password=${{ secrets.MYSQL_PASSWORD }}" \
+          --set "replicaCount="${{ env.ENABLE }} \
           ${{ env.EKS_CLUSTER_SERVICE }} helm
-          
+
   notification:
     runs-on: ubuntu-latest
-    needs: [sonar, deploy]
+    if: ${{ always() }}
+    needs: [deploy]
 
     steps:
       - name: Slack Notification

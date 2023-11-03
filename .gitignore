@@ -64,3 +64,5 @@ dump
 /.eslintcache
 **/~$*.docx
     
+
+Docker/data/

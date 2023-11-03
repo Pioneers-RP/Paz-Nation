@@ -1,0 +1,189 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "charts.fullname" . }}
+  labels:
+    {{- include "charts.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "charts.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "charts.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "charts.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-database
+                  key: HOST
+            - name: USER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-database
+                  key: USER
+            - name: PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "charts.fullname" . }}-database
+                  key: PASSWORD
+            - name: DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-database
+                  key: DATABASE
+            - name: CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: CLIENT_ID
+            - name: GUILD_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: GUILD_ID
+            - name: TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: TOKEN
+            - name: URL_LOGO
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: URL_LOGO
+            - name: SALON_ACTUALITE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_ACTUALITE
+            - name: SALON_LOGS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_LOGS
+            - name: SALON_COMMAND
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_COMMAND
+            - name: SALON_ANNONCE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_ANNONCE
+            - name: SALON_PWEETER
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_PWEETER
+            - name: SALON_COMMERCE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_COMMERCE
+            - name: SALON_PRIX
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_PRIX
+            - name: SALON_AMBASSADE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_AMBASSADE
+            - name: SALON_ORGANISATION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_ORGANISATION
+            - name: SALON_GUERRE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_GUERRE
+            - name: SALON_CARTE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_CARTE
+            - name: CATEGORY_PAYS
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: CATEGORY_PAYS
+            - name: SALON_COMPET
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_COMPET
+            - name: SALON_COMPET_BONHEUR
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_COMPET_BONHEUR
+            - name: SALON_COMPET_POPULATION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_COMPET_POPULATION
+            - name: SALON_COMPET_TERRITOIRE
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: SALON_COMPET_TERRITOIRE
+            - name: NBR_FULL_AVEC_LOGO
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: NBR_FULL_AVEC_LOGO
+            - name: NBR_FULL_SANS_LOGO
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: NBR_FULL_SANS_LOGO
+            - name: NBR_SIMPLE_LOGO
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-discord
+                  key: NBR_SIMPLE_LOGO
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.targetPort }}
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

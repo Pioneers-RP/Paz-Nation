@@ -1,0 +1,48 @@
+# compiled output
+/dist
+/node_modules
+.tasks/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# IDEs and editors
+.git/
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
+
+# IDE - VSCode
+.vscode/*
+
+# Extra files
+docs/
+*.md
+**/Dockerfile*
+docker-compose.*
+.env
+.env.*
+helm/
+.gitlab*
+tools/
+resources/
+!resources/swagger
+locales/*.ts
+
+# Ignore task files
+Taskfile.yml
+.tasks
+
+# Ignore sonar scanner files
+.scannerwork/
+.sonar/
+
