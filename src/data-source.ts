@@ -10,18 +10,7 @@ export const AppDataSource = new DataSource({
     password: process.env.DATABASE_PASSWORD ?? 'password',
     database: process.env.DATABASE_DATABASE ?? 'database',
     entities: [
-        __dirname + "/entities/*Armee.ts", // Au final essayer de remplacer seulement avec *
-        __dirname + "/entities/*Batiments.ts",
-        __dirname + "/entities/*Diplomatie.ts",
-        __dirname + "/entities/*Historique.ts",
-        __dirname + "/entities/*Pays.ts",
-        __dirname + "/entities/*Population.ts",
-        __dirname + "/entities/*Processus.ts",
-        __dirname + "/entities/*Qachat.ts",
-        __dirname + "/entities/*Qvente.ts",
-        __dirname + "/entities/*Ressources.ts",
-        __dirname + "/entities/*Territoire.ts",
-        __dirname + "/entities/*Trade.ts"
+        __dirname + "/entities/*.ts",
     ],
     synchronize: true,
     multipleStatements: true,

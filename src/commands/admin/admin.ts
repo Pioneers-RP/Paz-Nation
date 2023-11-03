@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, StringSelectMenuBuilder, codeBlock} = require('discord.js');
+import {ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, StringSelectMenuBuilder, codeBlock} from 'discord.js';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -6,49 +6,18 @@ module.exports = {
         .setDescription(`Commandes admin`)
         .addSubcommand(subcommand =>
             subcommand
-            .setName('give')
-            .setDescription('Donner un item à joueur')
-            .addUserOption(option =>
-                option.setName('joueur')
-                .setDescription('Le joueur à qui donner')
-                .setRequired(true))
-            .addStringOption(item =>
-                item.setName('item')
-                .setDescription(`L'item à donner`)
-                .addChoices(
-                    { name: `Argent`, value: 'cash' },
-                    { name: `Biens de consommation`, value: 'bc'},
-                    { name: `Bois`, value: 'bois'},
-                    { name: `Eau`, value: 'eau'},
-                    { name: `Métaux`, value: 'metaux'},
-                    { name: `Nourriture`, value: 'nourriture'},
-                    { name: `Pétrole`, value: 'petrole'},
-                    { name: `Population`, value: 'population'},
-                    { name: `Territoire libre`, value: 'T_libre'},
-                    { name: `Territoire occupé`, value: 'T_occ'})
-                .setRequired(true))
-            .addIntegerOption(quantité =>
-                quantité.setName('quantité')
-                .setDescription(`La quantité que vous voulez donner`)
-                .setRequired(true)))
-        .addSubcommand(subcommand =>
-            subcommand
             .setName('start')
-            .setDescription('NE PAS UTILISER SVP'))
+            .setDescription('Message pour commencer le jeu'))
         .addSubcommand(subcommand =>
             subcommand
             .setName('reglement')
-            .setDescription('NE PAS UTILISER SVP'))
-        .addSubcommand(subcommand =>
-            subcommand
-            .setName('lock')
-            .setDescription('NE PAS UTILISER SVP'))
+            .setDescription('Messages du règlement'))
         .addSubcommand(subcommand =>
             subcommand
                 .setName('tags')
-                .setDescription('NE PAS UTILISER SVP')),
+                .setDescription('Récupérer les tags d\'un forum')),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
         let channelName;
         const { connection } = require('../../index.ts');
         let embed;
@@ -58,73 +27,6 @@ module.exports = {
                 const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
                 console.log(salon_commerce.availableTags)
                 break
-            case 'give':
-                const joueur = interaction.options.getUser('joueur');
-                const item = interaction.options.getString('item');
-                const quantite = interaction.options.getInteger('quantité');
-
-                const sql = `SELECT * FROM pays WHERE id_joueur=${joueur.id}`;
-                connection.query(sql, async(err, results) => {if (err) { throw err; }
-
-                    if (!results[0]) {
-                        const reponse = codeBlock('diff', `- Cette personne ne joue pas.`);
-                        await interaction.reply({ content: reponse, ephemeral: true });
-                    } else {
-
-                        let sql = `UPDATE pays SET ${item}=${item}+${quantite} WHERE id_joueur="${joueur.id}"`;
-
-                        if (item === 'T_libre' || 't_occ') {
-                            sql = sql + `;UPDATE pays SET T_total=T_total+${quantite} WHERE id_joueur=${interaction.user.id}`;
-
-                            if ((results[0].T_total + quantite) > (results[0].hexagone * 15000)) {
-                                sql = sql + `;UPDATE pays SET hexagone=hexagone+1 WHERE id_joueur=${interaction.user.id}`;
-
-                                const annonce = {
-                                    author: {
-                                        name: `${results[0].rang} de ${results[0].nom}`,
-                                        icon_url: interaction.member.displayAvatarURL()
-                                    },
-                                    thumbnail: {
-                                        url: results[0].drapeau,
-                                    },
-                                    title: `\`Le/la ${results[0].regime} a désormais une influence sur une nouvelle case\``,
-                                    description: `> Direction : ${results[0].direction}`,
-                                    timestamp: new Date(),
-                                    footer: {
-                                        text: `${results[0].devise}`
-                                    },
-                                    color: interaction.member.displayColor
-                                };
-
-                                const salon_carte = interaction.client.channels.cache.get(process.env.SALON_CARTE);
-                                salon_carte.send({ embeds: [annonce] });
-
-                                const salon_joueur = interaction.client.channels.cache.get(results[0].id_salon);
-                                salon_joueur.send({ content: `__**Vous vous êtes étendu sur une nouvelle case : ${salon_carte}**__` });
-                            }
-                        }
-                        connection.query(sql, async(err, results) => { if (err) { throw err; } });
-
-                        const embed = {
-                            author: {
-                                name: `${results[0].rang} de ${results[0].nom}`,
-                                icon_url: joueur.displayAvatarURL()
-                            },
-                            thumbnail: {
-                                url: `${results[0].drapeau}`
-                            },
-                            title: `\`Give par ${interaction.member.displayName}\``,
-                            color: joueur.displayColor,
-                            timestamp: new Date(),
-                            footer: {
-                                text: `${results[0].devise}`
-                            },
-                        };
-
-                        await interaction.reply({ embeds: [embed] });
-                    }
-                });
-                break;
 
             case 'start':
                     embed = {
@@ -206,8 +108,8 @@ module.exports = {
                             ),
                         );
 
-                    const salon_début = interaction.client.channels.cache.get('983316109367345152');
-                    salon_début.send({ embeds: [embed], components: [row0] });
+                    const startingChannel = interaction.client.channels.cache.get('983316109367345152');
+                    startingChannel.send({ embeds: [embed], components: [row0] });
                     await interaction.reply({ content: `Bouton envoyé` });
                     break;
 
@@ -243,20 +145,6 @@ module.exports = {
                 salon_reglement.send({ embeds: [reglement4] })
                 await interaction.reply({ content: `Bouton envoyé` });
                 break;
-
-            case 'lock':
-                const channel = interaction.channel;
-                if (channel.name.includes("🔒") == true) {
-                    channelName = channel.name.slice(2);
-                    channel.setName(channelName);
-                    channel.permissionOverwrites.edit('875056356820918292', { SEND_MESSAGES: true })
-                    await interaction.reply({ content: `Channel lock` });
-                } else {
-                    channelName = channel.name;
-                    channel.setName("🔒-" + channelName);
-                    channel.permissionOverwrites.edit('875056356820918292', { SEND_MESSAGES: false })
-                    await interaction.reply({ content: `Channel unlock` });
-                }
         }
     },
 };

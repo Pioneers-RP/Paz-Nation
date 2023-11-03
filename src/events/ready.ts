@@ -1,11 +1,11 @@
-const { ActivityType, Events, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
-const { readFileSync, writeFileSync } = require('fs');
-const { connection } = require('../index.ts');
-const { globalBox } = require('global-box');
+import {ActivityType, Events, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle, Client} from 'discord.js';
+import {readFileSync, writeFileSync} from 'fs';
+import {connection} from '../index';
+import {globalBox} from 'global-box';
 const box = globalBox();
-const Chance = require('chance');
+import Chance from 'chance';
 const chance = new Chance();
-const ms = require('ms');
+import ms from 'ms';
 const CronJob = require('cron').CronJob;
 
 const armeeObject = JSON.parse(readFileSync('src/data/armee.json', 'utf-8'));
@@ -18,7 +18,7 @@ const regionObject = JSON.parse(readFileSync('src/data/region.json', 'utf-8'));
 module.exports = {
     name: Events.ClientReady,
     once: true,
-    execute(client) {
+    execute(client: any) {
 
         if (client.user.id === 834855105177845794) {
             client.channels.cache.get(process.env.SALON_ACTUALITE).send('<@834855105177845794> a été <@&1061392938829094913>')
@@ -84,7 +84,7 @@ module.exports = {
                     const arrayPays = Object.values(results);
                     arrayPays.forEach(chaquePays);
 
-                    function chaquePays(value) {
+                    function chaquePays(value: any) {
                         const sql = `
                             SELECT * FROM armee WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM batiments WHERE id_joueur='${value.id_joueur}';
@@ -756,9 +756,9 @@ module.exports = {
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     const arrayProcess = Object.values(results);
                     arrayProcess.forEach(chaqueProcess);
-                    function chaqueProcess(value) {
+                    function chaqueProcess(value: any) {
                         // Fonction pour vérifier si un timestamp est déjà passé
-                        function estTimestampPasse(timestamp) {
+                        function estTimestampPasse(timestamp: any) {
                             const maintenant = Date.now();
                             return timestamp < maintenant;
                         }
@@ -777,6 +777,7 @@ module.exports = {
                                     case 'exploration':
                                         //region Exploration
                                         const arrayBiome = Object.keys(eval(`biomeObject.${Territoire.region}.biome`));
+                                        // @ts-ignore
                                         const arrayChance = Object.values(eval(`biomeObject.${Territoire.region}.biome`)).map(item => item.chance);
                                         const biomeChoisi = chance.weighted(arrayBiome, arrayChance)
                                         const tailleChoisi = chance.integer({
@@ -854,7 +855,7 @@ module.exports = {
                                                     .setStyle(ButtonStyle.Success),
                                             )
 
-                                        function bouton(message) {
+                                        function bouton(message: any) {
                                             return new ActionRowBuilder()
                                                 .addComponents(
                                                     new ButtonBuilder()
@@ -866,7 +867,7 @@ module.exports = {
                                         }
 
                                         client.channels.cache.get(Pays.id_salon).send({embeds: [embedRevenu], components: [row1]})
-                                            .then(message => joueur.send({
+                                            .then((message: any) => joueur.send({
                                                 embeds: [embedRevenu],
                                                 components: [bouton(message)]
                                             }))
@@ -911,7 +912,7 @@ module.exports = {
                     const arrayPays = Object.values(results);
                     arrayPays.forEach(chaquePays);
 
-                    function chaquePays(value) {
+                    function chaquePays(value: any) {
                         sql = `
                             SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
                             SELECT * FROM population WHERE id_joueur='${value.id_joueur}';
@@ -1007,7 +1008,7 @@ module.exports = {
                             })
 
                             //region Croissance démographique
-                            const pop_taux_demo = ((10 + Population.eau_acces * 2.3 + Population.nourriture_acces * 2.3 + Population.bonheur * 1) / 100).toFixed(2);
+                            const pop_taux_demo: number = parseFloat(((10 + Population.eau_acces * 2.3 + Population.nourriture_acces * 2.3 + Population.bonheur * 1) / 100).toFixed(2));
                             let enfant = Math.round((15 / 16) * Population.enfant + (populationObject.NATALITE_JEUNE * pop_taux_demo * Population.jeune) + (populationObject.NATALITE_ADULTE * pop_taux_demo * Population.adulte) - populationObject.MORTALITE_ENFANT * Population.enfant);
                             if (enfant < 0) {
                                 enfant = 0;
@@ -1036,7 +1037,7 @@ module.exports = {
                             //endregion
 
 
-                            function func_enfant(Population, mort) {
+                            function func_enfant(Population: any, mort: number) {
                                 let enfant;
                                 let enfant_mort;
 
@@ -1050,7 +1051,7 @@ module.exports = {
                                 return { enfant, enfant_mort };
                             }
 
-                            function func_jeune(Population, mort) {
+                            function func_jeune(Population: any, mort: number) {
                                 let jeune;
                                 let jeune_mort;
 
@@ -1064,7 +1065,7 @@ module.exports = {
                                 return { jeune, jeune_mort };
                             }
 
-                            function func_adulte(Population, mort) {
+                            function func_adulte(Population: any, mort: number) {
                                 let adulte;
                                 let adulte_mort;
                                 if (Population.adulte - mort < 0) {
@@ -1077,7 +1078,7 @@ module.exports = {
                                 return { adulte, adulte_mort };
                             }
 
-                            function func_vieux(Population, mort) {
+                            function func_vieux(Population: any, mort: number) {
                                 let vieux;
                                 let vieux_mort;
 
@@ -1138,7 +1139,7 @@ module.exports = {
                                             }
                                         };
                                         const joueur = client.users.cache.get(Pays.id_joueur)
-                                        function bouton(message) {
+                                        function bouton(message: { url: string; }) {
                                             return new ActionRowBuilder()
                                                 .addComponents(
                                                     new ButtonBuilder()
@@ -1150,7 +1151,7 @@ module.exports = {
                                         }
 
                                         client.channels.cache.get(Pays.id_salon).send({embeds: [embed]})
-                                            .then(message => joueur.send({
+                                            .then((message: { url: string; }) => joueur.send({
                                                 embeds: [embed],
                                                 components: [bouton(message)]
                                             }))
@@ -1220,7 +1221,7 @@ module.exports = {
                                                 }
                                             };
                                             const joueur = client.users.cache.get(Pays.id_joueur)
-                                            function bouton(message) {
+                                            function bouton(message: { url: string; }) {
                                                 return new ActionRowBuilder()
                                                     .addComponents(
                                                         new ButtonBuilder()
@@ -1232,7 +1233,7 @@ module.exports = {
                                             }
 
                                             client.channels.cache.get(Pays.id_salon).send({embeds: [embed]})
-                                                .then(message => joueur.send({
+                                                .then((message: { url: string; }) => joueur.send({
                                                     embeds: [embed],
                                                     components: [bouton(message)]
                                                 }))
@@ -1333,7 +1334,7 @@ module.exports = {
                     arrayQvente.forEach(chaqueMarket);
                     arrayQachat.forEach(chaqueMarket);
 
-                    function chaqueMarket(value) {
+                    function chaqueMarket(value: any) {
                         switch (value.ressource) {
                             case 'Acier':
                                 box.set('acier_prix_total', (box.get('acier_prix_total') + value.prix));
@@ -1386,28 +1387,40 @@ module.exports = {
                         }
                     }
 
+                    // @ts-ignore
                     const acier_prix_moyen = (box.get('acier_prix_total') / box.get('acier_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const beton_prix_moyen = (box.get('beton_prix_total') / box.get('beton_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const bc_prix_moyen = (box.get('bc_prix_total') / box.get('bc_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const bois_prix_moyen = (box.get('bois_prix_total') / box.get('bois_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const carburant_prix_moyen = (box.get('carburant_prix_total') / box.get('carburant_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const charbon_prix_moyen = (box.get('charbon_prix_total') / box.get('charbon_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const eau_prix_moyen = (box.get('eau_prix_total') / box.get('eau_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const metaux_prix_moyen = (box.get('metaux_prix_total') / box.get('metaux_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const nourriture_prix_moyen = (box.get('nourriture_prix_total') / box.get('nourriture_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const petrole_prix_moyen = (box.get('petrole_prix_total') / box.get('petrole_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const sable_prix_moyen = (box.get('sable_prix_total') / box.get('sable_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
+                    // @ts-ignore
                     const verre_prix_moyen = (box.get('verre_prix_total') / box.get('verre_res_total')) + chance.floating({ min: 0, max: 0.2, fixed: 2 });
 
                     const prix = {
@@ -1425,7 +1438,7 @@ module.exports = {
                         "verre": verre_prix_moyen.toFixed(2),
                     };
 
-                    let jsonPrix = JSON.stringify(prix);
+                    let jsonPrix: any = JSON.stringify(prix);
                     writeFileSync('data/prix.json', jsonPrix)
 
                     jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
@@ -1498,9 +1511,9 @@ module.exports = {
                     const secondPart = list.splice(-fivePartIndex);
                     let number = 0;
 
-                    let array1 = [];
+                    let array1: { name: string; value: string; }[] = [];
                     list.forEach(monClassement1);
-                    function monClassement1(item) {
+                    function monClassement1(item: { id_joueur: any; T_total: { toLocaleString: (arg0: string) => any; }; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1517,9 +1530,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array2 = [];
+                    let array2: { name: string; value: string; }[] = [];
                     secondPart.forEach(monClassement2);
-                    function monClassement2(item) {
+                    function monClassement2(item: { id_joueur: any; T_total: { toLocaleString: (arg0: string) => any; }; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1536,9 +1549,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array3 = [];
+                    let array3: { name: string; value: string; }[] = [];
                     thirdPart.forEach(monClassement3);
-                    function monClassement3(item) {
+                    function monClassement3(item: { id_joueur: any; T_total: { toLocaleString: (arg0: string) => any; }; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1555,9 +1568,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array4 = [];
+                    let array4: { name: string; value: string; }[] = [];
                     fourthPart.forEach(monClassement4);
-                    function monClassement4(item) {
+                    function monClassement4(item: { id_joueur: any; T_total: { toLocaleString: (arg0: string) => any; }; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1574,9 +1587,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array5 = [];
+                    let array5: { name: string; value: string; }[] = [];
                     fifthPart.forEach(monClassement5);
-                    function monClassement5(item) {
+                    function monClassement5(item: { id_joueur: any; T_total: { toLocaleString: (arg0: string) => any; }; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1609,9 +1622,9 @@ module.exports = {
                     const secondPart = list.splice(-fivePartIndex);
                     let number = 0;
 
-                    let array1 = [];
+                    let array1: { name: string; value: string; }[] = [];
                     list.forEach(monClassement1);
-                    function monClassement1(item) {
+                    function monClassement1(item: { id_joueur: any; bonheur: any; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1628,9 +1641,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array2 = [];
+                    let array2: { name: string; value: string; }[] = [];
                     secondPart.forEach(monClassement2);
-                    function monClassement2(item) {
+                    function monClassement2(item: { id_joueur: any; bonheur: any; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1647,9 +1660,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array3 = [];
+                    let array3: { name: string; value: string; }[] = [];
                     thirdPart.forEach(monClassement3);
-                    function monClassement3(item) {
+                    function monClassement3(item: { id_joueur: any; bonheur: any; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1666,9 +1679,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array4 = [];
+                    let array4: { name: string; value: string; }[] = [];
                     fourthPart.forEach(monClassement4);
-                    function monClassement4(item) {
+                    function monClassement4(item: { id_joueur: any; bonheur: any; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1685,9 +1698,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array5 = [];
+                    let array5: { name: string; value: string; }[] = [];
                     fifthPart.forEach(monClassement5);
-                    function monClassement5(item) {
+                    function monClassement5(item: { id_joueur: any; bonheur: any; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1713,7 +1726,7 @@ module.exports = {
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     const list = results;
                     const list2 = new Set(list)
-                    list.sort(function(a, b){return (b.habitant - b.ancien_pop) - (a.habitant - a.ancien_pop)})
+                    list.sort(function(a: any, b: any){return (b.habitant - b.ancien_pop) - (a.habitant - a.ancien_pop)})
                     const fivePartIndex = Math.round(list.length / 5);
 
                     const fifthPart = list.splice(-fivePartIndex);
@@ -1722,9 +1735,9 @@ module.exports = {
                     const secondPart = list.splice(-fivePartIndex);
                     let number = 0;
 
-                    let array1 = [];
+                    let array1: { name: string; value: string; }[] = [];
                     list.forEach(monClassement1);
-                    function monClassement1(item) {
+                    function monClassement1(item: { id_joueur: any; habitant: number; ancien_pop: number; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1741,9 +1754,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array2 = [];
+                    let array2: { name: string; value: string; }[] = [];
                     secondPart.forEach(monClassement2);
-                    function monClassement2(item) {
+                    function monClassement2(item: { id_joueur: any; habitant: number; ancien_pop: number; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1760,9 +1773,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array3 = [];
+                    let array3: { name: string; value: string; }[] = [];
                     thirdPart.forEach(monClassement3);
-                    function monClassement3(item) {
+                    function monClassement3(item: { id_joueur: any; habitant: number; ancien_pop: number; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1779,9 +1792,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array4 = [];
+                    let array4: { name: string; value: string; }[] = [];
                     fourthPart.forEach(monClassement4);
-                    function monClassement4(item) {
+                    function monClassement4(item: { id_joueur: any; habitant: number; ancien_pop: number; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1798,9 +1811,9 @@ module.exports = {
                         timestamp: new Date(),
                     };
 
-                    let array5 = [];
+                    let array5: { name: string; value: string; }[] = [];
                     fifthPart.forEach(monClassement5);
-                    function monClassement5(item) {
+                    function monClassement5(item: { id_joueur: any; habitant: number; ancien_pop: number; }) {
                         number += 1;
                         const element = {
                             name: `#${number}`,
@@ -1818,7 +1831,7 @@ module.exports = {
                     };
 
                     list2.forEach(ancienPop)
-                    function ancienPop(value) {
+                    function ancienPop(value: any) {
                         let sql = `UPDATE population SET ancien_pop="${value.habitant}" WHERE id_joueur="${value.id_joueur}"`;
                         connection.query(sql, async(err) => { if (err) { throw err; }})
                     }
@@ -1827,7 +1840,7 @@ module.exports = {
                     salon_compet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
 
                     list2.forEach(nouvelleCg);
-                    function nouvelleCg(item) {
+                    function nouvelleCg(item: any) {
                         const sql = `
                             SELECT * FROM diplomatie WHERE id_joueur='${item.id_joueur}';
                             SELECT * FROM pays WHERE id_joueur='${item.id_joueur}'
@@ -1836,7 +1849,7 @@ module.exports = {
                             const Diplomatie = results[0][0];
                             const Pays = results[1][0]
 
-                            function cg(influence, gouv, jour){
+                            function cg(influence: number, gouv: number, jour: number){
                                 return (72.4+(310.4-72.4)/180*jour)*gouv*Math.exp(influence*0.01)
                             }
 
@@ -1858,9 +1871,9 @@ module.exports = {
                         const secondPart = list.splice(-fivePartIndex);
                         let number = 0;
 
-                        let array1 = [];
+                        let array1: { name: string; value: string; }[] = [];
                         list.forEach(monClassement1);
-                        function monClassement1(item) {
+                        function monClassement1(item: { id_joueur: any; influence: { toLocaleString: (arg0: string) => any; }; }) {
                             number += 1;
                             const element = {
                                 name: `#${number}`,
@@ -1875,9 +1888,9 @@ module.exports = {
                             timestamp: new Date(),
                         };
 
-                        let array2 = [];
+                        let array2: { name: string; value: string; }[] = [];
                         secondPart.forEach(monClassement2);
-                        function monClassement2(item) {
+                        function monClassement2(item: { id_joueur: any; influence: { toLocaleString: (arg0: string) => any; }; }) {
                             number += 1;
                             const element = {
                                 name: `#${number}`,
@@ -1892,9 +1905,9 @@ module.exports = {
                             timestamp: new Date(),
                         };
 
-                        let array3 = [];
+                        let array3: { name: string; value: string; }[] = [];
                         thirdPart.forEach(monClassement3);
-                        function monClassement3(item) {
+                        function monClassement3(item: { id_joueur: any; influence: { toLocaleString: (arg0: string) => any; }; }) {
                             number += 1;
                             const element = {
                                 name: `#${number}`,
@@ -1909,9 +1922,9 @@ module.exports = {
                             timestamp: new Date(),
                         };
 
-                        let array4 = [];
+                        let array4: { name: string; value: string; }[] = [];
                         fourthPart.forEach(monClassement4);
-                        function monClassement4(item) {
+                        function monClassement4(item: { id_joueur: any; influence: { toLocaleString: (arg0: string) => any; }; }) {
                             number += 1;
                             const element = {
                                 name: `#${number}`,
@@ -1926,9 +1939,9 @@ module.exports = {
                             timestamp: new Date(),
                         };
 
-                        let array5 = [];
+                        let array5: { name: string; value: string; }[] = [];
                         fifthPart.forEach(monClassement5);
-                        function monClassement5(item) {
+                        function monClassement5(item: { id_joueur: any; influence: { toLocaleString: (arg0: string) => any; }; }) {
                             number += 1;
                             const element = {
                                 name: `#${number}`,
@@ -1964,13 +1977,13 @@ module.exports = {
                 let sql = `SELECT * FROM pays WHERE vacances=0`;
                 connection.query(sql, async(err, results) => {if (err) {throw err;}
                     results.forEach(dailyJour);
-                    function dailyJour(item) {
+                    function dailyJour(item: { id_joueur: any; }) {
                         let sql = `UPDATE pays SET daily=0 WHERE id_joueur="${item.id_joueur}"`;
                         connection.query(sql, async (err) => {if (err) {throw err;}})
                     }
 
                     results.forEach(nouvelleCg);
-                    function nouvelleCg(item) {
+                    function nouvelleCg(item: { id_joueur: any; }) {
                         const sql = `
                             SELECT * FROM diplomatie WHERE id_joueur='${item.id_joueur}';
                             SELECT * FROM pays WHERE id_joueur='${item.id_joueur}'
@@ -1979,7 +1992,7 @@ module.exports = {
                             const Diplomatie = results[0][0];
                             const Pays = results[1][0]
 
-                            function cg(influence, gouv, jour){
+                            function cg(influence: number, gouv: number, jour: number): number{
                                 return (72.4+(310.4-72.4)/180*jour)*gouv*Math.exp(influence*0.01)
                             }
 

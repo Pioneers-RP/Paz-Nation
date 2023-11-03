@@ -28,7 +28,7 @@ connection.connect(function(err) {
     console.log('Database initialized with MySQL under ID : ' + connection.threadId);
 });
 
-const client = new Client({
+export const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction],
 });
@@ -61,7 +61,7 @@ loadCommands().catch((error) => {
 });
 
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
+const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.ts'));
 
 async function loadEvents() {
     for (const file of eventFiles) {

@@ -1,5 +1,5 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} = require('discord.js');
-const { readFileSync } = require('fs');
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} from 'discord.js';
+import {readFileSync} from 'fs';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -29,14 +29,14 @@ module.exports = {
             .setMinValue(1)
             .setRequired(true)),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
         const { connection } = require('../../index.ts');
 
         const sql = `
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
             SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
         `;
-        connection.query(sql, async(err, results) => {if (err) {throw err;}
+        connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
             let reponse;
 
             const Pays = results[0][0];
@@ -44,7 +44,7 @@ module.exports = {
             const ressource = interaction.options.getString('ressource');
             const quantite = interaction.options.getInteger('quantité');
             const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
-            function offre(prix_moyen, emoji) {
+            function offre(prix_moyen: number, emoji: string) {
                 const prix_vente = parseFloat((prix_moyen * 0.7).toFixed(2));
                 const prix = Math.round(quantite * prix_vente);
 
@@ -78,7 +78,7 @@ module.exports = {
                     color: interaction.member.displayColor,
                     timestamp: new Date(),
                     footer: {
-                        text: `${Pays.devise}`
+                        text: Pays.devise
                     },
                 };
 

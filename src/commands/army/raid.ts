@@ -1,8 +1,9 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
-const { SlashCommandBuilder, codeBlock } = require('@discordjs/builders');
-const { readFileSync } = require('fs');
-const {msToMinutes, CommandCooldown} = require("discord-command-cooldown");
-const ms = require("ms");
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle} from 'discord.js';
+import {SlashCommandBuilder, codeBlock} from '@discordjs/builders';
+import {readFileSync} from 'fs';
+import {msToMinutes, CommandCooldown} from "discord-command-cooldown";
+import ms from "ms";
+import {failReply} from "../../fonctions/functions";
 const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
 const raidCommandCooldown = new CommandCooldown('raid', ms('1d'));
 
@@ -20,55 +21,47 @@ module.exports = {
                 .setMinValue(1)
                 .setRequired(true)),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
         const { connection } = require('../../index.ts');
-        const joueur = interaction.options.getUser('joueur');
-        const nombre = interaction.options.getInteger('nombre');
-        let sql;
-
+        const defender = interaction.options.getUser('joueur');
+        const numberUnit = interaction.options.getInteger('nombre');
         const userCooldowned = await raidCommandCooldown.getUser(interaction.member.id);
 
         if (userCooldowned) {
             const timeLeft = msToMinutes(userCooldowned.msLeft, false);
-            const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous avez fait un raid récemment. Il reste ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir un faire un nouveau.`);
-            await interaction.reply({ content: reponse, ephemeral: true });
+            failReply(interaction, `Vous avez fait un raid récemment. Il reste ${timeLeft.hours}h ${timeLeft.minutes}min avant de pouvoir un faire un nouveau.`);
         } else {
-            sql = `
+            const sql = `
                 SELECT *
                 FROM armee
                 WHERE id_joueur = '${interaction.member.id}';
                 SELECT *
                 FROM pays
-                WHERE id_joueur = '${joueur.id}';
+                WHERE id_joueur = '${defender.id}';
                 SELECT *
                 FROM territoire
-                WHERE id_joueur = '${joueur.id}'
+                WHERE id_joueur = '${defender.id}'
             `;
-            connection.query(sql, async (err, results) => {if (err) {throw err;}
+            connection.query(sql, async (err: any, results: any[][]) => {if (err) {throw err;}
                 const Armee = results[0][0];
                 const Pays = results[1][0];
                 const Territoire = results[2][0];
 
                 if (!Pays) {
-                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mCette personne ne joue pas.`);
-                    await interaction.reply({content: reponse, ephemeral: true});
+                    failReply(interaction, `Cette personne ne joue pas.`);
                 } else if (Pays.rang === 'Cité') {
-                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas attaquer les cités.`);
-                    await interaction.reply({content: reponse, ephemeral: true});
+                    failReply(interaction, `Vous ne pouvez pas attaquer les cités.`);
                 } else if (Pays.vacances === 1) {
-                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas attaquer les joueurs en vacances.`);
-                    await interaction.reply({content: reponse, ephemeral: true});
-                } else if (joueur.id === interaction.member.id) {
-                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas vous attaquer vous-même.`);
-                    await interaction.reply({content: reponse, ephemeral: true});
-                } else if (nombre > (0.8 * Armee.unite)) {
-                    const reponse = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous ne pouvez pas envoyer plus de 80% de votre armée.`);
-                    await interaction.reply({content: reponse, ephemeral: true});
+                    failReply(interaction, `Vous ne pouvez pas attaquer les joueurs en vacances.`);
+                } else if (defender.id === interaction.member.id) {
+                    failReply(interaction, `Vous ne pouvez pas vous attaquer vous-même.`);
+                } else if (numberUnit > (0.8 * Armee.unite)) {
+                    failReply(interaction, `Vous ne pouvez pas envoyer plus de 80% de votre armée.`);
                 } else {
-                    const embed = {
+                    const embedRaid = {
                         author: {
                             name: `${Pays.rang} de ${Pays.nom}`,
-                            icon_url: joueur.displayAvatarURL()
+                            icon_url: defender.displayAvatarURL()
                         },
                         thumbnail: {
                             url: Pays.drapeau
@@ -85,7 +78,7 @@ module.exports = {
                             {
                                 name: `> 🪖 Assaut :`,
                                 value: codeBlock(
-                                    `• ${nombre} unités\n`) + `\u200B`
+                                    `• ${numberUnit} unités\n`) + `\u200B`
                             },
                         ],
                         color: 0xFF0000,
@@ -100,7 +93,7 @@ module.exports = {
                             new ButtonBuilder()
                                 .setLabel(`Raid`)
                                 .setEmoji(`⚔️`)
-                                .setCustomId(`raid-${joueur.id}`)
+                                .setCustomId(`raid-${defender.id}`)
                                 .setStyle(ButtonStyle.Success),
                         )
                         .addComponents(
@@ -111,7 +104,7 @@ module.exports = {
                                 .setStyle(ButtonStyle.Danger),
                         )
 
-                    await interaction.reply({embeds: [embed], components: [row]});
+                    await interaction.reply({embeds: [embedRaid], components: [row]});
                 }
             });
         }
