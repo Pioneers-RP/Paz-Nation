@@ -1,5 +1,6 @@
 import {ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} from 'discord.js';
 import {readFileSync} from 'fs';
+import {failReply} from "../../fonctions/functions";
 const batimentObject = JSON.parse(readFileSync('src/OLD/data/batiment.json', 'utf-8'));
 const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
@@ -37,9 +38,9 @@ module.exports = {
                 .setRequired(true)),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index');
-        const batiment = interaction.options.getString('batiment');
-        const nombre = interaction.options.getInteger('nombre');
+        const { connection } = require('../../index.ts');
+        const chosenBuild = interaction.options.getString('batiment');
+        const numberBuild = interaction.options.getInteger('numberBuild');
 
         const sql = `
             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -55,7 +56,6 @@ module.exports = {
             let gainWindTurbine: number = 0;
             let gainGlass: number = 0;
 
-            let failReply: string;
             let numberAfter: number = 0;
             let numberBefore: number = 0;
 
@@ -65,20 +65,19 @@ module.exports = {
             let needWindTurbine: boolean = false;
             let needGlass: boolean = false;
 
-            switch (batiment) {
+            switch (chosenBuild) {
                 case 'Acierie':
                     //region Acierie
                     needSteel = true;
 
-                    if (nombre > Batiment.acierie) {
+                    if (numberBuild > Batiment.acierie) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.acierie}/${nombre} acieries`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.acierie}/${numberBuild} acieries`);
                     }
-                    gainSparePlace = batimentObject.acierie.SURFACE_ACIERIE * nombre;
-                    gainSteel = Math.round(batimentObject.acierie.CONST_ACIERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.acierie.SURFACE_ACIERIE * numberBuild;
+                    gainSteel = Math.round(batimentObject.acierie.CONST_ACIERIE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.acierie;
-                    numberAfter = Batiment.acierie - nombre;
+                    numberAfter = Batiment.acierie - numberBuild;
                     //endregion
                     break;
 
@@ -87,16 +86,15 @@ module.exports = {
                     needSteel = true;
                     needWood = true;
 
-                    if (nombre > Batiment.atelier_verre) {
+                    if (numberBuild > Batiment.atelier_verre) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.atelier_verre}/${nombre} ateliers de verre`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.atelier_verre}/${numberBuild} ateliers de verre`);
                     }
-                    gainSparePlace = batimentObject.atelier_verre.SURFACE_ATELIER_VERRE * nombre;
-                    gainSteel = Math.round(batimentObject.atelier_verre.CONST_ATELIER_VERRE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
-                    gainWood = Math.round(batimentObject.atelier_verre.CONST_ATELIER_VERRE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.atelier_verre.SURFACE_ATELIER_VERRE * numberBuild;
+                    gainSteel = Math.round(batimentObject.atelier_verre.CONST_ATELIER_VERRE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainWood = Math.round(batimentObject.atelier_verre.CONST_ATELIER_VERRE_BOIS * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.atelier_verre;
-                    numberAfter = Batiment.atelier_verre - nombre;
+                    numberAfter = Batiment.atelier_verre - numberBuild;
                     //endregion
                     break;
 
@@ -104,15 +102,14 @@ module.exports = {
                     //region Carriere de sable
                     needSteel = true;
 
-                    if (nombre > Batiment.carriere_sable) {
+                    if (numberBuild > Batiment.carriere_sable) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.carriere_sable}/${nombre} carrieres de sable`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.carriere_sable}/${numberBuild} carrieres de sable`);
                     }
-                    gainSparePlace = batimentObject.carriere_sable.SURFACE_CARRIERE_SABLE * nombre;
-                    gainSteel = Math.round(batimentObject.carriere_sable.CONST_CARRIERE_SABLE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.carriere_sable.SURFACE_CARRIERE_SABLE * numberBuild;
+                    gainSteel = Math.round(batimentObject.carriere_sable.CONST_CARRIERE_SABLE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.carriere_sable;
-                    numberAfter = Batiment.carriere_sable - nombre;
+                    numberAfter = Batiment.carriere_sable - numberBuild;
                     //endregion
                     break;
 
@@ -120,15 +117,14 @@ module.exports = {
                     //region Centrale biomasse
                     needSteel = true;
 
-                    if (nombre > Batiment.centrale_biomasse) {
+                    if (numberBuild > Batiment.centrale_biomasse) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.centrale_biomasse}/${nombre} centrales biomasse`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.centrale_biomasse}/${numberBuild} centrales biomasse`);
                     }
-                    gainSparePlace = batimentObject.centrale_biomasse.SURFACE_CENTRALE_BIOMASSE * nombre;
-                    gainSteel = Math.round(batimentObject.centrale_biomasse.CONST_CENTRALE_BIOMASSE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.centrale_biomasse.SURFACE_CENTRALE_BIOMASSE * numberBuild;
+                    gainSteel = Math.round(batimentObject.centrale_biomasse.CONST_CENTRALE_BIOMASSE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.centrale_biomasse;
-                    numberAfter = Batiment.centrale_biomasse - nombre;
+                    numberAfter = Batiment.centrale_biomasse - numberBuild;
                     //endregion
                     break;
 
@@ -136,15 +132,14 @@ module.exports = {
                     //region Centrale au charbon
                     needSteel = true;
 
-                    if (nombre > Batiment.centrale_charbon) {
+                    if (numberBuild > Batiment.centrale_charbon) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.centrale_charbon}/${nombre} centrales au charbon`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.centrale_charbon}/${numberBuild} centrales au charbon`);
                     }
-                    gainSparePlace = batimentObject.centrale_charbon.SURFACE_CENTRALE_CHARBON * nombre;
-                    gainSteel = Math.round(batimentObject.centrale_charbon.CONST_CENTRALE_CHARBON_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.centrale_charbon.SURFACE_CENTRALE_CHARBON * numberBuild;
+                    gainSteel = Math.round(batimentObject.centrale_charbon.CONST_CENTRALE_CHARBON_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.centrale_charbon;
-                    numberAfter = Batiment.centrale_charbon - nombre;
+                    numberAfter = Batiment.centrale_charbon - numberBuild;
                     //endregion
                     break;
 
@@ -152,15 +147,14 @@ module.exports = {
                     //region Centrale au fioul
                     needSteel = true;
 
-                    if (nombre > Batiment.centrale_fioul) {
+                    if (numberBuild > Batiment.centrale_fioul) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.centrale_fioul}/${nombre} centrales au fioul`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.centrale_fioul}/${numberBuild} centrales au fioul`);
                     }
-                    gainSparePlace = batimentObject.centrale_fioul.SURFACE_CENTRALE_FIOUL * nombre;
-                    gainSteel = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.centrale_fioul.SURFACE_CENTRALE_FIOUL * numberBuild;
+                    gainSteel = Math.round(batimentObject.centrale_fioul.CONST_CENTRALE_FIOUL_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.centrale_fioul;
-                    numberAfter = Batiment.centrale_fioul - nombre;
+                    numberAfter = Batiment.centrale_fioul - numberBuild;
                     //endregion
                     break;
 
@@ -169,16 +163,15 @@ module.exports = {
                     needSteel = true;
                     needWood = true;
 
-                    if (nombre > Batiment.champ) {
+                    if (numberBuild > Batiment.champ) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.champ}/${nombre} champs`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.champ}/${numberBuild} champs`);
                     }
-                    gainSparePlace = batimentObject.champ.SURFACE_CHAMP * nombre;
-                    gainSteel = Math.round(batimentObject.champ.CONST_CHAMP_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
-                    gainWood = Math.round(batimentObject.champ.CONST_CHAMP_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.champ.SURFACE_CHAMP * numberBuild;
+                    gainSteel = Math.round(batimentObject.champ.CONST_CHAMP_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainWood = Math.round(batimentObject.champ.CONST_CHAMP_BOIS * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.champ;
-                    numberAfter = Batiment.champ - nombre;
+                    numberAfter = Batiment.champ - numberBuild;
                     //endregion
                     break;
 
@@ -186,15 +179,14 @@ module.exports = {
                     //region Cimenterie
                     needSteel = true;
 
-                    if (nombre > Batiment.cimenterie) {
+                    if (numberBuild > Batiment.cimenterie) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.cimenterie}/${nombre} cimenteries`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.cimenterie}/${numberBuild} cimenteries`);
                     }
-                    gainSparePlace = batimentObject.cimenterie.SURFACE_CIMENTERIE * nombre;
-                    gainSteel = Math.round(batimentObject.cimenterie.CONST_CIMENTERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.cimenterie.SURFACE_CIMENTERIE * numberBuild;
+                    gainSteel = Math.round(batimentObject.cimenterie.CONST_CIMENTERIE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.cimenterie;
-                    numberAfter = Batiment.cimenterie - nombre;
+                    numberAfter = Batiment.cimenterie - numberBuild;
                     //endregion
                     break;
 
@@ -202,15 +194,14 @@ module.exports = {
                     //region Eolienne
                     needWindTurbine = true;
 
-                    if (nombre > Batiment.eolienne) {
+                    if (numberBuild > Batiment.eolienne) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.eolienne}/${nombre} champs d'éoliennes`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.eolienne}/${numberBuild} champs d'éoliennes`);
                     }
-                    gainSparePlace = batimentObject.eolienne.SURFACE_EOLIENNE * nombre;
-                    gainWindTurbine = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * nombre);
+                    gainSparePlace = batimentObject.eolienne.SURFACE_EOLIENNE * numberBuild;
+                    gainWindTurbine = Math.round(batimentObject.eolienne.CONST_EOLIENNE_EOLIENNE * numberBuild);
                     numberBefore = Batiment.eolienne;
-                    numberAfter = Batiment.eolienne - nombre;
+                    numberAfter = Batiment.eolienne - numberBuild;
                     //endregion
                     break;
 
@@ -218,15 +209,14 @@ module.exports = {
                     //region Derrick
                     needSteel = true;
 
-                    if (nombre > Batiment.derrick) {
+                    if (numberBuild > Batiment.derrick) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.derrick}/${nombre} derricks`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.derrick}/${numberBuild} derricks`);
                     }
-                    gainSparePlace = batimentObject.derrick.SURFACE_DERRICK * nombre;
-                    gainSteel = Math.round(batimentObject.derrick.CONST_DERRICK_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.derrick.SURFACE_DERRICK * numberBuild;
+                    gainSteel = Math.round(batimentObject.derrick.CONST_DERRICK_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.derrick;
-                    numberAfter = Batiment.derrick - nombre;
+                    numberAfter = Batiment.derrick - numberBuild;
                     //endregion
                     break;
 
@@ -234,15 +224,14 @@ module.exports = {
                     //region Mine de charbon
                     needSteel = true;
 
-                    if (nombre > Batiment.mine_charbon) {
+                    if (numberBuild > Batiment.mine_charbon) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.mine_charbon}/${nombre} mines de charbon`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.mine_charbon}/${numberBuild} mines de charbon`);
                     }
-                    gainSparePlace = batimentObject.mine_charbon.SURFACE_MINE_CHARBON * nombre;
-                    gainSteel = Math.round(batimentObject.mine_charbon.CONST_MINE_CHARBON_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`)) * batimentObject.RETOUR_POURCENTAGE;
+                    gainSparePlace = batimentObject.mine_charbon.SURFACE_MINE_CHARBON * numberBuild;
+                    gainSteel = Math.round(batimentObject.mine_charbon.CONST_MINE_CHARBON_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`)) * batimentObject.RETOUR_POURCENTAGE;
                     numberBefore = Batiment.mine_charbon;
-                    numberAfter = Batiment.mine_charbon - nombre;
+                    numberAfter = Batiment.mine_charbon - numberBuild;
                     //endregion
                     break;
 
@@ -250,15 +239,14 @@ module.exports = {
                     //region Mine de metaux
                     needSteel = true;
 
-                    if (nombre > Batiment.mine_metaux) {
+                    if (numberBuild > Batiment.mine_metaux) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.mine_metaux}/${nombre} mines de metaux`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.mine_metaux}/${numberBuild} mines de metaux`);
                     }
-                    gainSparePlace = batimentObject.mine_metaux.SURFACE_MINE_METAUX * nombre;
-                    gainSteel = Math.round(batimentObject.mine_metaux.CONST_MINE_METAUX_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.mine_metaux.SURFACE_MINE_METAUX * numberBuild;
+                    gainSteel = Math.round(batimentObject.mine_metaux.CONST_MINE_METAUX_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.mine_metaux;
-                    numberAfter = Batiment.mine_metaux - nombre;
+                    numberAfter = Batiment.mine_metaux - numberBuild;
                     //endregion
                     break;
 
@@ -266,15 +254,14 @@ module.exports = {
                     //region Station de pompage
                     needSteel = true;
 
-                    if (nombre > Batiment.station_pompage) {
+                    if (numberBuild > Batiment.station_pompage) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.station_pompage}/${nombre} stations de pompage`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.station_pompage}/${numberBuild} stations de pompage`);
                     }
-                    gainSparePlace = batimentObject.station_pompage.SURFACE_STATION_POMPAGE * nombre;
-                    gainSteel = Math.round(batimentObject.station_pompage.CONST_STATION_POMPAGE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.station_pompage.SURFACE_STATION_POMPAGE * numberBuild;
+                    gainSteel = Math.round(batimentObject.station_pompage.CONST_STATION_POMPAGE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.station_pompage;
-                    numberAfter = Batiment.station_pompage - nombre;
+                    numberAfter = Batiment.station_pompage - numberBuild;
                     //endregion
                     break;
 
@@ -284,17 +271,16 @@ module.exports = {
                     needWood = true;
                     needGlass = true;
 
-                    if (nombre > Batiment.quartier) {
+                    if (numberBuild > Batiment.quartier) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.quartier}/${nombre} quartiers`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.quartier}/${numberBuild} quartiers`);
                     }
-                    gainSparePlace = batimentObject.quartier.SURFACE_QUARTIER * nombre;
-                    gainSteel = Math.round(batimentObject.quartier.CONST_QUARTIER_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
-                    gainWood = Math.round(batimentObject.quartier.CONST_QUARTIER_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
-                    gainGlass = Math.round(batimentObject.quartier.CONST_QUARTIER_VERRE * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.quartier.SURFACE_QUARTIER * numberBuild;
+                    gainSteel = Math.round(batimentObject.quartier.CONST_QUARTIER_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainWood = Math.round(batimentObject.quartier.CONST_QUARTIER_BOIS * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainGlass = Math.round(batimentObject.quartier.CONST_QUARTIER_VERRE * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.quartier;
-                    numberAfter = Batiment.quartier - nombre;
+                    numberAfter = Batiment.quartier - numberBuild;
                     //endregion
                     break;
 
@@ -302,15 +288,14 @@ module.exports = {
                     //region Raffinerie
                     needSteel = true;
 
-                    if (nombre > Batiment.raffinerie) {
+                    if (numberBuild > Batiment.raffinerie) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.raffinerie}/${nombre} raffineries`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.raffinerie}/${numberBuild} raffineries`);
                     }
-                    gainSparePlace = batimentObject.raffinerie.SURFACE_RAFFINERIE * nombre;
-                    gainSteel = Math.round(batimentObject.raffinerie.CONST_RAFFINERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.raffinerie.SURFACE_RAFFINERIE * numberBuild;
+                    gainSteel = Math.round(batimentObject.raffinerie.CONST_RAFFINERIE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.raffinerie;
-                    numberAfter = Batiment.raffinerie - nombre;
+                    numberAfter = Batiment.raffinerie - numberBuild;
                     //endregion
                     break;
 
@@ -319,16 +304,15 @@ module.exports = {
                     needSteel = true;
                     needWood = true;
 
-                    if (nombre > Batiment.scierie) {
+                    if (numberBuild > Batiment.scierie) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.scierie}/${nombre} scieries`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.scierie}/${numberBuild} scieries`);
                     }
-                    gainSparePlace = batimentObject.scierie.SURFACE_SCIERIE * nombre;
-                    gainSteel = Math.round(batimentObject.scierie.CONST_SCIERIE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
-                    gainWood = Math.round(batimentObject.scierie.CONST_SCIERIE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    gainSparePlace = batimentObject.scierie.SURFACE_SCIERIE * numberBuild;
+                    gainSteel = Math.round(batimentObject.scierie.CONST_SCIERIE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`));
+                    gainWood = Math.round(batimentObject.scierie.CONST_SCIERIE_BOIS * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`));
                     numberBefore = Batiment.scierie;
-                    numberAfter = Batiment.scierie - nombre;
+                    numberAfter = Batiment.scierie - numberBuild;
                     //endregion
                     break;
 
@@ -337,16 +321,15 @@ module.exports = {
                     needSteel = true;
                     needWood = true;
 
-                    if (nombre > Batiment.usine_civile) {
+                    if (numberBuild > Batiment.usine_civile) {
                         demolishStatus = false;
-                        failReply = codeBlock('ansi', `\u001b[0m\u001b[1;31mVous n'avez que ${Batiment.usine_civile}/${nombre} usines civile`);
-                        await interaction.reply({ content: failReply, ephemeral: true });
+                        failReply(interaction, `Vous n'avez que ${Batiment.usine_civile}/${numberBuild} usines civile`);
                     }
-                    gainSparePlace = batimentObject.usine_civile.SURFACE_USINE_CIVILE * nombre;
-                    gainSteel = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_ACIER * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
-                    gainWood = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_BOIS * nombre * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainSparePlace = batimentObject.usine_civile.SURFACE_USINE_CIVILE * numberBuild;
+                    gainSteel = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_ACIER * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
+                    gainWood = Math.round(batimentObject.usine_civile.CONST_USINE_CIVILE_BOIS * numberBuild * eval(`gouvernementObject.${Pays.ideologie}.construction`) * batimentObject.RETOUR_POURCENTAGE);
                     numberBefore = Batiment.usine_civile;
-                    numberAfter = Batiment.usine_civile - nombre;
+                    numberAfter = Batiment.usine_civile - numberBuild;
                     //endregion
                     break;
             }
@@ -355,7 +338,7 @@ module.exports = {
                 const fields = [];
 
                 fields.push({
-                    name: `> 🏭 ${batiment} :`,
+                    name: `> 🏭 ${chosenBuild} :`,
                     value: codeBlock(`• Avant : ${numberBefore.toLocaleString('en-US')}\n• Après : ${numberAfter.toLocaleString('en-US')}`) + `\u200B`
                 })
                 fields.push({
@@ -394,14 +377,14 @@ module.exports = {
                         icon_url: interaction.member.displayAvatarURL()
                     },
                     thumbnail: {
-                        url: `${Pays.drapeau}`
+                        url: Pays.drapeau
                     },
-                    title: `\`Demolition : ${nombre} ${batiment}\``,
+                    title: `\`Demolition : ${numberBuild} ${chosenBuild}\``,
                     fields: fields,
                     color: interaction.member.displayColor,
                     timestamp: new Date(),
                     footer: {
-                        text: `${Pays.devise}`
+                        text: Pays.devise
                     },
                 };
 

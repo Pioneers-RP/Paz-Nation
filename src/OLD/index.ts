@@ -1,16 +1,15 @@
-import { readdirSync, writeFile } from 'fs'
+import { readdirSync } from 'fs'
 import path from 'node:path';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
 import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
-dotenv.config();
 
+dotenv.config();
 export const connect = AppDataSource.initialize()
     .then(() => {
         console.log("Database initialized with TypeORM")})
     .catch((error) => console.log(error))
-
 export const connection = mysql.createConnection({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,
@@ -29,7 +28,7 @@ connection.connect(function(err) {
     console.log('Database initialized with MySQL under ID : ' + connection.threadId);
 });
 
-const client = new Client({
+export const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction],
 });
@@ -62,7 +61,7 @@ loadCommands().catch((error) => {
 });
 
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
+const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.ts'));
 
 async function loadEvents() {
     for (const file of eventFiles) {
@@ -93,6 +92,5 @@ process.on('Warning', (...args: any[]) => {
 });
 
 client.login(process.env.TOKEN!).then(() => {
-    console.log("Starting bot vs3...")
     console.log(`Bot launched under : ${client.user?.tag}`);
 });

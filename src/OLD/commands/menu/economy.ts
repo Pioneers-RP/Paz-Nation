@@ -1,8 +1,5 @@
 import {SlashCommandBuilder} from "discord.js";
 import {menuEconomie} from "../../fonctions/functions";
-import {readFileSync} from "fs";
-const armeeObject = JSON.parse(readFileSync('src/OLD/data/armee.json', 'utf-8'));
-const batimentObject = JSON.parse(readFileSync('src/OLD/data/batiment.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -10,8 +7,8 @@ module.exports = {
         .setDescription(`Consultez votre économie`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index');
+        const { connection } = require('../../index.ts');
 
-        menuEconomie(interaction, connection, armeeObject, batimentObject);
+        menuEconomie(interaction, connection);
     },
 };

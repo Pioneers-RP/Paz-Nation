@@ -1,6 +1,12 @@
 import {codeBlock, ActionRowBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle} from "discord.js";
+import {readFileSync} from "fs";
+const armeeObject = JSON.parse(readFileSync('src/OLD/data/armee.json', 'utf-8'));
+const batimentObject = JSON.parse(readFileSync('src/OLD/data/batiment.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
+const populationObject = JSON.parse(readFileSync('src/OLD/data/population.json', 'utf-8'));
+const regionObject = JSON.parse(readFileSync('src/OLD/data/region.json', 'utf-8'));
 
-export function calculerEmploi(armee: object, batiment: any, population: any, armeeObject: any, batimentObject: any) {
+export function calculerEmploi(armee: object, batiment: any, population: any) {
     const emplois_acierie = batimentObject.acierie.EMPLOYES_ACIERIE * batiment.acierie;
     const emplois_atelier_verre = batimentObject.atelier_verre.EMPLOYES_ATELIER_VERRE * batiment.atelier_verre;
     const emplois_carriere_sable = batimentObject.carriere_sable.EMPLOYES_CARRIERE_SABLE * batiment.carriere_sable;
@@ -26,11 +32,11 @@ export function calculerEmploi(armee: object, batiment: any, population: any, ar
 
     return {
         emploisTotaux: emploisTotaux,
-        emploies: population.jeune + population.adulte - calculerSoldat(armee, armeeObject),
-        efficacite: Math.min(Number((parseFloat(String(population.jeune + population.adulte - calculerSoldat(armee, armeeObject))) / emploisTotaux).toFixed(4)), 1),
+        emploies: population.jeune + population.adulte - calculerSoldat(armee),
+        efficacite: Math.min(Number((parseFloat(String(population.jeune + population.adulte - calculerSoldat(armee))) / emploisTotaux).toFixed(4)), 1),
     };
 }
-export function calculerSoldat(armee: any, armeeObject: any) {
+export function calculerSoldat(armee: any) {
     return armee.unite * eval(`armeeObject.${armee.strategie}.aviation`) * eval(`armeeObject.aviation.homme`) +
         armee.unite * eval(`armeeObject.${armee.strategie}.infanterie`) * eval(`armeeObject.infanterie.homme`) +
         armee.unite * eval(`armeeObject.${armee.strategie}.mecanise`) * eval(`armeeObject.mecanise.homme`) +
@@ -41,7 +47,7 @@ export function calculerSoldat(armee: any, armeeObject: any) {
         (armee.support * armeeObject.support.homme);
 }
 
-export function menuArmee(interaction: any, connection: any, armeeObject: any) {
+export function menuArmee(interaction: any, connection: any) {
     const sql = `
         SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'
@@ -107,28 +113,22 @@ export function menuArmee(interaction: any, connection: any, armeeObject: any) {
                 text: Pays.devise
             },
         };
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('action-armee')
-                    .setPlaceholder(`Afficher un autre menu`)
-                    .addOptions([
-                        {
-                            label: `Mobiliser des Unités`,
-                            emoji: `🪖`,
-                            description: `Transférer des unités de votre réserve vers votre armée`,
-                            value: 'unite',
-                        },
-                        {
-                            label: `Stratégie`,
-                            emoji: `♟️`,
-                            description: `Choisir une stratégie pour votre armée`,
-                            value: 'strategie',
-                        },
-                    ]),
-            );
-        interaction.reply({ embeds: [embed], components: [row] });
+        const options = [
+            {
+                label: `Mobiliser des Unités`,
+                emoji: `🪖`,
+                description: `Transférer des unités de votre réserve vers votre armée`,
+                value: 'unite',
+            },
+            {
+                label: `Stratégie`,
+                emoji: `♟️`,
+                description: `Choisir une stratégie pour votre armée`,
+                value: 'strategie',
+            },
+        ];
+        const row1 = addSelectMenu('action-armee', "Sélectionner une action", options);
+        interaction.reply({ embeds: [embed], components: [row1] });
     });
 }
 
@@ -188,20 +188,14 @@ export function menuDiplomatie(interaction: any, connection: any) {
         ];
 
         if (Pays.rang !== 'Cité') {
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId('action-diplomatie')
-                        .setPlaceholder(`Sélectionner une action`)
-                        .addOptions(options),
-                );
-            components.push(row);
+            const row1 = addSelectMenu('action-diplomatie', "Sélectionner une action", options);
+            components.push(row1);
         }
 
         await interaction.reply({ embeds: [embed], components: components });
     });
 }
-export function menuEconomie(interaction: any, connection: any, armeeObject: any, batimentObject: any) {
+export function menuEconomie(interaction: any, connection: any) {
     let sql = `
         SELECT *
         FROM armee
@@ -228,9 +222,9 @@ export function menuEconomie(interaction: any, connection: any, armeeObject: any
         } else {
             const Argent = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> -0 | +0 | :0 | ${Pays.cash.toLocaleString('en-US')} $`);
 
-            const emploies = calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject).emploies;
-            const emploisTotaux = calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject).emploisTotaux;
-            const efficacite = calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject).efficacite;
+            const emploies = calculerEmploi(Armee, Batiment, Population).emploies;
+            const emploisTotaux = calculerEmploi(Armee, Batiment, Population).emploisTotaux;
+            const efficacite = calculerEmploi(Armee, Batiment, Population).efficacite;
 
             let Emploi;
             if (efficacite >= 0.9) {
@@ -271,34 +265,28 @@ export function menuEconomie(interaction: any, connection: any, armeeObject: any
                 },
             };
 
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId('action-economie')
-                        .setPlaceholder(`Consommations`)
-                        .addOptions([
-                            {
-                                label: `Consommations`,
-                                emoji: `📦`,
-                                description: `Voir vos flux de ressources`,
-                                value: 'consommations',
-                            },
-                            {
-                                label: `Emploi`,
-                                emoji: `👩‍🔧`,
-                                description: `Voir vos postes de travail`,
-                                value: 'emploi',
-                            },
-                            {
-                                label: `Industrie`,
-                                emoji: `🏭`,
-                                description: `Voir vos industries`,
-                                value: 'industrie',
-                            }
-                        ]),
-                );
-
-            await interaction.reply({ embeds: [embed], components: [row] });
+            const options = [
+                {
+                    label: `Consommations`,
+                    emoji: `📦`,
+                    description: `Voir vos flux de ressources`,
+                    value: 'consommations',
+                },
+                {
+                    label: `Emploi`,
+                    emoji: `👩‍🔧`,
+                    description: `Voir vos postes de travail`,
+                    value: 'emploi',
+                },
+                {
+                    label: `Industrie`,
+                    emoji: `🏭`,
+                    description: `Voir vos industries`,
+                    value: 'industrie',
+                }
+            ];
+            const row1 = addSelectMenu('action-economie', "Sélectionner un menu", options);
+            await interaction.reply({ embeds: [embed], components: [row1] });
         }
     });
 }
@@ -349,41 +337,34 @@ export function menuGouvernement(interaction: any, connection: any) {
                 text: Pays.devise
             }
         };
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('action-gouv')
-                    .setPlaceholder(`Effectuer une action`)
-                    .addOptions([
-                        {
-                            label: `Annonce`,
-                            emoji: `📢`,
-                            description: `Faire une annonce`,
-                            value: 'annonce',
-                        },
-                        {
-                            label: `Devise`,
-                            emoji: `📃`,
-                            description: `Choisir une nouvelle devise`,
-                            value: 'devise',
-                        },
-                        {
-                            label: `Drapeau`,
-                            emoji: `🎌`,
-                            description: `Choisir un nouveau drapeau`,
-                            value: 'drapeau',
-                        },
-                        {
-                            label: `Pweeter`,
-                            emoji: `<:Pweeter:983399130154008576>`,
-                            description: `Changer son pseudo pweeter`,
-                            value: 'pweeter',
-                        },
-                    ]),
-            );
-
-        await interaction.reply({ embeds: [embed], components: [row] });
+        const options = [
+            {
+                label: `Annonce`,
+                emoji: `📢`,
+                description: `Faire une annonce`,
+                value: 'annonce',
+            },
+            {
+                label: `Devise`,
+                emoji: `📃`,
+                description: `Choisir une nouvelle devise`,
+                value: 'devise',
+            },
+            {
+                label: `Drapeau`,
+                emoji: `🎌`,
+                description: `Choisir un nouveau drapeau`,
+                value: 'drapeau',
+            },
+            {
+                label: `Pweeter`,
+                emoji: `<:Pweeter:983399130154008576>`,
+                description: `Changer son pseudo pweeter`,
+                value: 'pweeter',
+            },
+        ];
+        const row1 = addSelectMenu('action-gouv', "Sélectionner une action", options);
+        await interaction.reply({ embeds: [embed], components: [row1] });
     });
 }
 
@@ -428,117 +409,110 @@ export function menuIndustrie(interaction: any, connection: any) {
                 text: Pays.devise
             },
         };
-
-        const row = new ActionRowBuilder()
-            .addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('usine')
-                    .setPlaceholder(`Le type d\'usine`)
-                    .addOptions([
-                        {
-                            label: `Acierie`,
-                            emoji: `<:acier:1075776411329122304>`,
-                            description: `Produit de l'acier`,
-                            value: 'acierie',
-                        },
-                        {
-                            label: `Atelier de verre`,
-                            emoji: `🪟`,
-                            description: `Produit du verre`,
-                            value: 'atelier_verre',
-                        },
-                        {
-                            label: `Carrière de sable`,
-                            emoji: `<:sable:1075776363782479873>`,
-                            description: `Produit du sable`,
-                            value: 'carriere_sable',
-                        },
-                        {
-                            label: `Centrale biomasse`,
-                            emoji: `⚡`,
-                            description: `Produit de l'électricité`,
-                            value: 'centrale_biomasse',
-                        },
-                        {
-                            label: `Centrale au charbon`,
-                            emoji: `⚡`,
-                            description: `Produit de l'électricité`,
-                            value: 'centrale_charbon',
-                        },
-                        {
-                            label: `Centrale au fioul`,
-                            emoji: `⚡`,
-                            description: `Produit de l'électricité`,
-                            value: 'centrale_fioul',
-                        },
-                        {
-                            label: `Champ`,
-                            emoji: `🌽`,
-                            description: `Produit de la nourriture`,
-                            value: 'champ',
-                        },
-                        {
-                            label: `Champ d'éoliennes`,
-                            emoji: `⚡`,
-                            description: `Produit de l'électricité`,
-                            value: 'eolienne',
-                        },
-                        {
-                            label: `Cimenterie`,
-                            emoji: `<:beton:1075776342227943526>`,
-                            description: `Produit du béton`,
-                            value: 'cimenterie',
-                        },
-                        {
-                            label: `Derrick`,
-                            emoji: `🛢️`,
-                            description: `Produit du pétrole`,
-                            value: 'derrick',
-                        },
-                        {
-                            label: `Mine de charbon`,
-                            emoji: `<:charbon:1075776385517375638>`,
-                            description: `Produit du charbon`,
-                            value: 'mine_charbon',
-                        },
-                        {
-                            label: `Mine de métaux`,
-                            emoji: `🪨`,
-                            description: `Produit des métaux`,
-                            value: 'mine_metaux',
-                        },
-                        {
-                            label: `Station de pompage`,
-                            emoji: `💧`,
-                            description: `Produit de l\'eau`,
-                            value: 'station_pompage',
-                        },
-                        {
-                            label: `Raffinerie`,
-                            emoji: `⛽`,
-                            description: `Produit du carburant`,
-                            value: 'raffinerie',
-                        },
-                        {
-                            label: `Scierie`,
-                            emoji: `🪵`,
-                            description: `Produit du bois`,
-                            value: 'scierie',
-                        },
-                        {
-                            label: `Usine civile`,
-                            emoji: `💻`,
-                            description: `Produit des biens de consommation`,
-                            value: 'usine_civile',
-                        },
-                    ]),
-            );
-
-        await interaction.reply({ embeds: [embed], components: [row] });
+        const options = [
+            {
+                label: `Acierie`,
+                emoji: `<:acier:1075776411329122304>`,
+                description: `Produit de l'acier`,
+                value: 'acierie',
+            },
+            {
+                label: `Atelier de verre`,
+                emoji: `🪟`,
+                description: `Produit du verre`,
+                value: 'atelier_verre',
+            },
+            {
+                label: `Carrière de sable`,
+                emoji: `<:sable:1075776363782479873>`,
+                description: `Produit du sable`,
+                value: 'carriere_sable',
+            },
+            {
+                label: `Centrale biomasse`,
+                emoji: `⚡`,
+                description: `Produit de l'électricité`,
+                value: 'centrale_biomasse',
+            },
+            {
+                label: `Centrale au charbon`,
+                emoji: `⚡`,
+                description: `Produit de l'électricité`,
+                value: 'centrale_charbon',
+            },
+            {
+                label: `Centrale au fioul`,
+                emoji: `⚡`,
+                description: `Produit de l'électricité`,
+                value: 'centrale_fioul',
+            },
+            {
+                label: `Champ`,
+                emoji: `🌽`,
+                description: `Produit de la nourriture`,
+                value: 'champ',
+            },
+            {
+                label: `Champ d'éoliennes`,
+                emoji: `⚡`,
+                description: `Produit de l'électricité`,
+                value: 'eolienne',
+            },
+            {
+                label: `Cimenterie`,
+                emoji: `<:beton:1075776342227943526>`,
+                description: `Produit du béton`,
+                value: 'cimenterie',
+            },
+            {
+                label: `Derrick`,
+                emoji: `🛢️`,
+                description: `Produit du pétrole`,
+                value: 'derrick',
+            },
+            {
+                label: `Mine de charbon`,
+                emoji: `<:charbon:1075776385517375638>`,
+                description: `Produit du charbon`,
+                value: 'mine_charbon',
+            },
+            {
+                label: `Mine de métaux`,
+                emoji: `🪨`,
+                description: `Produit des métaux`,
+                value: 'mine_metaux',
+            },
+            {
+                label: `Station de pompage`,
+                emoji: `💧`,
+                description: `Produit de l\'eau`,
+                value: 'station_pompage',
+            },
+            {
+                label: `Raffinerie`,
+                emoji: `⛽`,
+                description: `Produit du carburant`,
+                value: 'raffinerie',
+            },
+            {
+                label: `Scierie`,
+                emoji: `🪵`,
+                description: `Produit du bois`,
+                value: 'scierie',
+            },
+            {
+                label: `Usine civile`,
+                emoji: `💻`,
+                description: `Produit des biens de consommation`,
+                value: 'usine_civile',
+            },
+        ];
+        const row1 = addSelectMenu('usine', "Sélectionner une usine", options);
+        await interaction.reply({ embeds: [embed], components: [row1] });
     });
 }
 
-export function menuPopulation(interaction: any, connection: any, armeeObject: any, batimentObject: any, gouvernementObject: any, populationObject: any, regionObject: any) {
+export function menuPopulation(interaction: any, connection: any) {
     const sql = `
             SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -703,7 +677,7 @@ export function menuPopulation(interaction: any, connection: any, armeeObject: a
     });
 }
 
-export function menuTerritoire(interaction: any, connection: any, biomeObject: any) {
+export function menuTerritoire(interaction: any, connection: any) {
     const sql = `
         SELECT * FROM diplomatie WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM pays WHERE id_joueur='${interaction.member.id}';
@@ -752,21 +726,15 @@ export function menuTerritoire(interaction: any, connection: any, biomeObject: a
             },
         };
 
-        const row1 = new ActionRowBuilder()
-            .addComponents(
-                new StringSelectMenuBuilder()
-                    .setCustomId('action-territoire')
-                    .setPlaceholder(`Afficher un autre menu`)
-                    .addOptions([
-                        {
-                            label: `Biome`,
-                            emoji: `🏞️`,
-                            description: `Menu des biomes`,
-                            value: 'biome',
-                        }
-                    ]),
-            );
-
+        const options = [
+            {
+                label: `Biome`,
+                emoji: `🏞️`,
+                description: `Menu des biomes`,
+                value: 'biome',
+            }
+        ]
+        const row1 = addSelectMenu('action-territoire', `Afficher un autre menu`, options)
         const row2 = new ActionRowBuilder()
             .addComponents(
                 new ButtonBuilder()
@@ -780,7 +748,7 @@ export function menuTerritoire(interaction: any, connection: any, biomeObject: a
     });
 }
 
-export function menuConsommation(mode: 'menu' | 'edit', interaction: any, connection: any, armeeObject: any, batimentObject: any, gouvernementObject: any, populationObject: any, regionObject: any) {
+export function menuConsommation(mode: 'menu' | 'edit', interaction: any, connection: any) {
     const sql = `
         SELECT * FROM armee WHERE id_joueur='${interaction.member.id}';
         SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -865,7 +833,7 @@ export function menuConsommation(mode: 'menu' | 'edit', interaction: any, connec
         //endregion
 
         //region Calcul des coefficients de production des ressources
-        const efficacite = calculerEmploi(Armee, Batiment, Population, armeeObject, batimentObject).efficacite;
+        const efficacite = calculerEmploi(Armee, Batiment, Population).efficacite;
 
         const coef_bois = eval(`regionObject.${Territoire.region}.bois`)
         const coef_charbon = eval(`regionObject.${Territoire.region}.charbon`)
@@ -1145,6 +1113,137 @@ export function menuConsommation(mode: 'menu' | 'edit', interaction: any, connec
     })
 }
 
+export function failReply(interaction: any, message: string) {
+    interaction.reply({content: codeBlock('ansi', `\u001b[0;0m\u001b[1;31m${message}`), ephemeral: true});
+}
+
+export function convertMillisecondsToTime(milliseconds: number) {
+    const seconds = Math.floor(milliseconds / 1000);
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+    return `${hours} heures, ${minutes} minutes, ${remainingSeconds} secondes`;
+}
+
+export function addSelectMenu(customId: string, placeholder: string, options: any[]) {
+    return new ActionRowBuilder()
+        .addComponents(
+            new StringSelectMenuBuilder()
+                .setCustomId(customId)
+                .setPlaceholder(placeholder)
+                .addOptions(options),
+        );
+}
+
+export function toId(name: string) {
+    switch (name) {
+        case 'Acierie':
+            return 'acierie';
+        case 'Atelier de verre':
+            return 'atelier_verre';
+        case 'Carrière de sable':
+            return 'carriere_sable';
+        case 'Centrale à biomasse':
+            return 'centrale_biomasse';
+        case 'Centrale à charbon':
+            return 'centrale_charbon';
+        case 'Centrale à fioul':
+            return 'centrale_fioul';
+        case 'Champ':
+            return 'champ';
+        case 'Champ d\'éoliennes':
+            return 'eolienne';
+        case 'Cimenterie':
+            return 'cimenterie';
+        case 'Derrick':
+            return 'derrick';
+        case 'Mine de charbon':
+            return 'mine_charbon';
+        case 'Mine de métaux':
+            return 'mine_metaux';
+        case 'Station de pompage':
+            return 'station_pompage';
+        case 'Quartier':
+            return 'quartier';
+        case 'Raffinerie':
+            return 'raffinerie';
+        case 'Scierie':
+            return 'scierie';
+        case 'Usine civile':
+            return 'usine_civile';
+    }
+}
+
+// @ts-ignore
+export function toName(id: string): string {
+    switch (id) {
+        case 'acierie':
+            return 'Acierie';
+        case 'atelier_verre':
+            return 'Atelier de verre';
+        case 'carriere_sable':
+            return 'Carrière de sable';
+        case 'centrale_biomasse':
+            return 'Centrale à biomasse';
+        case 'centrale_charbon':
+            return 'Centrale à charbon';
+        case 'centrale_fioul':
+            return 'Centrale à fioul';
+        case 'champ':
+            return 'Champ';
+        case 'eolienne':
+            return 'Champ d\'éoliennes';
+        case 'cimenterie':
+            return 'Cimenterie';
+        case 'derrick':
+            return 'Derrick';
+        case 'mine_charbon':
+            return 'Mine de charbon';
+        case 'mine_metaux':
+            return 'Mine de métaux';
+        case 'station_pompage':
+            return 'Station de pompage';
+        case 'quartier':
+            return 'Quartier';
+        case 'raffinerie':
+            return 'Raffinerie';
+        case 'scierie':
+            return 'Scierie';
+        case 'usine_civile':
+            return 'Usine civile';
+    }
+}
+
+// @ts-ignore
+export function toEmoji(id: string): string {
+    switch (id) {
+        case 'acier':
+            return '<:acier:1075776411329122304>';
+        case 'beton':
+            return '<:beton:1075776342227943526>';
+        case 'bc':
+            return '💻';
+        case 'bois':
+            return '🪵';
+        case 'carburant':
+            return '⛽';
+        case 'charbon':
+            return '<:charbon:1075776385517375638>';
+        case 'eau':
+            return '💧';
+        case 'metaux':
+            return '🪨';
+        case 'nourriture':
+            return '🌽';
+        case 'petrole':
+            return '🛢️';
+        case 'sable':
+            return '<:sable:1075776363782479873>';
+        case 'verre':
+            return '🪟';
+    }
+}
+
 module.exports = {
     calculerEmploi,
     calculerSoldat,
@@ -1155,5 +1254,11 @@ module.exports = {
     menuEconomie,
     menuIndustrie,
     menuPopulation,
-    menuTerritoire
+    menuTerritoire,
+    failReply,
+    convertMillisecondsToTime,
+    addSelectMenu,
+    toId,
+    toName,
+    toEmoji,
 }
