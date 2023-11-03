@@ -65,4 +65,4 @@ dump
 **/~$*.docx
     
 
-Docker/data/
+Docker/data/*
