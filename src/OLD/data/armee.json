@@ -1,0 +1,62 @@
+{
+  "aviation" : {
+    "homme": 25,
+    "avion": 40,
+    "equipement_support": 50,
+    "materiel_infanterie": 5,
+    "vehicule": 4
+  },
+  "infanterie" : {
+    "homme": 100,
+    "avion": 0,
+    "equipement_support": 20,
+    "materiel_infanterie": 100,
+    "vehicule": 6
+  },
+  "mecanise" : {
+    "homme": 120,
+    "avion": 0,
+    "equipement_support": 35,
+    "materiel_infanterie": 40,
+    "vehicule": 80
+  },
+  "support" : {
+    "homme": 20,
+    "avion": 10,
+    "equipement_support": 60,
+    "materiel_infanterie": 10,
+    "vehicule": 8
+  },
+  "assaut_masse" : {
+    "nom": "Assaut de masse",
+    "aviation": 12,
+    "infanterie": 68,
+    "mecanise": 4,
+    "support": 16,
+    "bonus_taille": 1
+  },
+  "defense" : {
+    "nom": "Defense",
+    "aviation": 12,
+    "infanterie": 52,
+    "mecanise": 4,
+    "support": 32,
+    "bonus_taille": 1
+  },
+  "motorisation" : {
+    "nom": "Motorisation",
+    "aviation": 15,
+    "infanterie": 35,
+    "mecanise": 25,
+    "support": 25,
+    "bonus_taille": 0.7
+  },
+  "puissance_feu" : {
+    "nom": "Puissance de feu",
+    "aviation": 19,
+    "infanterie": 46,
+    "mecanise": 7,
+    "support": 28,
+    "bonus_taille": 1.2
+  }
+}

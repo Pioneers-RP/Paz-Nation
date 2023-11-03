@@ -33,7 +33,7 @@
         "typescript": "^5.2.2"
     },
     "scripts": {
-        "start": "ts-node src/index.ts",
+        "start": "ts-node src/OLD/index.ts",
         "lint": "eslint .",
         "release": "yarn standard-version",
         "release:minor": "yarn standard-version --release-as minor",

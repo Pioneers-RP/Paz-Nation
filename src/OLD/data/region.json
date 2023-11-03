@@ -1,0 +1,122 @@
+{
+    "afrique_australe": {
+        "bois": 1,
+        "charbon": 0.3,
+        "eau": 1,
+        "eolienne": 1.6,
+        "metaux": 1.5,
+        "nourriture": 1,
+        "petrole": 0.1,
+        "sable": 2
+    },
+    "afrique_equatoriale": {
+        "bois": 2,
+        "charbon": 0.1,
+        "eau": 1.6,
+        "eolienne": 1.3,
+        "metaux": 1,
+        "nourriture": 1,
+        "petrole": 0.1,
+        "sable": 1
+    },
+    "afrique_du_nord": {
+        "bois": 0.1,
+        "charbon": 1,
+        "eau": 0.2,
+        "eolienne": 1,
+        "metaux": 1.2,
+        "nourriture": 0.3,
+        "petrole": 2,
+        "sable": 2
+    },
+    "amerique_latine": {
+        "bois": 1.4,
+        "charbon": 1,
+        "eau": 1,
+        "eolienne": 1.6,
+        "metaux": 1.5,
+        "nourriture": 1.4,
+        "petrole": 0.4,
+        "sable": 0.1
+    },
+    "amerique_du_nord": {
+        "bois": 0.2,
+        "charbon": 2,
+        "eau": 0.7,
+        "eolienne": 1.3,
+        "metaux": 1.2,
+        "nourriture": 1.2,
+        "petrole": 1.5,
+        "sable": 0.2
+    },
+    "amerique_du_sud": {
+        "bois": 1,
+        "charbon": 0.1,
+        "eau": 2,
+        "eolienne": 1.9,
+        "metaux": 1,
+        "nourriture": 1.5,
+        "petrole": 0.1,
+        "sable": 1.2
+    },
+    "asie_du_nord": {
+        "bois": 1,
+        "charbon": 1.3,
+        "eau": 0.5,
+        "eolienne": 1.6,
+        "metaux": 2,
+        "nourriture": 1.6,
+        "petrole": 0.3,
+        "sable": 0.1
+    },
+    "asie_du_sud": {
+        "bois": 2,
+        "charbon": 0.3,
+        "eau": 1.2,
+        "eolienne": 1,
+        "metaux": 0.5,
+        "nourriture": 1.4,
+        "petrole": 0.1,
+        "sable": 1.4
+    },
+    "europe": {
+        "bois": 1.6,
+        "charbon": 1,
+        "eau": 0.9,
+        "eolienne": 1.6,
+        "metaux": 0.2,
+        "nourriture": 2,
+        "petrole": 0.1,
+        "sable": 1
+    },
+    "grand_nord": {
+        "bois": 1.3,
+        "charbon": 1.4,
+        "eau": 1.3,
+        "eolienne": 1.9,
+        "metaux": 1,
+        "nourriture": 0.4,
+        "petrole": 1.5,
+        "sable": 0.1
+    },
+    "moyen_orient": {
+        "bois": 0.1,
+        "charbon": 1,
+        "eau": 0.3,
+        "eolienne": 1,
+        "metaux": 1,
+        "nourriture": 0.4,
+        "petrole": 2,
+        "sable": 2
+    },
+    "oceanie": {
+        "bois": 0.5,
+        "charbon": 1.3,
+        "eau": 1,
+        "eolienne": 1.9,
+        "metaux": 1.8,
+        "nourriture": 0.8,
+        "petrole": 0.1,
+        "sable": 1.4
+    }
+}

@@ -1,5 +1,5 @@
-import { AppDataSource } from '../src/data-source';
-import { Armee } from '../src/entities/Armee'; // Assurez-vous que le chemin est correct
+import { AppDataSource } from '../src/OLD/data-source';
+import { Armee } from '../src/OLD/entities/Armee'; // Assurez-vous que le chemin est correct
 import dotenv from 'dotenv';
 dotenv.config();
 

@@ -1,0 +1,770 @@
+{
+  "desert": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 140,
+        "defenseur": 120
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 90
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 150,
+        "defenseur": 80
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 80,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 90,
+        "defenseur": 100
+      }
+    }
+  },
+  "foret": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 140,
+        "defenseur": 120
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 90
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 140
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 90,
+        "defenseur": 100
+      },
+      "puissance_feu": {
+        "attaquant": 80,
+        "defenseur": 140
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 150,
+        "defenseur": 80
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    }
+  },
+  "jungle": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 140,
+        "defenseur": 120
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 90
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 140
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 90,
+        "defenseur": 100
+      },
+      "puissance_feu": {
+        "attaquant": 80,
+        "defenseur": 140
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 150,
+        "defenseur": 80
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    }
+  },
+  "prairie": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 140,
+        "defenseur": 120
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 90
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 150,
+        "defenseur": 80
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 80,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 90,
+        "defenseur": 100
+      }
+    }
+  },
+  "rocheuses": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 140,
+        "defenseur": 120
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 90
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 140
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 90,
+        "defenseur": 100
+      },
+      "puissance_feu": {
+        "attaquant": 80,
+        "defenseur": 140
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 150,
+        "defenseur": 80
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    }
+  },
+  "savane": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 140,
+        "defenseur": 120
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 90
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 150,
+        "defenseur": 80
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 80,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 90,
+        "defenseur": 100
+      }
+    }
+  },
+  "steppe": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 140,
+        "defenseur": 120
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 90
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 130,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 150,
+        "defenseur": 80
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 80,
+        "defenseur": 140
+      },
+      "puissance_feu": {
+        "attaquant": 90,
+        "defenseur": 100
+      }
+    }
+  },
+  "taiga": {
+    "assaut_masse": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 70
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 140,
+        "defenseur": 120
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    },
+    "defense": {
+      "assaut_masse": {
+        "attaquant": 60,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 60,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 60,
+        "defenseur": 90
+      },
+      "puissance_feu": {
+        "attaquant": 60,
+        "defenseur": 140
+      }
+    },
+    "motorisation": {
+      "assaut_masse": {
+        "attaquant": 110,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 120,
+        "defenseur": 150
+      },
+      "motorisation": {
+        "attaquant": 90,
+        "defenseur": 100
+      },
+      "puissance_feu": {
+        "attaquant": 80,
+        "defenseur": 140
+      }
+    },
+    "puissance_feu": {
+      "assaut_masse": {
+        "attaquant": 150,
+        "defenseur": 60
+      },
+      "defense": {
+        "attaquant": 150,
+        "defenseur": 130
+      },
+      "motorisation": {
+        "attaquant": 150,
+        "defenseur": 80
+      },
+      "puissance_feu": {
+        "attaquant": 130,
+        "defenseur": 140
+      }
+    },
+    "toundra": {
+      "assaut_masse": {
+        "assaut_masse": {
+          "attaquant": 150,
+          "defenseur": 70
+        },
+        "defense": {
+          "attaquant": 150,
+          "defenseur": 150
+        },
+        "motorisation": {
+          "attaquant": 130,
+          "defenseur": 140
+        },
+        "puissance_feu": {
+          "attaquant": 140,
+          "defenseur": 120
+        }
+      },
+      "defense": {
+        "assaut_masse": {
+          "attaquant": 60,
+          "defenseur": 60
+        },
+        "defense": {
+          "attaquant": 60,
+          "defenseur": 150
+        },
+        "motorisation": {
+          "attaquant": 60,
+          "defenseur": 140
+        },
+        "puissance_feu": {
+          "attaquant": 60,
+          "defenseur": 90
+        }
+      },
+      "motorisation": {
+        "assaut_masse": {
+          "attaquant": 150,
+          "defenseur": 60
+        },
+        "defense": {
+          "attaquant": 150,
+          "defenseur": 130
+        },
+        "motorisation": {
+          "attaquant": 130,
+          "defenseur": 140
+        },
+        "puissance_feu": {
+          "attaquant": 150,
+          "defenseur": 80
+        }
+      },
+      "puissance_feu": {
+        "assaut_masse": {
+          "attaquant": 110,
+          "defenseur": 60
+        },
+        "defense": {
+          "attaquant": 120,
+          "defenseur": 150
+        },
+        "motorisation": {
+          "attaquant": 80,
+          "defenseur": 140
+        },
+        "puissance_feu": {
+          "attaquant": 90,
+          "defenseur": 100
+        }
+      }
+    },
+    "ville": {
+      "assaut_masse": {
+        "assaut_masse": {
+          "attaquant": 150,
+          "defenseur": 70
+        },
+        "defense": {
+          "attaquant": 150,
+          "defenseur": 150
+        },
+        "motorisation": {
+          "attaquant": 140,
+          "defenseur": 120
+        },
+        "puissance_feu": {
+          "attaquant": 130,
+          "defenseur": 140
+        }
+      },
+      "defense": {
+        "assaut_masse": {
+          "attaquant": 60,
+          "defenseur": 60
+        },
+        "defense": {
+          "attaquant": 60,
+          "defenseur": 150
+        },
+        "motorisation": {
+          "attaquant": 60,
+          "defenseur": 90
+        },
+        "puissance_feu": {
+          "attaquant": 60,
+          "defenseur": 140
+        }
+      },
+      "motorisation": {
+        "assaut_masse": {
+          "attaquant": 110,
+          "defenseur": 60
+        },
+        "defense": {
+          "attaquant": 120,
+          "defenseur": 150
+        },
+        "motorisation": {
+          "attaquant": 90,
+          "defenseur": 100
+        },
+        "puissance_feu": {
+          "attaquant": 80,
+          "defenseur": 140
+        }
+      },
+      "puissance_feu": {
+        "assaut_masse": {
+          "attaquant": 150,
+          "defenseur": 60
+        },
+        "defense": {
+          "attaquant": 150,
+          "defenseur": 130
+        },
+        "motorisation": {
+          "attaquant": 150,
+          "defenseur": 80
+        },
+        "puissance_feu": {
+          "attaquant": 130,
+          "defenseur": 140
+        }
+      }
+    },
+    "perte_attaquant": {
+      "strategie_attaquant": {
+        "assaut_masse": 1.2,
+        "defense": 0.7,
+        "motorisation": 0.8,
+        "puissance_feu": 0.9
+      },
+      "strategie_defenseur": {
+        "assaut_masse": 1,
+        "defense": 1.5,
+        "motorisation": 1.3,
+        "puissance_feu": 1.3
+      }
+    },
+    "perte_defenseur": {
+      "strategie_attaquant": {
+        "assaut_masse": 1.1,
+        "defense": 1,
+        "motorisation": 1.2,
+        "puissance_feu": 1.3
+      },
+      "strategie_defenseur": {
+        "assaut_masse": 1.1,
+        "defense": 0.6,
+        "motorisation": 0.7,
+        "puissance_feu": 0.9
+      }
+    }
+  }
+}
