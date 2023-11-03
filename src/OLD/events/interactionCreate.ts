@@ -44,14 +44,14 @@ const organisationCommandCooldown = new CommandCooldown('organisation', ms('7d')
 const strategieCommandCooldown = new CommandCooldown('strategie', ms('7d'));
 const vacancesCommandCooldown = new CommandCooldown('vacances', ms('7d'));
 
-const armeeObject = JSON.parse(readFileSync('src/data/armee.json', 'utf-8'));
-const assemblageObject = JSON.parse(readFileSync('src/data/assemblage.json', 'utf-8'));
-const batimentObject = JSON.parse(readFileSync('src/data/batiment.json', 'utf-8'));
-const biomeObject = JSON.parse(readFileSync('src/data/biome.json', 'utf-8'));
-const gouvernementObject = JSON.parse(readFileSync('src/data/gouvernement.json', 'utf-8'));
-const populationObject = JSON.parse(readFileSync('src/data/population.json', 'utf-8'));
-const regionObject = JSON.parse(readFileSync('src/data/region.json', 'utf-8'));
-const strategieObject = JSON.parse(readFileSync('src/data/strategie.json', 'utf-8'));
+const armeeObject = JSON.parse(readFileSync('src/OLD/data/armee.json', 'utf-8'));
+const assemblageObject = JSON.parse(readFileSync('src/OLD/data/assemblage.json', 'utf-8'));
+const batimentObject = JSON.parse(readFileSync('src/OLD/data/batiment.json', 'utf-8'));
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
+const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
+const populationObject = JSON.parse(readFileSync('src/OLD/data/population.json', 'utf-8'));
+const regionObject = JSON.parse(readFileSync('src/OLD/data/region.json', 'utf-8'));
+const strategieObject = JSON.parse(readFileSync('src/OLD/data/strategie.json', 'utf-8'));
 
 module.exports = {
     name: Events.InteractionCreate,
