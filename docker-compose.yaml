@@ -21,15 +21,15 @@ services:
     ports:
       - "8080:80"
 
-  server:
-      build:
-        context: .
-        dockerfile: Dockerfile
-        target: development
-      container_name: server
-      env_file:
-        - .env
-      ports:
-        - "5678:5678" #debug
-      volumes:
-        - ./src:/app
+  # server:
+  #     build:
+  #       context: .
+  #       dockerfile: Dockerfile
+  #       target: development
+  #     container_name: server
+  #     env_file:
+  #       - .env
+  #     ports:
+  #       - "5678:5678" #debug
+  #     volumes:
+  #       - ./src:/app

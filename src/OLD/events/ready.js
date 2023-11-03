@@ -1426,7 +1426,7 @@ module.exports = {
                     };
 
                     let jsonPrix = JSON.stringify(prix);
-                    writeFileSync('data/prix.json', jsonPrix)
+                    writeFileSync('../data/prix.json', jsonPrix)
 
                     jsonPrix = JSON.parse(readFileSync('../OLD/data/prix.json', 'utf-8'));
                     const embed = {
