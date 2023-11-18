@@ -1,5 +1,5 @@
-const { SlashCommandBuilder, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} = require('discord.js');
-const { readFileSync } = require('fs');
+import {SlashCommandBuilder, codeBlock, ActionRowBuilder, ButtonBuilder, ButtonStyle} from 'discord.js';
+import {readFileSync} from 'fs';
 const regionObject = JSON.parse(readFileSync('src/OLD/data/region.json', 'utf-8'));
 
 module.exports = {
@@ -7,8 +7,8 @@ module.exports = {
         .setName('reserve')
         .setDescription(`Affiche vos réserves`),
 
-    async execute(interaction) {
-        const { connection } = require('../../index');
+    async execute(interaction: any) {
+        const { connection } = require('../../index.ts');
 
         const sql = `
             SELECT * FROM batiments WHERE id_joueur='${interaction.member.id}';
@@ -16,7 +16,7 @@ module.exports = {
             SELECT * FROM ressources WHERE id_joueur='${interaction.member.id}';
             SELECT * FROM territoire WHERE id_joueur='${interaction.member.id}';
         `;
-        connection.query(sql, async(err, results) => {if (err) {throw err;}
+        connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
             const Pays = results[1][0];
             const Ressources = results[2][0];
             const Territoire = results[3][0];

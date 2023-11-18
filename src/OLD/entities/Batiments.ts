@@ -10,28 +10,28 @@ export class Batiments {
   idJoueur: string | null;
 
   @Column("int", { name: "deja_prod", default: () => "'1'" })
-  dejaProd: number;
+  deja_prod: number;
 
   @Column("int", { name: "usine_total", default: () => "'20'" })
-  usineTotal: number;
+  usine_total: number;
 
   @Column("int", { name: "acierie", default: () => "'0'" })
   acierie: number;
 
   @Column("int", { name: "atelier_verre", default: () => "'0'" })
-  atelierVerre: number;
+  atelier_verre: number;
 
   @Column("int", { name: "carriere_sable", default: () => "'1'" })
-  carriereSable: number;
+  carriere_sable: number;
 
   @Column("int", { name: "centrale_biomasse", default: () => "'0'" })
-  centraleBiomasse: number;
+  centrale_biomasse: number;
 
   @Column("int", { name: "centrale_charbon", default: () => "'0'" })
-  centraleCharbon: number;
+  centrale_charbon: number;
 
   @Column("int", { name: "centrale_fioul", default: () => "'1'" })
-  centraleFioul: number;
+  centrale_fioul: number;
 
   @Column("int", { name: "champ", default: () => "'6'" })
   champ: number;
@@ -46,13 +46,13 @@ export class Batiments {
   eolienne: number;
 
   @Column("int", { name: "mine_charbon", default: () => "'1'" })
-  mineCharbon: number;
+  mine_charbon: number;
 
   @Column("int", { name: "mine_metaux", default: () => "'1'" })
-  mineMetaux: number;
+  mine_metaux: number;
 
   @Column("int", { name: "station_pompage", default: () => "'5'" })
-  stationPompage: number;
+  station_pompage: number;
 
   @Column("int", { name: "quartier", default: () => "'35'" })
   quartier: number;
@@ -64,29 +64,29 @@ export class Batiments {
   scierie: number;
 
   @Column("int", { name: "usine_civile", default: () => "'0'" })
-  usineCivile: number;
+  usine_civile: number;
 
   constructor() {
     this.idPays = null;
     this.idJoueur = null;
-    this.dejaProd = 0;
-    this.usineTotal = 0;
+    this.deja_prod = 0;
+    this.usine_total = 0;
     this.acierie = 0;
-    this.atelierVerre = 0;
-    this.carriereSable = 0;
-    this.centraleBiomasse = 0;
-    this.centraleCharbon = 0;
-    this.centraleFioul = 0;
+    this.atelier_verre = 0;
+    this.carriere_sable = 0;
+    this.centrale_biomasse = 0;
+    this.centrale_charbon = 0;
+    this.centrale_fioul = 0;
     this.champ = 0;
     this.cimenterie = 0;
     this.derrick = 0;
     this.eolienne = 0;
-    this.mineCharbon = 0;
-    this.mineMetaux = 0;
-    this.stationPompage = 0;
+    this.mine_charbon = 0;
+    this.mine_metaux = 0;
+    this.station_pompage = 0;
     this.quartier = 0;
     this.raffinerie = 0;
     this.scierie = 0;
-    this.usineCivile = 0;
+    this.usine_civile = 0;
   }
 }

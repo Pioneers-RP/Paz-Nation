@@ -1,11 +1,17 @@
-const {ActionRowBuilder, ModalBuilder, SlashCommandBuilder, TextInputBuilder, TextInputStyle} = require("discord.js");
+import {
+    ActionRowBuilder,
+    ModalBuilder,
+    SlashCommandBuilder,
+    TextInputBuilder,
+    TextInputStyle
+} from "discord.js";
 
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('annonce')
         .setDescription(`Faire une annonce au monde entier`),
 
-    async execute(interaction) {
+    async execute(interaction: any) {
         const modal = new ModalBuilder()
             .setCustomId(`annonce`)
             .setTitle(`Faire une annonce`);
@@ -25,8 +31,8 @@ module.exports = {
             .setMaxLength(150)
             .setRequired(false)
 
-        const firstActionRow = new ActionRowBuilder().addComponents(text_annonce);
-        const secondActionRow = new ActionRowBuilder().addComponents(image_annonce);
+        const firstActionRow: any = new ActionRowBuilder().addComponents(text_annonce);
+        const secondActionRow: any = new ActionRowBuilder().addComponents(image_annonce);
         modal.addComponents(firstActionRow, secondActionRow);
         interaction.showModal(modal);
     }

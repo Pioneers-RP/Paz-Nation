@@ -1,7 +1,7 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} = require('discord.js');
-const { readFileSync } = require('fs');
-const { CommandCooldown, msToMinutes } = require('discord-command-cooldown');
-const ms = require('ms');
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} from 'discord.js';
+import {readFileSync} from 'fs';
+import {CommandCooldown, msToMinutes} from 'discord-command-cooldown';
+import ms from 'ms';
 const gouvernementObject = JSON.parse(readFileSync('src/OLD/data/gouvernement.json', 'utf-8'));
 
 module.exports = {
@@ -26,25 +26,25 @@ module.exports = {
                     { name: `Sable`, value: `Sable`},
                     { name: `Verre`, value: `Verre`}
                 )
-            .setRequired(true))
+                .setRequired(true))
         .addIntegerOption(quantite =>
             quantite.setName('quantité')
-            .setDescription(`La quantité de ressources que vous voulez vendre`)
+                .setDescription(`La quantité de ressources que vous voulez vendre`)
                 .setMinValue(1)
-            .setRequired(true))
+                .setRequired(true))
         .addNumberOption(prix =>
             prix.setName('prix')
-            .setDescription(`Le prix à l'unité pour la quantité de ressource`)
-            .setRequired(true)),
+                .setDescription(`Le prix à l'unité pour la quantité de ressource`)
+                .setRequired(true)),
 
-    async execute(interaction) {
-        const { connection } = require('../../index');
+    async execute(interaction: any) {
+        const { connection } = require('../../index.ts');
 
         const sql = `
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
             SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
         `;
-        connection.query(sql, async(err, results) => {if (err) {throw err;}
+        connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
             const Pays = results[0][0];
             const Ressources = results[1][0];
 
@@ -62,9 +62,9 @@ module.exports = {
                 const ressource = interaction.options.getString('ressource');
                 const quantite = interaction.options.getInteger('quantité');
                 const prix_u = interaction.options.getNumber('prix');
-                const jsonPrix = JSON.parse(readFileSync('OLD/data/prix.json', 'utf-8'));
+                const jsonPrix = JSON.parse(readFileSync('data/prix.json', 'utf-8'));
 
-                function offre(prixMoyen, pourcentage, emoji) {
+                function offre(prixMoyen: number | 'Pas de prix moyen', pourcentage: number, emoji: string) {
                     const prix = Math.round(quantite * prix_u);
 
                     const embed = {
@@ -104,17 +104,17 @@ module.exports = {
                     const row = new ActionRowBuilder()
                         .addComponents(
                             new ButtonBuilder()
-                            .setLabel(`Vendre`)
-                            .setEmoji(`💵`)
-                            .setCustomId(`vendre-${interaction.member.id}`)
-                            .setStyle(ButtonStyle.Success),
+                                .setLabel(`Vendre`)
+                                .setEmoji(`💵`)
+                                .setCustomId(`vendre-${interaction.member.id}`)
+                                .setStyle(ButtonStyle.Success),
                         )
                         .addComponents(
                             new ButtonBuilder()
-                            .setLabel(`Refuser`)
-                            .setEmoji(`✋`)
-                            .setCustomId(`refuser-${interaction.member.id}`)
-                            .setStyle(ButtonStyle.Danger),
+                                .setLabel(`Refuser`)
+                                .setEmoji(`✋`)
+                                .setCustomId(`refuser-${interaction.member.id}`)
+                                .setStyle(ButtonStyle.Danger),
                         )
 
                     interaction.reply({ embeds: [embed], components: [row] });
@@ -137,7 +137,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente de l'acier est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.acier * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.acier * 100).toFixed(1));
                                 offre(jsonPrix.acier, pourcentage, '<:acier:1075776411329122304>')
                             }
                             break;
@@ -158,7 +158,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du béton est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.beton * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.beton * 100).toFixed(1));
                                 offre(jsonPrix.beton, pourcentage, '<:beton:1075776342227943526>')
                             }
                             break;
@@ -179,7 +179,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente des biens de consommations est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.bc * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.bc * 100).toFixed(1));
                                 offre(jsonPrix.bc, pourcentage, '\uD83D\uDCBB')
                             }
                             break;
@@ -200,7 +200,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du bois est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.bois * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.bois * 100).toFixed(1));
                                 offre(jsonPrix.bois, pourcentage, '🪵')
                             }
                             break;
@@ -221,7 +221,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du carburant est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.carburant * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.carburant * 100).toFixed(1));
                                 offre(jsonPrix.carburant, pourcentage, '⛽')
                             }
                             break;
@@ -242,7 +242,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du charbon est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.charbon * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.charbon * 100).toFixed(1));
                                 offre(jsonPrix.charbon, pourcentage, '<:charbon:1075776385517375638>')
                             }
                             break;
@@ -263,7 +263,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente de l'eau est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.eau * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.eau * 100).toFixed(1));
                                 offre(jsonPrix.eau, pourcentage, '💧')
                             }
                             break;
@@ -274,7 +274,7 @@ module.exports = {
                             await interaction.reply({ content: reponse, ephemeral: true });
                             break;
                         } else {
-                                offre('Pas de prix moyen', '100', '<:windmill:1108767955442991225>')
+                            offre('Pas de prix moyen', 100, '<:windmill:1108767955442991225>')
                             break;
                         }
                     case 'Métaux':
@@ -293,7 +293,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente des métaux est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.metaux * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.metaux * 100).toFixed(1));
                                 offre(jsonPrix.metaux, pourcentage, '🪨')
                             }
                             break;
@@ -314,7 +314,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente de la nourriture est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.nourriture * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.nourriture * 100).toFixed(1));
                                 offre(jsonPrix.nourriture, pourcentage, '🌽')
                             }
                             break;
@@ -335,7 +335,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du pétrole est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.petrole * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.petrole * 100).toFixed(1));
                                 offre(jsonPrix.petrole, pourcentage, '🛢️')
                             }
                             break;
@@ -356,7 +356,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du sable est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.sable * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.sable * 100).toFixed(1));
                                 offre(jsonPrix.sable, pourcentage, '<:sable:1075776363782479873>')
                             }
                             break;
@@ -377,7 +377,7 @@ module.exports = {
                                 reponse = codeBlock('ansi', `\u001b[0m\u001b[1;31mLe prix de vente du verre est fixé entre : ${prix_bas} et ${prix_haut} l'unité`);
                                 await interaction.reply({ content: reponse, ephemeral: true });
                             } else {
-                                const pourcentage = (prix_u / jsonPrix.verre * 100).toFixed(1);
+                                const pourcentage = parseFloat((prix_u / jsonPrix.verre * 100).toFixed(1));
                                 offre(jsonPrix.verre, pourcentage, '🪟')
                             }
                             break;

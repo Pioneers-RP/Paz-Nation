@@ -1202,6 +1202,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/chance@npm:^1.1.5":
+  version: 1.1.5
+  resolution: "@types/chance@npm:1.1.5"
+  checksum: a0ee36d95e4ef3c61ecd191dcaa128c0ffdbf7b291ed567cce59e4a8499e855e6d65794fbbe8a70a98596d237cfca768cd10af29d5e7a67d113df5411b8c4057
+  languageName: node
+  linkType: hard
+
 "@types/eslint-scope@npm:^3.7.3":
   version: 3.7.6
   resolution: "@types/eslint-scope@npm:3.7.6"
@@ -1282,6 +1289,13 @@ __metadata:
   version: 1.2.4
   resolution: "@types/minimist@npm:1.2.4"
   checksum: 01403652c09de17b8c6d7d9959cb7a244deccf31e9e7a1a7011fba73fa2724c14fe935718e0fdc48dcd30403fd76a916cb991d4c0ddf229748ccc6c4920c3371
+  languageName: node
+  linkType: hard
+
+"@types/ms@npm:^0.7.33":
+  version: 0.7.33
+  resolution: "@types/ms@npm:0.7.33"
+  checksum: ef610d94ebee838243af37800cb5d1a52b2ae0fb6880675fbb9276c0c4afcefda755f16889fa597ee4e5b377998a7e67b453614aae68d3225e5f7219984284df
   languageName: node
   linkType: hard
 
@@ -5657,7 +5671,9 @@ __metadata:
     "@sapphire/framework": "npm:2.4.0"
     "@stdlib/assert-is-uri": "npm:0.0.8"
     "@tsconfig/node17": "npm:17.1.1"
+    "@types/chance": "npm:^1.1.5"
     "@types/jest": "npm:^29.5.6"
+    "@types/ms": "npm:^0.7.33"
     "@types/mysql": "npm:2.15.22"
     "@types/node": "npm:20.8.6"
     "@typescript-eslint/eslint-plugin": "npm:^5.0.0"

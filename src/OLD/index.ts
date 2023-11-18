@@ -29,7 +29,7 @@ connection.connect(function(err) {
     console.log('Database initialized with MySQL under ID : ' + connection.threadId);
 });
 
-const client = new Client({
+export const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
     partials: [Partials.Channel, Partials.Message, Partials.User, Partials.GuildMember, Partials.Reaction],
 });
@@ -42,7 +42,7 @@ const commandFolders = readdirSync(foldersPath);
 async function loadCommands() {
     for (const folder of commandFolders) {
         const commandsPath = path.join(foldersPath, folder);
-        const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.js') || file.endsWith('.ts'));
+        const commandFiles = readdirSync(commandsPath).filter((file) => file.endsWith('.ts'));
         for (const file of commandFiles) {
             const filePath = path.join(commandsPath, file);
             const command = await import(filePath);
@@ -62,7 +62,7 @@ loadCommands().catch((error) => {
 });
 
 const eventsPath = path.join(__dirname, 'events');
-const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.js'));
+const eventFiles = readdirSync(eventsPath).filter((file) => file.endsWith('.ts'));
 
 async function loadEvents() {
     for (const file of eventFiles) {
@@ -93,6 +93,5 @@ process.on('Warning', (...args: any[]) => {
 });
 
 client.login(process.env.TOKEN!).then(() => {
-    console.log("Starting bot vs3...")
     console.log(`Bot launched under : ${client.user?.tag}`);
 });

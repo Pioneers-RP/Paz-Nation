@@ -1,9 +1,5 @@
 import { ActionRowBuilder, SlashCommandBuilder, StringSelectMenuBuilder, ButtonBuilder, ButtonStyle, codeBlock } from 'discord.js';
-import { readFileSync } from 'fs';
-import {calculerSoldat, calculerEmploi} from "../../fonctions/functions";
-const armeeObject = JSON.parse(readFileSync('src/OLD/data/armee.json', 'utf-8'));
-const batimentObject = JSON.parse(readFileSync('src/OLD/data/batiment.json', 'utf-8'));
-const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
+import {addSelectMenu, calculerEmploi} from "../../fonctions/functions";
 import { Pays } from '../../entities/Pays';
 import {Batiments} from "../../entities/Batiments";
 import {Armee} from "../../entities/Armee";
@@ -11,6 +7,8 @@ import {Diplomatie} from "../../entities/Diplomatie";
 import {Population} from "../../entities/Population";
 import {Territoire} from "../../entities/Territoire";
 import {AppDataSource} from "../../data-source";
+import {readFileSync} from "fs";
+const biomeObject = JSON.parse(readFileSync('src/OLD/data/biome.json', 'utf-8'));
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -36,18 +34,9 @@ module.exports = {
                 .addComponents(bouton1)
             await interaction.reply({ content: reponse, components: [row], ephemeral: true });
         } else {
-            const region = eval(`biomeObject.${territoire.region}.nom`);
-
+            const region = biomeObject[territoire.region].nom;
             //region Calcul du nombre d'employés
-            const emploisTotaux = calculerEmploi(armee, batiment, population, armeeObject, batimentObject).emploisTotaux;
-            const soldat = calculerSoldat(armee, armeeObject)
-
-            let chomage;
-            if (emploisTotaux/(population.jeune + population.adulte - soldat) > 1) {
-                chomage = 0
-            } else {
-                chomage = ((((population.jeune + population.adulte - soldat)-emploisTotaux)/(population.jeune + population.adulte - soldat))*100).toFixed(2)
-            }
+            const unemployment = calculerEmploi(armee, batiment, population).unemployment;
             //endregion
             let embed = {
                 author: {
@@ -67,7 +56,7 @@ module.exports = {
                         name: `> 👪 Population :`,
                         value: codeBlock(
                             `• ${population.habitant.toLocaleString('en-US')} habitants\n` +
-                            `• ${chomage.toLocaleString('en-US')}% de chômage`) + `\u200B`
+                            `• ${unemployment}% de chômage`) + `\u200B`
                     },
                     {
                         name: `> 🌄 Territoire :`,
@@ -144,14 +133,8 @@ module.exports = {
                         value: 'armee',
                     })
             }
-            const row = new ActionRowBuilder()
-                .addComponents(
-                    new StringSelectMenuBuilder()
-                        .setCustomId('action-pays')
-                        .setPlaceholder(`Afficher un autre menu`)
-                        .addOptions(options),
-                );
-            interaction.reply({ embeds: [embed], components: [row] });
+            const row1 = addSelectMenu('action-pays', "Sélectionner un menu", options)
+            interaction.reply({ embeds: [embed], components: [row1] });
         }
     },
 };

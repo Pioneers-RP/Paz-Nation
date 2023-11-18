@@ -1,5 +1,5 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} = require('discord.js');
-const { readFileSync } = require('fs');
+import {ActionRowBuilder, ButtonBuilder, ButtonStyle, SlashCommandBuilder, codeBlock} from 'discord.js';
+import {readFileSync} from 'fs';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -22,29 +22,29 @@ module.exports = {
                     { name: `Sable`, value: `Sable`},
                     { name: `Verre`, value: `Verre`}
                 )
-            .setRequired(true))
+                .setRequired(true))
         .addIntegerOption(quantite =>
             quantite.setName('quantité')
-            .setDescription(`La quantité de ressources que vous voulez vendre`)
-            .setMinValue(1)
-            .setRequired(true)),
+                .setDescription(`La quantité de ressources que vous voulez vendre`)
+                .setMinValue(1)
+                .setRequired(true)),
 
-    async execute(interaction) {
-        const { connection } = require('../../index');
+    async execute(interaction: any) {
+        const { connection } = require('../../index.ts');
 
         const sql = `
             SELECT * FROM pays WHERE id_joueur=${interaction.member.id};
             SELECT * FROM ressources WHERE id_joueur=${interaction.member.id}
         `;
-        connection.query(sql, async(err, results) => {if (err) {throw err;}
+        connection.query(sql, async(err: any, results: any[][]) => {if (err) {throw err;}
             let reponse;
 
             const Pays = results[0][0];
             const Ressources = results[1][0];
             const ressource = interaction.options.getString('ressource');
             const quantite = interaction.options.getInteger('quantité');
-            const jsonPrix = JSON.parse(readFileSync(__dirname +'../../data/prix.json'), 'utf-8');
-            function offre(prix_moyen, emoji) {
+            const jsonPrix = JSON.parse(readFileSync('src/OLD/data/prix.json', 'utf-8'));
+            function offre(prix_moyen: number, emoji: string) {
                 const prix_vente = parseFloat((prix_moyen * 0.7).toFixed(2));
                 const prix = Math.round(quantite * prix_vente);
 
@@ -78,24 +78,24 @@ module.exports = {
                     color: interaction.member.displayColor,
                     timestamp: new Date(),
                     footer: {
-                        text: `${Pays.devise}`
+                        text: Pays.devise
                     },
                 };
 
                 const row = new ActionRowBuilder()
                     .addComponents(
                         new ButtonBuilder()
-                        .setLabel(`Vendre`)
-                        .setEmoji(`💵`)
-                        .setCustomId(`qvente-${interaction.user.id}`)
-                        .setStyle(ButtonStyle.Success),
+                            .setLabel(`Vendre`)
+                            .setEmoji(`💵`)
+                            .setCustomId(`qvente-${interaction.user.id}`)
+                            .setStyle(ButtonStyle.Success),
                     )
                     .addComponents(
                         new ButtonBuilder()
-                        .setLabel(`Refuser`)
-                        .setEmoji(`✋`)
-                        .setCustomId(`refuser-${interaction.user.id}`)
-                        .setStyle(ButtonStyle.Danger),
+                            .setLabel(`Refuser`)
+                            .setEmoji(`✋`)
+                            .setCustomId(`refuser-${interaction.user.id}`)
+                            .setStyle(ButtonStyle.Danger),
                     )
 
                 interaction.reply({ embeds: [embed], components: [row] });
