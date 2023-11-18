@@ -7,7 +7,7 @@ module.exports = {
         .setDescription(`Menu de votre population`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index');
+        const { connection } = require('../../index.ts');
 
         menuPopulation(interaction, connection)
     },

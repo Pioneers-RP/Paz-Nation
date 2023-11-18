@@ -1,16 +1,15 @@
-import { readdirSync, writeFile } from 'fs'
+import { readdirSync } from 'fs'
 import path from 'node:path';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import dotenv from 'dotenv';
 import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
-dotenv.config();
 
+dotenv.config();
 export const connect = AppDataSource.initialize()
     .then(() => {
         console.log("Database initialized with TypeORM")})
     .catch((error) => console.log(error))
-
 export const connection = mysql.createConnection({
     host: process.env.DATABASE_HOST,
     user: process.env.DATABASE_USER,

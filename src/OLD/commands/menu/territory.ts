@@ -7,7 +7,7 @@ module.exports = {
         .setDescription(`Vue globale de votre territoire`),
 
     async execute(interaction: any) {
-        const { connection } = require('../../index');
+        const { connection } = require('../../index.ts');
 
         menuTerritoire(interaction, connection)
     },
