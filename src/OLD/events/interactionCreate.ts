@@ -9212,22 +9212,17 @@ module.exports = {
                             const emploies_raffinerie = batimentObject.raffinerie.EMPLOYES_RAFFINERIE * Batiment.raffinerie;
                             const emploies_scierie = batimentObject.scierie.EMPLOYES_SCIERIE * Batiment.scierie;
                             const emploies_usine_civile = batimentObject.usine_civile.EMPLOYES_USINE_CIVILE * Batiment.usine_civile;
-                            const emploisTotaux =
-                                emploies_acierie + emploies_atelier_verre + emploies_carriere_sable +
-                                emploies_centrale_biomasse + emploies_centrale_charbon + emploies_centrale_fioul +
-                                emploies_champ + emploies_cimenterie + emploies_derrick + emploies_eolienne +
-                                emploies_mine_charbon + emploies_mine_metaux + emploies_station_pompage +
-                                emploies_raffinerie + emploies_scierie + emploies_usine_civile;
+                            const jobsOverall = calculerEmploi(Armee, Batiment, Population).jobsOverall
                             const availableWorkers = calculerEmploi(Armee, Batiment, Population).availableWorkers
                             const efficiency = calculerEmploi(Armee, Batiment, Population).efficiency;
 
                             let fieldJob: string = '';
                             if (efficiency >= 0.9) {
-                                fieldJob = codeBlock('md', `> • ${availableWorkers.toLocaleString('en-US')}/${emploisTotaux.toLocaleString('en-US')} emplois (${efficiency * 100}% d'efficacité)`);
+                                fieldJob = codeBlock('md', `> • ${availableWorkers.toLocaleString('en-US')}/${jobsOverall.toLocaleString('en-US')} emplois (${efficiency * 100}% d'efficacité)`);
                             } else if (efficiency >= 0.5) {
-                                fieldJob = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${availableWorkers.toLocaleString('en-US')}/${emploisTotaux.toLocaleString('en-US')} emplois (${efficiency * 100}% d'efficacité)`);
+                                fieldJob = codeBlock('ansi', `\u001b[0;0m\u001b[1;33m> • ${availableWorkers.toLocaleString('en-US')}/${jobsOverall.toLocaleString('en-US')} emplois (${efficiency * 100}% d'efficacité)`);
                             } else {
-                                fieldJob = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${availableWorkers.toLocaleString('en-US')}/${emploisTotaux.toLocaleString('en-US')} emplois (${efficiency * 100}% d'efficacité)`);
+                                fieldJob = codeBlock('ansi', `\u001b[0;0m\u001b[1;31m> • ${availableWorkers.toLocaleString('en-US')}/${jobsOverall.toLocaleString('en-US')} emplois (${efficiency * 100}% d'efficacité)`);
                             }
 
                             const embed = {
@@ -9240,22 +9235,22 @@ module.exports = {
                                     url: Pays.drapeau
                                 },
                                 description:
-                                    `> <:acier:1075776411329122304> \`${Batiment.acierie} Acierie : ${emploies_acierie.toLocaleString('en-US')} | ${(emploies_acierie / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 🪟 \`${Batiment.atelier_verre} Atelier de verre : ${emploies_atelier_verre.toLocaleString('en-US')} | ${(emploies_atelier_verre / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> <:sable:1075776363782479873> \`${Batiment.carriere_sable} Carrière de sable : ${emploies_carriere_sable.toLocaleString('en-US')} | ${(emploies_carriere_sable / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> ⚡ \`${Batiment.centrale_biomasse} Centrale biomasse : ${emploies_centrale_biomasse.toLocaleString('en-US')} | ${(emploies_centrale_biomasse / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> ⚡ \`${Batiment.centrale_charbon} Centrale au charbon : ${emploies_centrale_charbon.toLocaleString('en-US')} | ${(emploies_centrale_charbon / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> ⚡ \`${Batiment.centrale_fioul} Centrale au fioul : ${emploies_centrale_fioul.toLocaleString('en-US')} | ${(emploies_centrale_fioul / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 🌽 \`${Batiment.champ} Champ : ${emploies_champ.toLocaleString('en-US')} | ${(emploies_champ / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> ⚡ \`${Batiment.eolienne} Champ d'éoliennes : ${emploies_eolienne.toLocaleString('en-US')} | ${(emploies_eolienne / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> <:beton:1075776342227943526> \`${Batiment.cimenterie} Cimenterie : ${emploies_cimenterie.toLocaleString('en-US')} | ${(emploies_cimenterie / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 🛢️ \`${Batiment.derrick} Derrick : ${emploies_derrick.toLocaleString('en-US')} | ${(emploies_derrick / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> <:charbon:1075776385517375638> \`${Batiment.mine_charbon} Mine de charbon : ${emploies_mine_charbon.toLocaleString('en-US')} | ${(emploies_mine_charbon / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 🪨 \`${Batiment.mine_metaux} Mine de métaux : ${emploies_mine_metaux.toLocaleString('en-US')} | ${(emploies_mine_metaux / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 💧 \`${Batiment.station_pompage} Station de pompage : ${emploies_station_pompage.toLocaleString('en-US')} | ${(emploies_station_pompage / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> ⛽ \`${Batiment.raffinerie} Raffinerie : ${emploies_raffinerie.toLocaleString('en-US')} | ${(emploies_raffinerie / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 🪵 \`${Batiment.scierie} Scierie : ${emploies_scierie.toLocaleString('en-US')} | ${(emploies_scierie / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n` +
-                                    `> 💻 \`${Batiment.usine_civile} Usine civile : ${emploies_usine_civile.toLocaleString('en-US')} | ${(emploies_usine_civile / emploisTotaux * 100).toFixed(1)}%\`\n` + `\u200B\n`,
+                                    `> <:acier:1075776411329122304> \`${Batiment.acierie} Acierie : ${emploies_acierie.toLocaleString('en-US')} | ${(emploies_acierie / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🪟 \`${Batiment.atelier_verre} Atelier de verre : ${emploies_atelier_verre.toLocaleString('en-US')} | ${(emploies_atelier_verre / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> <:sable:1075776363782479873> \`${Batiment.carriere_sable} Carrière de sable : ${emploies_carriere_sable.toLocaleString('en-US')} | ${(emploies_carriere_sable / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.centrale_biomasse} Centrale biomasse : ${emploies_centrale_biomasse.toLocaleString('en-US')} | ${(emploies_centrale_biomasse / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.centrale_charbon} Centrale au charbon : ${emploies_centrale_charbon.toLocaleString('en-US')} | ${(emploies_centrale_charbon / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.centrale_fioul} Centrale au fioul : ${emploies_centrale_fioul.toLocaleString('en-US')} | ${(emploies_centrale_fioul / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🌽 \`${Batiment.champ} Champ : ${emploies_champ.toLocaleString('en-US')} | ${(emploies_champ / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⚡ \`${Batiment.eolienne} Champ d'éoliennes : ${emploies_eolienne.toLocaleString('en-US')} | ${(emploies_eolienne / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> <:beton:1075776342227943526> \`${Batiment.cimenterie} Cimenterie : ${emploies_cimenterie.toLocaleString('en-US')} | ${(emploies_cimenterie / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🛢️ \`${Batiment.derrick} Derrick : ${emploies_derrick.toLocaleString('en-US')} | ${(emploies_derrick / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> <:charbon:1075776385517375638> \`${Batiment.mine_charbon} Mine de charbon : ${emploies_mine_charbon.toLocaleString('en-US')} | ${(emploies_mine_charbon / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🪨 \`${Batiment.mine_metaux} Mine de métaux : ${emploies_mine_metaux.toLocaleString('en-US')} | ${(emploies_mine_metaux / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 💧 \`${Batiment.station_pompage} Station de pompage : ${emploies_station_pompage.toLocaleString('en-US')} | ${(emploies_station_pompage / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> ⛽ \`${Batiment.raffinerie} Raffinerie : ${emploies_raffinerie.toLocaleString('en-US')} | ${(emploies_raffinerie / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 🪵 \`${Batiment.scierie} Scierie : ${emploies_scierie.toLocaleString('en-US')} | ${(emploies_scierie / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n` +
+                                    `> 💻 \`${Batiment.usine_civile} Usine civile : ${emploies_usine_civile.toLocaleString('en-US')} | ${(emploies_usine_civile / jobsOverall * 100).toFixed(1)}%\`\n` + `\u200B\n`,
                                 fields: [
                                     {
                                         name: `> 👩‍🔧 Emplois :`,

@@ -23,19 +23,8 @@ module.exports = {
         let population: any = await AppDataSource.getRepository(Population).findOneBy({ idJoueur: interaction.member.id });
         let territoire: any = await AppDataSource.getRepository(Territoire).findOneBy({ idJoueur: interaction.member.id });
 
-        const region = eval(`biomeObject.${territoire.region}.nom`);
-
-        //region Calcul du nombre d'employés
-        const emploisTotaux = calculerEmploi(armee, batiment, population).emploisTotaux;
-        const soldat = calculerSoldat(armee)
-
-        let chomage;
-        if (emploisTotaux/(population.jeune + population.adulte - soldat) > 1) {
-            chomage = 0
-        } else {
-            chomage = ((((population.jeune + population.adulte - soldat)-emploisTotaux)/(population.jeune + population.adulte - soldat))*100).toFixed(2)
-        }
-        //endregion
+        const region = biomeObject[territoire.region].nom;
+        const unemployment = calculerEmploi(armee, batiment, population).unemployment;
         let embed = {
             author: {
                 name: `${pays.rang} de ${pays.nom}`,
@@ -54,7 +43,7 @@ module.exports = {
                     name: `> 👪 Population :`,
                     value: codeBlock(
                         `• ${population.habitant.toLocaleString('en-US')} habitants\n` +
-                        `• ${chomage.toLocaleString('en-US')}% de chômage`) + `\u200B`
+                        `• ${unemployment.toLocaleString('en-US')}% de chômage`) + `\u200B`
                 },
                 {
                     name: `> 🌄 Territoire :`,

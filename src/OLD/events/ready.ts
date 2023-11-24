@@ -1736,11 +1736,11 @@ module.exports = {
                     let number = 0;
                     function emojiCroissanceDemo(nombre: number) {
                         if (nombre > 0) {
-                            return '⬆️'
+                            return '🟢'
                         } else if (nombre === 0) {
-                            return '▶️'
+                            return '🔶'
                         } else {
-                            return '⬇️'
+                            return '🔴'
                         }
                     }
                     let array1: { name: string; value: string; }[] = [];
