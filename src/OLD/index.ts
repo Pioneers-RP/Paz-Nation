@@ -6,6 +6,14 @@ import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
 
 dotenv.config();
+
+console.log("Starting1 Index.ts")
+console.log("process.env.DATABASE_HOST : " + process.env.DATABASE_HOST)
+console.log("process.env.DATABASE_USER : " + process.env.DATABASE_USER)
+console.log("process.env.DATABASE_PASSWORD : " + process.env.DATABASE_PASSWORD)
+console.log("process.env.DATABASE_DATABASE : " + process.env.DATABASE_DATABASE)
+console.log("Ending1 Index.ts")
+
 export const connect = AppDataSource.initialize()
     .then(() => {
         console.log("Database initialized with TypeORM")})
@@ -18,6 +26,13 @@ export const connection = mysql.createConnection({
     port: Number('3306'),
     multipleStatements: true
 })
+
+console.log("Starting2 Index.ts")
+console.log("process.env.DATABASE_HOST : " + process.env.DATABASE_HOST)
+console.log("process.env.DATABASE_USER : " + process.env.DATABASE_USER)
+console.log("process.env.DATABASE_PASSWORD : " + process.env.DATABASE_PASSWORD)
+console.log("process.env.DATABASE_DATABASE : " + process.env.DATABASE_DATABASE)
+console.log("Ending2 Index.ts")
 
 connection.connect(function(err) {
     if (err) {
