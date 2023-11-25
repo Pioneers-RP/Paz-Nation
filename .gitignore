@@ -36,7 +36,7 @@ helm/**/*.tgz
 !.vscode/extensions.json
 
 # Environment files
-.env.example
+.env*
 !.env.example
 !.tasks/.env.default*
 Makefile

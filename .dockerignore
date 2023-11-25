@@ -29,8 +29,8 @@ docs/
 *.md
 **/Dockerfile*
 docker-compose.*
-.env.example
-.env.example
+.env
+.env.*
 helm/
 .gitlab*
 tools/
