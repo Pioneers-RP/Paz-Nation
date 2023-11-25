@@ -1,0 +1,4 @@
+CREATE USER 'root-orm'@'%' IDENTIFIED BY 'root';
+GRANT ALL PRIVILEGES ON *.* TO 'root-orm'@'%';
+FLUSH PRIVILEGES;
+

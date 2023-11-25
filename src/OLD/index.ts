@@ -19,11 +19,11 @@ export const connect = AppDataSource.initialize()
     .catch((error) => console.log(error))
 
 export const connection = mysql.createConnection({
-    host: process.env.DATABASE_HOST ?? 'localhost',
+    host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT, 10) : 3306,
-    user: process.env.DATABASE_USER ?? 'root',
-    password: process.env.DATABASE_PASSWORD ?? 'password',
-    database: process.env.DATABASE_DATABASE ?? 'database',
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_DATABASE,
     multipleStatements: true
 })
 
