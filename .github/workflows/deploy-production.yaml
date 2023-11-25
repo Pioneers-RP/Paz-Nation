@@ -1,4 +1,4 @@
-name: MAIN
+name: PROD
 
 on:
   workflow_dispatch:
