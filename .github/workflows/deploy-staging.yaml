@@ -131,8 +131,6 @@ jobs:
       - uses: benjlevesque/short-sha@v1.2
         id: image-tag
 
-      - run: echo ${{ env.ENABLE }}
-
       - name: Deploy k8s yaml
         id: deploy-k8s-yaml
         env:
@@ -146,7 +144,6 @@ jobs:
           --set "image.repository=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}" \
           --set "image.tag=${{ env.IMAGE_TAG }}" \
           --set "mariadb.auth.password=${{ secrets.MYSQL_PASSWORD }}" \
-          --set "replicaCount="${{ env.ENABLE }} \
           ${{ env.EKS_CLUSTER_SERVICE }} helm
 
   notification:
