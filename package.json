@@ -4,7 +4,7 @@
     "license": "UNLICENSED",
     "main": "dist/OLD/index.js",
     "scripts": {
-        "start:dev": "NODE_ENV=development yarn ts-node-dev --respawn ./src/OLD/index.ts",
+        "start:dev": "NODE_ENV=development yarn ts-node-dev -r dotenv/config --respawn ./src/OLD/index.ts",
         "start": "NODE_ENV=production node dist/OLD/index.js",
         "build": "tsc",
         "build:js": "yarn build && cp src/**/*.js dist/",

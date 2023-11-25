@@ -1,8 +1,3 @@
-const dotenv = require('dotenv');
-
-// Charge les variables d'environnement du fichier .env
-dotenv.config();
-
 module.exports = {
   type: 'mariadb',
   host: process.env.DATABASE_HOST ?? 'localhost',

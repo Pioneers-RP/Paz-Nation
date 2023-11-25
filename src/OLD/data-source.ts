@@ -1,6 +1,4 @@
 import { DataSource } from "typeorm"
-import dotenv from 'dotenv';
-dotenv.config();
 
 console.log("Starting1 Datasource1.ts")
 console.log("process.env.DATABASE_HOST : " + process.env.DATABASE_HOST)

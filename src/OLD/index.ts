@@ -1,11 +1,8 @@
 import { readdirSync } from 'fs'
 import path from 'node:path';
 import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
-import dotenv from 'dotenv';
 import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
-
-dotenv.config();
 
 console.log("Starting1 Index.ts")
 console.log("process.env.DATABASE_HOST : " + process.env.DATABASE_HOST)
