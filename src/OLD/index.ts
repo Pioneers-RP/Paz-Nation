@@ -32,9 +32,14 @@ connection.connect(function(err) {
         console.error('There was an error connecting to the Database with MySQL ' + err.stack);
         return;
     }
-
     console.log('Database initialized with MySQL under ID : ' + connection.threadId);
 });
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error(`Rejet non géré : ${reason}\n-----\n`, promise);
+    // Fermez la connexion MySQL en cas d'erreur
+    connection.end();
+  });
 
 export const client = new Client({
     intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMessageReactions, GatewayIntentBits.DirectMessages, GatewayIntentBits.MessageContent],
