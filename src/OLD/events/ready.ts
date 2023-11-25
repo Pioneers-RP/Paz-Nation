@@ -742,153 +742,153 @@ module.exports = {
             //endregion
         );
 
-        //region Process
-        const autoProcess = new CronJob(
-            '0 * * * * *',
-            //'* * * * * *',
-            function autoProcess() {
-                let sql;
-                sql = `SELECT * FROM processus`;
-                connection.query(sql, async(err, results) => {if (err) {throw err;}
-                    const arrayProcess = Object.values(results);
-                    arrayProcess.forEach(chaqueProcess);
-                    function chaqueProcess(value: any) {
-                        // Fonction pour vérifier si un timestamp est déjà passé
-                        function estTimestampPasse(timestamp: any) {
-                            const maintenant = Date.now();
-                            return timestamp < maintenant;
-                        }
+        // //region Process
+        // const autoProcess = new CronJob(
+        //     '0 * * * * *',
+        //     //'* * * * * *',
+        //     function autoProcess() {
+        //         let sql;
+        //         sql = `SELECT * FROM processus`;
+        //         connection.query(sql, async(err, results) => {if (err) {throw err;}
+        //             const arrayProcess = Object.values(results);
+        //             arrayProcess.forEach(chaqueProcess);
+        //             function chaqueProcess(value: any) {
+        //                 // Fonction pour vérifier si un timestamp est déjà passé
+        //                 function estTimestampPasse(timestamp: any) {
+        //                     const maintenant = Date.now();
+        //                     return timestamp < maintenant;
+        //                 }
 
-                        // Parcourir la liste de timestamps et vérifier si chaque timestamp est passé
-                        if (estTimestampPasse(value.date)) {
-                            sql = `
-                                SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
-                                SELECT * FROM territoire WHERE id_joueur='${value.id_joueur}'
-                            `;
-                            connection.query(sql, async (err, results) => {if (err) {throw err;}
-                                const Pays = results[0][0];
-                                const Territoire = results[1][0];
+        //                 // Parcourir la liste de timestamps et vérifier si chaque timestamp est passé
+        //                 if (estTimestampPasse(value.date)) {
+        //                     sql = `
+        //                         SELECT * FROM pays WHERE id_joueur='${value.id_joueur}';
+        //                         SELECT * FROM territoire WHERE id_joueur='${value.id_joueur}'
+        //                     `;
+        //                     connection.query(sql, async (err, results) => {if (err) {throw err;}
+        //                         const Pays = results[0][0];
+        //                         const Territoire = results[1][0];
 
-                                switch (value.type) {
-                                    case 'exploration':
-                                        //region Exploration
-                                        const arrayBiome = Object.keys(eval(`biomeObject.${Territoire.region}.biome`));
-                                        // @ts-ignore
-                                        const arrayChance = Object.values(eval(`biomeObject.${Territoire.region}.biome`)).map(item => item.chance);
-                                        const biomeChoisi = chance.weighted(arrayBiome, arrayChance)
-                                        const tailleChoisi = chance.integer({
-                                            min: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.min`)),
-                                            max: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.max`))
-                                        })
-                                        //let densite;
-                                        //switch (biomeChoisi) {
-                                        //    case 'ville':
-                                        //        densite = 376;
-                                        //        break;
-                                        //    case 'rocheuses':
-                                        //        densite = 15;
-                                        //        break;
-                                        //    case 'volcan':
-                                        //        densite = 0;
-                                        //        break;
-                                        //    case 'lac':
-                                        //        densite = 0;
-                                        //        break;
-                                        //    default:
-                                        //        densite = 33;
-                                        //        break;
-                                        //}
-                                        //const enfant = Math.round(tailleChoisi * densite * 0.2);
-                                        //const jeune = Math.round(tailleChoisi * densite * 0.3);
-                                        //const adulte = Math.round(tailleChoisi * densite * 0.4);
-                                        //const vieux = Math.round(tailleChoisi * densite * 0.1);
-                                        function bouton(message: any) {
-                                            return new ActionRowBuilder()
-                                                .addComponents(
-                                                    new ButtonBuilder()
-                                                        .setLabel(`Lien vers le message`)
-                                                        .setEmoji(`🗺️`)
-                                                        .setURL(message.url)
-                                                        .setStyle(ButtonStyle.Link),
-                                                )
-                                        }
+        //                         switch (value.type) {
+        //                             case 'exploration':
+        //                                 //region Exploration
+        //                                 const arrayBiome = Object.keys(eval(`biomeObject.${Territoire.region}.biome`));
+        //                                 // @ts-ignore
+        //                                 const arrayChance = Object.values(eval(`biomeObject.${Territoire.region}.biome`)).map(item => item.chance);
+        //                                 const biomeChoisi = chance.weighted(arrayBiome, arrayChance)
+        //                                 const tailleChoisi = chance.integer({
+        //                                     min: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.min`)),
+        //                                     max: parseInt(eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.max`))
+        //                                 })
+        //                                 //let densite;
+        //                                 //switch (biomeChoisi) {
+        //                                 //    case 'ville':
+        //                                 //        densite = 376;
+        //                                 //        break;
+        //                                 //    case 'rocheuses':
+        //                                 //        densite = 15;
+        //                                 //        break;
+        //                                 //    case 'volcan':
+        //                                 //        densite = 0;
+        //                                 //        break;
+        //                                 //    case 'lac':
+        //                                 //        densite = 0;
+        //                                 //        break;
+        //                                 //    default:
+        //                                 //        densite = 33;
+        //                                 //        break;
+        //                                 //}
+        //                                 //const enfant = Math.round(tailleChoisi * densite * 0.2);
+        //                                 //const jeune = Math.round(tailleChoisi * densite * 0.3);
+        //                                 //const adulte = Math.round(tailleChoisi * densite * 0.4);
+        //                                 //const vieux = Math.round(tailleChoisi * densite * 0.1);
+        //                                 function bouton(message: any) {
+        //                                     return new ActionRowBuilder()
+        //                                         .addComponents(
+        //                                             new ButtonBuilder()
+        //                                                 .setLabel(`Lien vers le message`)
+        //                                                 .setEmoji(`🗺️`)
+        //                                                 .setURL(message.url)
+        //                                                 .setStyle(ButtonStyle.Link),
+        //                                         )
+        //                                 }
 
-                                        client.users.fetch(Pays.id_joueur)
-                                            .then((joueur: any) => {
-                                                const embedRevenu = {
-                                                    author: {
-                                                        name: `${Pays.rang} de ${Pays.nom}`,
-                                                        icon_url: joueur.avatarURL()
-                                                    },
-                                                    thumbnail: {
-                                                        url: Pays.drapeau
-                                                    },
-                                                    title: `\`L'explorateur est revenu de mission\``,
-                                                    fields: [
-                                                        {
-                                                            name: `> 🌄 Territoire :`,
-                                                            value: codeBlock(
-                                                                `• Il a trouvé ${eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.nom`)} de ${tailleChoisi} km²`) + `\u200B`
-                                                        }
-                                                    ],
-                                                    color: 0x57F287,
-                                                    timestamp: new Date(),
-                                                    footer: {
-                                                        text: Pays.devise
-                                                    },
-                                                };
+        //                                 client.users.fetch(Pays.id_joueur)
+        //                                     .then((joueur: any) => {
+        //                                         const embedRevenu = {
+        //                                             author: {
+        //                                                 name: `${Pays.rang} de ${Pays.nom}`,
+        //                                                 icon_url: joueur.avatarURL()
+        //                                             },
+        //                                             thumbnail: {
+        //                                                 url: Pays.drapeau
+        //                                             },
+        //                                             title: `\`L'explorateur est revenu de mission\``,
+        //                                             fields: [
+        //                                                 {
+        //                                                     name: `> 🌄 Territoire :`,
+        //                                                     value: codeBlock(
+        //                                                         `• Il a trouvé ${eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.nom`)} de ${tailleChoisi} km²`) + `\u200B`
+        //                                                 }
+        //                                             ],
+        //                                             color: 0x57F287,
+        //                                             timestamp: new Date(),
+        //                                             footer: {
+        //                                                 text: Pays.devise
+        //                                             },
+        //                                         };
 
-                                                const row1 = new ActionRowBuilder()
-                                                    .addComponents(
-                                                        new ButtonBuilder()
-                                                            .setLabel(`Renvoyer un explorateur`)
-                                                            .setEmoji(`🧭`)
-                                                            .setCustomId('explorateur-' + Pays.id_joueur)
-                                                            .setStyle(ButtonStyle.Success)
-                                                    )
-                                                    .addComponents(
-                                                        new ButtonBuilder()
-                                                            .setLabel(`Intégrer`)
-                                                            .setEmoji(`✔`)
-                                                            .setCustomId('integrer-' + Pays.id_joueur)
-                                                            .setStyle(ButtonStyle.Success),
-                                                    )
+        //                                         const row1 = new ActionRowBuilder()
+        //                                             .addComponents(
+        //                                                 new ButtonBuilder()
+        //                                                     .setLabel(`Renvoyer un explorateur`)
+        //                                                     .setEmoji(`🧭`)
+        //                                                     .setCustomId('explorateur-' + Pays.id_joueur)
+        //                                                     .setStyle(ButtonStyle.Success)
+        //                                             )
+        //                                             .addComponents(
+        //                                                 new ButtonBuilder()
+        //                                                     .setLabel(`Intégrer`)
+        //                                                     .setEmoji(`✔`)
+        //                                                     .setCustomId('integrer-' + Pays.id_joueur)
+        //                                                     .setStyle(ButtonStyle.Success),
+        //                                             )
 
-                                                client.channels.fetch(Pays.id_salon)
-                                                    .send({embeds: [embedRevenu], components: [row1]})
-                                                    .then((message: any) => joueur.send({
-                                                        embeds: [embedRevenu],
-                                                        components: [bouton(message)]
-                                                    }))
-                                            })
+        //                                         client.channels.fetch(Pays.id_salon)
+        //                                             .send({embeds: [embedRevenu], components: [row1]})
+        //                                             .then((message: any) => joueur.send({
+        //                                                 embeds: [embedRevenu],
+        //                                                 components: [bouton(message)]
+        //                                             }))
+        //                                     })
 
-                                        sql = `DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
-                                        connection.query(sql, async (err) => {if (err) {throw err;}});
-                                        //endregion
-                                        break;
-                                    case 'integration':
-                                        //region Integration
-                                        sql = `
-                                            UPDATE territoire
-                                            SET T_national=T_national+${value.option2},
-                                               T_libre=T_libre+${value.option2},
-                                               T_controle=T_controle-${value.option2}
-                                            WHERE id_joueur='${value.id_joueur}';
-                                            DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
-                                        connection.query(sql, async (err) => {if (err) {throw err;}});
-                                        //endregion
-                                        break;
-                                }
-                            })
-                        }
-                    }
-                })
-            },
-            null,
-            true,
-            'Europe/Paris'
-        );
-        //endregion
+        //                                 sql = `DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
+        //                                 connection.query(sql, async (err) => {if (err) {throw err;}});
+        //                                 //endregion
+        //                                 break;
+        //                             case 'integration':
+        //                                 //region Integration
+        //                                 sql = `
+        //                                     UPDATE territoire
+        //                                     SET T_national=T_national+${value.option2},
+        //                                        T_libre=T_libre+${value.option2},
+        //                                        T_controle=T_controle-${value.option2}
+        //                                     WHERE id_joueur='${value.id_joueur}';
+        //                                     DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
+        //                                 connection.query(sql, async (err) => {if (err) {throw err;}});
+        //                                 //endregion
+        //                                 break;
+        //                         }
+        //                     })
+        //                 }
+        //             }
+        //         })
+        //     },
+        //     null,
+        //     true,
+        //     'Europe/Paris'
+        // );
+        // //endregion
 
         const autoPopulation = new CronJob(
             //region Population
