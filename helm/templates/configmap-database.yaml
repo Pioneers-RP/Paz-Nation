@@ -8,7 +8,7 @@ metadata:
     labels:
       {{- include "charts.labels" . | nindent 4 }}
 data:
-  HOST: {{ .Values.mariadb.auth.host | quote }}
-  USER: {{ .Values.mariadb.auth.username | quote }}
-  DATABASE: {{ .Values.mariadb.auth.database | quote }}  
-  PORT: {{ .Values.mariadb.auth.port | quote }}  
+  DATABASE_HOST: {{ .Values.mariadb.auth.host | quote }}
+  DATABASE_USER: {{ .Values.mariadb.auth.username | quote }}
+  DATABASE_DATABASE: {{ .Values.mariadb.auth.database | quote }}  
+  DATABASE_PORT: {{ .Values.mariadb.auth.port | quote }}  
