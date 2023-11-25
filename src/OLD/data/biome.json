@@ -101,7 +101,7 @@
             "petit_steppe": {
                 "nom": "une petite Steppe",
                 "chance": 4.2,
-                "min": 300,
+                "min": 1100,
                 "max": 600
             },
             "moyen_steppe": {

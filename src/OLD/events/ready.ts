@@ -20,10 +20,6 @@ module.exports = {
     once: true,
     execute(client: any) {
 
-        if (client.user.id === 834855105177845794) {
-            client.channels.cache.get(process.env.SALON_ACTUALITE).send('<@834855105177845794> a été <@&1061392938829094913>')
-        }
-
         //region Statut
         const arrayStatut = [
             {
@@ -655,7 +651,7 @@ module.exports = {
                                             //            text: `${Pays.devise}`
                                             //        }
                                             //    };
-                                            //    client.channels.cache.get(Pays.id_salon).send({embeds: [embed]}).catch(console.error);
+                                            //    client.channels.fetch(Pays.id_salon).send({embeds: [embed]}).catch(console.error);
 //
                                             //    sql = `UPDATE batiments SET deja_prod=0 WHERE id_joueur="${Pays.id_joueur}"`;
                                             //    connection.query(sql, async (err) => {if (err) {throw err;}})
@@ -699,7 +695,7 @@ module.exports = {
                                     //            text: `${Pays.devise}`
                                     //        }
                                     //    }
-                                    //    client.channels.cache.get(Pays.id_salon).send({embeds: [embed]}).catch(console.error);
+                                    //    client.channels.fetch(Pays.id_salon).send({embeds: [embed]}).catch(console.error);
                                     //}
                                     //endregion
                                 } else if (prod_elec < conso_elec) {
@@ -730,7 +726,7 @@ module.exports = {
                                     //            text: `${Pays.devise}`
                                     //        }
                                     //    }
-                                    //    client.channels.cache.get(Pays.id_salon).send({embeds: [embed]}).catch(console.error);
+                                    //    client.channels.fetch(Pays.id_salon).send({embeds: [embed]}).catch(console.error);
                                     //}
                                     //endregion
                                 }
@@ -806,71 +802,65 @@ module.exports = {
                                         //const jeune = Math.round(tailleChoisi * densite * 0.3);
                                         //const adulte = Math.round(tailleChoisi * densite * 0.4);
                                         //const vieux = Math.round(tailleChoisi * densite * 0.1);
+                                        function bouton(message: any) {
+                                            return new ActionRowBuilder()
+                                                .addComponents(
+                                                    new ButtonBuilder()
+                                                        .setLabel(`Lien vers le message`)
+                                                        .setEmoji(`🗺️`)
+                                                        .setURL(message.url)
+                                                        .setStyle(ButtonStyle.Link),
+                                                )
+                                        }
 
-                                        const joueur = client.users.cache.get(Pays.id_joueur)
-                                        const embedRevenu = {
-                                            author: {
-                                                name: `${Pays.rang} de ${Pays.nom}`,
-                                                icon_url: joueur.avatarURL()
-                                            },
-                                            thumbnail: {
-                                                url: Pays.drapeau
-                                            },
-                                            title: `\`L'explorateur est revenu de mission\``,
-                                            fields: [
-                                                {
-                                                    name: `> 🌄 Territoire :`,
-                                                    value: codeBlock(
-                                                        `• Il a trouvé ${eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.nom`)} de ${tailleChoisi} km²`) + `\u200B`
-                                                }
-                                                //{
-                                                //    name: `> 👪 Population :`,
-                                                //    value: codeBlock(
-                                                //        `• ${enfant.toLocaleString('en-US')} enfants\n` +
-                                                //        `• ${jeune.toLocaleString('en-US')} jeunes\n` +
-                                                //        `• ${adulte.toLocaleString('en-US')} adultes\n` +
-                                                //        `• ${vieux.toLocaleString('en-US')} personnes agées`) + `\u200B`
-                                                //},
-                                            ],
-                                            color: 0x57F287,
-                                            timestamp: new Date(),
-                                            footer: {
-                                                text: `${Pays.devise}`
-                                            },
-                                        };
+                                        client.users.fetch(Pays.id_joueur)
+                                            .then((joueur: any) => {
+                                                const embedRevenu = {
+                                                    author: {
+                                                        name: `${Pays.rang} de ${Pays.nom}`,
+                                                        icon_url: joueur.avatarURL()
+                                                    },
+                                                    thumbnail: {
+                                                        url: Pays.drapeau
+                                                    },
+                                                    title: `\`L'explorateur est revenu de mission\``,
+                                                    fields: [
+                                                        {
+                                                            name: `> 🌄 Territoire :`,
+                                                            value: codeBlock(
+                                                                `• Il a trouvé ${eval(`biomeObject.${Territoire.region}.biome.${biomeChoisi}.nom`)} de ${tailleChoisi} km²`) + `\u200B`
+                                                        }
+                                                    ],
+                                                    color: 0x57F287,
+                                                    timestamp: new Date(),
+                                                    footer: {
+                                                        text: Pays.devise
+                                                    },
+                                                };
 
-                                        const row1 = new ActionRowBuilder()
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`Renvoyer un explorateur`)
-                                                    .setEmoji(`🧭`)
-                                                    .setCustomId('explorateur-' + Pays.id_joueur)
-                                                    .setStyle(ButtonStyle.Success)
-                                            )
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`Intégrer`)
-                                                    .setEmoji(`✔`)
-                                                    .setCustomId('integrer-' + Pays.id_joueur)
-                                                    .setStyle(ButtonStyle.Success),
-                                            )
+                                                const row1 = new ActionRowBuilder()
+                                                    .addComponents(
+                                                        new ButtonBuilder()
+                                                            .setLabel(`Renvoyer un explorateur`)
+                                                            .setEmoji(`🧭`)
+                                                            .setCustomId('explorateur-' + Pays.id_joueur)
+                                                            .setStyle(ButtonStyle.Success)
+                                                    )
+                                                    .addComponents(
+                                                        new ButtonBuilder()
+                                                            .setLabel(`Intégrer`)
+                                                            .setEmoji(`✔`)
+                                                            .setCustomId('integrer-' + Pays.id_joueur)
+                                                            .setStyle(ButtonStyle.Success),
+                                                    )
 
-                                    function bouton(message: any) {
-                                        return new ActionRowBuilder()
-                                            .addComponents(
-                                                new ButtonBuilder()
-                                                    .setLabel(`Lien vers le message`)
-                                                    .setEmoji(`🗺️`)
-                                                    .setURL(message.url)
-                                                    .setStyle(ButtonStyle.Link),
-                                            )
-                                    }
-
-                                        client.channels.cache.get(Pays.id_salon).send({embeds: [embedRevenu], components: [row1]})
-                                            .then((message: any) => joueur.send({
-                                                embeds: [embedRevenu],
-                                                components: [bouton(message)]
-                                            }))
+                                                client.channels.fetch(Pays.id_salon)
+                                                    .send({embeds: [embedRevenu], components: [row1]})
+                                                    .then((message: any) => joueur.send({
+                                                        embeds: [embedRevenu],
+                                                        components: [bouton(message)]
+                                                    }))
+                                            })
 
                                         sql = `DELETE FROM processus WHERE id_processus='${value.id_processus}'`;
                                         connection.query(sql, async (err) => {if (err) {throw err;}});
@@ -1138,7 +1128,7 @@ module.exports = {
                                                 text: `${Pays.devise}`
                                             }
                                         };
-                                        const joueur = client.users.cache.get(Pays.id_joueur)
+
                                         function bouton(message: { url: string; }) {
                                             return new ActionRowBuilder()
                                                 .addComponents(
@@ -1150,11 +1140,14 @@ module.exports = {
                                                 )
                                         }
 
-                                        client.channels.cache.get(Pays.id_salon).send({embeds: [embed]})
-                                            .then((message: { url: string; }) => joueur.send({
-                                                embeds: [embed],
-                                                components: [bouton(message)]
-                                            }))
+                                        client.users.fetch(Pays.id_joueur)
+                                            .then((joueur: any) =>
+                                                client.channels.fetch(Pays.id_salon)
+                                                    .send({embeds: [embed]})
+                                                    .then((message: { url: string; }) => joueur.send({
+                                                        embeds: [embed],
+                                                        components: [bouton(message)]
+                                                    })))
                                     }
 
                                     sql = `
@@ -1220,7 +1213,7 @@ module.exports = {
                                                     text: `${Pays.devise}`
                                                 }
                                             };
-                                            const joueur = client.users.cache.get(Pays.id_joueur)
+
                                             function bouton(message: { url: string; }) {
                                                 return new ActionRowBuilder()
                                                     .addComponents(
@@ -1232,11 +1225,16 @@ module.exports = {
                                                     )
                                             }
 
-                                            client.channels.cache.get(Pays.id_salon).send({embeds: [embed]})
-                                                .then((message: { url: string; }) => joueur.send({
-                                                    embeds: [embed],
-                                                    components: [bouton(message)]
-                                                }))
+                                            client.users.fetch(Pays.id_joueur)
+                                                .then((joueur: any) =>
+                                                    client.channels.fetch(Pays.id_salon)
+                                                        .then((channel: any) => channel.send({embeds: [embed]})
+                                                            .then((message: { url: string; }) => joueur.send({
+                                                                embeds: [embed],
+                                                                components: [bouton(message)]
+                                                            }))
+                                                        )
+                                                )
                                         }
 
                                         sql = `
@@ -1269,7 +1267,7 @@ module.exports = {
                 //        },
                 //    };
 //
-                //    const channel = client.channels.cache.get(process.env.SALON_COMMAND);
+                //    const channel = client.channels.fetch(process.env.SALON_COMMAND);
                 //    channel.send({embeds: [embed] })
                 //}
             },
@@ -1484,9 +1482,10 @@ module.exports = {
                         color: 0xe7ae24,
                         timestamp: new Date(),
                     };
-                    const channel = client.channels.cache.get(process.env.SALON_PRIX);
-                    await channel.bulkDelete(1)
-                    channel.send({embeds: [embed] })
+                    client.channels.fetch(process.env.SALON_PRIX)
+                        .then((channel: any) => {
+                            channel.bulkDelete(1)
+                            channel.send({embeds: [embed] })})
                 })
             },
             null,
@@ -1605,10 +1604,11 @@ module.exports = {
                         color: 0xe73f12,
                         timestamp: new Date(),
                     };
-
-                    const salon_compet = client.channels.cache.get(process.env.SALON_COMPET_TERRITOIRE);
-                    salon_compet.send('‎');
-                    salon_compet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                    client.channels.fetch(process.env.SALON_COMPET_TERRITOIRE)
+                        .then((channel: any) => {
+                            channel.send('‎');
+                            channel.send({ embeds: [embed1, embed2, embed3, embed4, embed5] })
+                        })
                 })
 
                 sql = `SELECT * FROM population ORDER BY bonheur DESC`;
@@ -1716,10 +1716,11 @@ module.exports = {
                         color: 0xe73f12,
                         timestamp: new Date(),
                     };
-
-                    const salon_compet = client.channels.cache.get(process.env.SALON_COMPET_BONHEUR);
-                    salon_compet.send('‎');
-                    salon_compet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                    client.channels.fetch(process.env.SALON_COMPET_BONHEUR)
+                        .then((channel: any) => {
+                            channel.send('‎');
+                            channel.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                        })
                 })
 
                 sql = `SELECT * FROM population`;
@@ -1853,9 +1854,11 @@ module.exports = {
                         let sql = `UPDATE population SET ancien_pop="${value.habitant}" WHERE id_joueur="${value.id_joueur}"`;
                         connection.query(sql, async(err) => { if (err) { throw err; }})
                     }
-                    const salon_compet = client.channels.cache.get(process.env.SALON_COMPET_POPULATION);
-                    salon_compet.send('‎');
-                    salon_compet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                    client.channels.fetch(process.env.SALON_COMPET_POPULATION)
+                        .then((channel: any) => {
+                            channel.send('‎');
+                            channel.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                        })
 
                     list2.forEach(nouvelleCg);
                     function nouvelleCg(item: any) {
@@ -1974,9 +1977,11 @@ module.exports = {
                             timestamp: new Date(),
                         };
 
-                        const salonCompet = client.channels.cache.get(process.env.SALON_COMPET);
-                        salonCompet.send('<@&845692674111045673>');
-                        salonCompet.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                        client.channels.fetch(process.env.SALON_COMPET)
+                            .then((channel: any) => {
+                                channel.send('<@&845692674111045673>');
+                                channel.send({ embeds: [embed1, embed2, embed3, embed4, embed5] });
+                            })
                     })
                 }, 2000)
             },

@@ -19,7 +19,6 @@ module.exports = {
     async execute(interaction: any) {
         const pweet = interaction.options.getString('pweet');
         const image = interaction.options.getString('url');
-        const channelPweeter = interaction.client.channels.cache.get(process.env.SALON_PWEETER);
 
         const sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
         connection.query(sql, async(err: any, results: any[]) => {if (err) {throw err;}
@@ -41,10 +40,13 @@ module.exports = {
             if (image) {
                 if (await isImageURL(image)) {
                     embedPweet.image = { url: image };
-                    channelPweeter.send({ embeds: [embedPweet] }).then((sentMessage: { react: (arg0: string) => void; }) => {
-                        sentMessage.react('<:Pike:981918620282134579>');
-                    });
-                    await interaction.reply({ content: channelPweeter });
+                    interaction.client.channels.fetch(process.env.SALON_PWEETER)
+                        .then((channel: any) => {
+                            channel.send({ embeds: [embedPweet] }).then((sentMessage: { react: (arg0: string) => void; }) => {
+                                sentMessage.react('<:Pike:981918620282134579>');
+                            });
+                            interaction.reply({ content: channel });
+                        })
                 } else {
                     failReply(interaction, `Vous n'avez pas fourni une URL valide`);
                 }

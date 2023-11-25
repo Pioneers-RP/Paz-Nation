@@ -1,4 +1,4 @@
-.env
+.env.example
 *.map
 
 # compiled output
@@ -36,7 +36,7 @@ helm/**/*.tgz
 !.vscode/extensions.json
 
 # Environment files
-.env*
+.env.example
 !.env.example
 !.tasks/.env.default*
 Makefile

@@ -1,4 +1,9 @@
-import {ActionRowBuilder, ButtonBuilder, SlashCommandBuilder, StringSelectMenuBuilder, codeBlock} from 'discord.js';
+import {ActionRowBuilder, AnyComponentBuilder,
+    ButtonBuilder,
+    SlashCommandBuilder,
+    StringSelectMenuBuilder,
+    codeBlock
+} from 'discord.js';
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -19,17 +24,16 @@ module.exports = {
 
     async execute(interaction: any) {
         let channelName;
-        const { connection } = require('../../index.ts');
-        let embed;
+        const {connection} = require('../../index.ts');
 
         switch (interaction.options.getSubcommand()) {
             case 'tags':
-                const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
-                console.log(salon_commerce.availableTags)
+                interaction.client.channels.fetch(process.env.SALON_COMMERCE)
+                    .then((tags: { availableTags: any; }) => console.log(tags.availableTags))
                 break
 
             case 'start':
-                embed = {
+                const embed = {
                     author: {
                         name: `Bienvenue sur 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
                     },
@@ -108,41 +112,43 @@ module.exports = {
                             ),
                     );
 
-                const startingChannel = interaction.client.channels.cache.get('983316109367345152');
-                startingChannel.send({ embeds: [embed], components: [row0] });
+                interaction.client.channels.fetch('983316109367345152')
+                    .then((channel: any) => channel.send({ embeds: [embed], components: [row0] }))
                 await interaction.reply({ content: `Bouton envoyé` });
                 break;
 
             case 'reglement':
-                const reglement1 = {
+                const reglement1: object = {
                     author: {
                         name: `Règlement de 🌍 𝐏𝐀𝐙 𝐍𝐀𝐓𝐈𝐎𝐍 👑`,
                     },
                     title: `\`I/ Règles générales \``,
                     description: codeBlock(`- Respectez les TOS (Termes et conditions) de Discord.\n\n- Votre pseudo, votre description (“À propos”) et votre avatar ne doivent pas contenir de message à caractère diffamatoire, haineux, pornographique, et illégaux.`),
                 };
-                const reglement2 = {
+                const reglement2: object = {
                     title: `\`II/ Discussions et Langage\``,
                     description: codeBlock(`- Évitez le langage malpoli et vulgaire. Vous avez le droit de dire merde, vous pouvez être familier, mais un langage en majorité correct et poli est préférable.\n\n` +
                         `Remarque : Comme partout, ce serveur est composé de personnes majeures et d'autres mineures.`),
                 };
-                const reglement3 = {
+                const reglement3: object = {
                     title: `\`III/ Utilisation du serveur, des salons et des bots\``,
                     description: codeBlock(`- Chaque salon textuel a une fonction particulière. Elles sont précisées dans le nom ou la description (affichée en haut de la fenêtre quand vous êtes dans le salon, cliquez dessus pour l’afficher en entier). Merci de les respecter.\n\n` +
                         `- Publicité : La publicité pour un site, un réseau social ou un serveur est interdite. Si vous souhaitez partager votre contenu ou votre serveur Discord, adressez vous à un membre du Staff.\n\n` +
                         `- NSFW : Il n’y a pas de salons NSFW, le contenu “NSFW” (Not Safe For Work) est tout simplement interdit.\n\n` +
                         `- L’abus des fonctionnalités des bots, l’utilisation de failles et de bugs sont interdits. Si vous en trouvez, signalez-les.`),
                 };
-                const reglement4 = {
+                const reglement4: object = {
                     title: `\`IV/ Paz Nation : le jeu\``,
                     description: codeBlock(`- L'utilisation de second compte est strictement interdit.`),
                 };
 
-                const salon_reglement = interaction.client.channels.cache.get('829292098921693194');
-                salon_reglement.send({ embeds: [reglement1] })
-                salon_reglement.send({ embeds: [reglement2] })
-                salon_reglement.send({ embeds: [reglement3] })
-                salon_reglement.send({ embeds: [reglement4] })
+                interaction.client.channels.fetch('829292098921693194')
+                    .then((channel: any) => {
+                        channel.send({ embeds: [reglement1] })
+                        channel.send({embeds: [reglement2]})
+                        channel.send({embeds: [reglement3]})
+                        channel.send({embeds: [reglement4]})
+                    })
                 await interaction.reply({ content: `Bouton envoyé` });
                 break;
         }

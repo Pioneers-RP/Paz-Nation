@@ -130,8 +130,8 @@ module.exports = {
                                             text: `${Pays.devise}`
                                         },
                                     };
-                                    salon = interaction.client.channels.cache.get(Pays.id_salon);
-                                    salon.send({ embeds: [embed] });
+                                    interaction.client.channels.fetch(Pays.id_salon)
+                                        .then((channel: any) => channel.send({ embeds: [embed] }))
 
                                     embed = {
                                         author: {
@@ -151,8 +151,8 @@ module.exports = {
                                         footer: {text: `${Pays.devise}`},
                                     };
 
-                                    salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                                    salon.send({ embeds: [embed] });
+                                    interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                                        .then((channel: any) => channel.send({ embeds: [embed] }))
                                     break;
                                 case 32:
                                     sql = `UPDATE pays SET rang='Etat' WHERE id_joueur="${interaction.member.id}"`;
@@ -193,8 +193,8 @@ module.exports = {
                                             text: `${Pays.devise}`
                                         },
                                     };
-                                    salon = interaction.client.channels.cache.get(Pays.id_salon);
-                                    salon.send({ embeds: [embed] });
+                                    interaction.client.channels.fetch(Pays.id_salon)
+                                        .then((channel: any) => channel.send({ embeds: [embed] }))
 
                                     embed = {
                                         author: {
@@ -214,8 +214,8 @@ module.exports = {
                                         footer: {text: `${Pays.devise}`},
                                     };
 
-                                    salon = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                                    salon.send({ embeds: [embed] });
+                                    interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                                        .then((channel: any) => channel.send({ embeds: [embed] }))
                                     break;
                                 case 122:
                                     sql = `UPDATE pays SET rang='Pays' WHERE id_joueur="${interaction.member.id}"`;
@@ -256,8 +256,8 @@ module.exports = {
                                             text: `${Pays.devise}`
                                         },
                                     };
-                                    salon = interaction.client.channels.cache.get(Pays.id_salon);
-                                    salon.send({ embeds: [embed] });
+                                    interaction.client.channels.fetch(Pays.id_salon)
+                                        .then((channel: any) => channel.send({ embeds: [embed] }))
                                     break;
                             }
                         }
@@ -285,7 +285,7 @@ module.exports = {
         } else if (interaction.isButton()) {
             //region Bouton
 
-            let log: object = {
+            const log: object = {
                 author: {
                     name: interaction.member.displayName,
                     icon_url: interaction.member.displayAvatarURL()
@@ -298,8 +298,8 @@ module.exports = {
                 },
             };
 
-            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
-            salon_logs.send({embeds: [log]});
+            interaction.client.channels.fetch(process.env.SALON_LOGS)
+                .then((channel: any) => channel.send({ embeds: [log] }))
 
             if (interaction.customId.includes('construction') === true) {
                 //region Construction
@@ -2522,11 +2522,11 @@ module.exports = {
                                         text: Pays.devise
                                     },
                                 };
-                                const playerSeller = await interaction.guild.members.fetch(idSeller);
-                                playerSeller.send({embeds: [embedSeller]});
+                                interaction.guild.members.fetch(idSeller)
+                                    .then((channel: { send: (arg0: { embeds: object[]; }) => any; }) => channel.send({ embeds: [embedSeller] }))
 
-                                const thread = await interaction.channel.fetch();
-                                await thread.delete();
+                                await interaction.channel.fetch()
+                                    .then((channel: { delete: () => any; }) => channel.delete())
 
                                 let sql = `SELECT *
                                            FROM trade
@@ -2763,14 +2763,16 @@ module.exports = {
                                     .setStyle(ButtonStyle.Danger),
                             )
 
-                        const salon_commerce = interaction.client.channels.cache.get(process.env.SALON_COMMERCE);
-                        const thread = await salon_commerce.threads.create({
-                            name: `${quantity.toLocaleString('en-US')} [${resource}] à ${unitPrice.toLocaleString('en-US')} | ${price.toLocaleString('en-US')} PAZ | ${interaction.member.displayName}`,
-                            message: {embeds: [offre], components: [row]},
-                            appliedTags: [tagId]
-                        });
-
-                        interaction.channel.send({content: `Votre offre a été publiée pour 1 jour : ${thread}`});
+                        interaction.client.channels.fetch(process.env.SALON_COMMERCE)
+                            .then((channel: any) => {
+                                channel.threads.create({
+                                    name: `${quantity.toLocaleString('en-US')} [${resource}] à ${unitPrice.toLocaleString('en-US')} | ${price.toLocaleString('en-US')} PAZ | ${interaction.member.displayName}`,
+                                    message: {embeds: [offre], components: [row]},
+                                    appliedTags: [tagId]})
+                                    .then((thread: any) => {
+                                        interaction.channel.send({content: `Votre offre a été publiée pour 1 jour : ${thread}`})
+                                    })
+                            })
                         await vendreCommandCooldown.addUser(interaction.member.id);
 
                         const sql = `UPDATE ressources
@@ -3134,7 +3136,7 @@ module.exports = {
                             }
                         })
 
-                        const refus = {
+                        const embedAccepted = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
@@ -3147,7 +3149,7 @@ module.exports = {
                             color: interaction.member.displayColor,
                             timestamp: new Date(),
                             footer: {
-                                text: `${Pays.devise}`
+                                text: Pays.devise
                             },
                         };
 
@@ -3162,29 +3164,31 @@ module.exports = {
                                 )
                         }
 
-                        const joueur = interaction.client.users.cache.get(id_joueur)
-                        interaction.client.channels.cache.get(Pays2.id_salon)
-                            .send({embeds: [refus]})
-                            .then((message: any) => joueur.send({
-                                embeds: [refus],
-                                components: [bouton(message)]
-                            }));
-
+                        interaction.client.users.fetch(id_joueur)
+                            .then((joueur: any) => {
+                                interaction.client.channels.fetch(Pays2.id_salon)
+                                    .send({embeds: [embedAccepted]})
+                                    .then((message: any) => joueur.send({
+                                        embeds: [embedAccepted],
+                                        components: [bouton(message)]
+                                    }));
+                            })
                         // @ts-ignore
-                        const channel: any = client.channels.cache.get(process.env.SALON_AMBASSADE);
-                        channel.threads
-                            .create({
-                                name: `${Pays.nom} - ${Pays2.nom}`,
-                                autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-                                type: ChannelType.PrivateThread,
-                                reason: 'Nouvelle ambassade',
+                        (await client.channels.fetch(process.env.SALON_AMBASSADE))
+                            .then((channel: any) => {
+                                channel.threads
+                                    .create({
+                                        name: `${Pays.nom} - ${Pays2.nom}`,
+                                        autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+                                        type: ChannelType.PrivateThread,
+                                        reason: 'Nouvelle ambassade',
+                                    })
+                                    .then((thread: { send: (arg0: string) => void; }) => {
+                                        thread.send(`${interaction.member} <@${Pays2.id_joueur}>`)
+                                    })
+                                    .catch(console.error);
                             })
-                            .then((thread: { send: (arg0: string) => void; }) => {
-                                thread.send(`${interaction.member} <@${Pays2.id_joueur}>`)
-                            })
-                            .catch(console.error);
                     })
-
                 })
                 //endregion
             } else if (interaction.customId.includes('ambassade-non') === true) {
@@ -3232,7 +3236,7 @@ module.exports = {
                         }
                         const Pays2 = results[0];
 
-                        const refus = {
+                        const embedDenied = {
                             author: {
                                 name: `${Pays.rang} de ${Pays.nom}`,
                                 icon_url: interaction.member.displayAvatarURL()
@@ -3260,13 +3264,16 @@ module.exports = {
                                 )
                         }
 
-                        const joueur = interaction.client.users.cache.get(id_joueur)
-                        interaction.client.channels.cache.get(Pays2.id_salon)
-                            .send({embeds: [refus]})
-                            .then((message: { url: string; }) => joueur.send({
-                                embeds: [refus],
-                                components: [bouton(message)]
-                            }))
+                        interaction.client.users.fetch(id_joueur)
+                            .then((joueur: any) => {
+                                interaction.client.channels.fetch(Pays2.id_salon)
+                                    .then((channel: any) => channel.send({embeds: [embedDenied]})
+                                        .then((message: any) => joueur.send({
+                                        embeds: [embedDenied],
+                                        components: [bouton(message)]
+                                        })
+                                    ))
+                            })
                     })
                 })
                 //endregion
@@ -3912,7 +3919,8 @@ module.exports = {
                             color: 0x57F287
                         };
                         // @ts-ignore
-                        client.channels.cache.get(process.env.SALON_CARTE).send({embeds: [annonce]})
+                        client.channels.fetch(process.env.SALON_CARTE)
+                            .then((channel: any) => channel.send({embeds: [annonce]}))
 
                         const row = new ActionRowBuilder()
                             .addComponents(
@@ -5116,8 +5124,8 @@ module.exports = {
                                 .setDisabled(choisir)
                         )
 
-                    interaction.message.edit({embeds: [embed], components: [row, row1]});
                     interaction.deferUpdate()
+                    interaction.message.edit({embeds: [embed], components: [row, row1]});
                 });
                 //endregion
             } else if (interaction.customId.includes('defense') === true) {
@@ -5814,8 +5822,9 @@ module.exports = {
                                 text: `${PaysB.devise}`
                             },
                         };
-                        const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                        salonB.send({embeds: [embedB]});
+                        interaction.client.channels.fetch(PaysB.id_salon)
+                            .then((channel: any) => channel.send({embeds: [embedB]}))
+
 
                         const embedGuerre = {
                             title: `\`Rapport de raid\``,
@@ -5842,8 +5851,8 @@ module.exports = {
                             ],
                             timestamp: new Date(),
                         }
-                        const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
-                        salonGuerre.send({embeds: [embedGuerre]});
+                        interaction.client.channels.fetch(process.env.SALON_GUERRE)
+                            .then((channel: any) => channel.send({embeds: [embedGuerre]}))
 
                         let sql = `
                             UPDATE armee
@@ -6068,8 +6077,8 @@ module.exports = {
                                         text: `${PaysB.devise}`
                                     },
                                 };
-                                const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                                salonB.send({embeds: [embedB]});
+                                interaction.client.channels.fetch(PaysB.id_salon)
+                                    .then((channel: any) => channel.send({embeds: [embedB]}))
 
                                 const embedGuerre = {
                                     title: `\`Rapport de raid\``,
@@ -6110,8 +6119,8 @@ module.exports = {
                                     ],
                                     timestamp: new Date(),
                                 }
-                                const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
-                                salonGuerre.send({embeds: [embedGuerre]});
+                                interaction.client.channels.fetch(process.env.SALON_GUERRE)
+                                    .then((channel: any) => channel.send({embeds: [embedGuerre]}))
 
                                 sql = `
                                     UPDATE armee
@@ -6249,8 +6258,8 @@ module.exports = {
                                         text: `${PaysB.devise}`
                                     },
                                 };
-                                const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                                salonB.send({embeds: [embedB]});
+                                interaction.client.channels.fetch(PaysB.id_salon)
+                                    .then((channel: any) => channel.send({embeds: [embedB]}))
 
                                 const embedGuerre = {
                                     title: `\`Rapport de raid\``,
@@ -6291,8 +6300,8 @@ module.exports = {
                                     ],
                                     timestamp: new Date(),
                                 }
-                                const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
-                                salonGuerre.send({embeds: [embedGuerre]});
+                                interaction.client.channels.fetch(process.env.SALON_GUERRE)
+                                    .then((channel: any) => channel.send({embeds: [embedGuerre]}))
 
                                 sql = `
                                     UPDATE armee
@@ -6436,8 +6445,8 @@ module.exports = {
                                     text: `${PaysB.devise}`
                                 },
                             };
-                            const salonB = interaction.client.channels.cache.get(PaysB.id_salon);
-                            salonB.send({embeds: [embedB]});
+                            interaction.client.channels.fetch(PaysB.id_salon)
+                                .then((channel: any) => channel.send({embeds: [embedB]}))
 
                             const embedGuerre = {
                                 title: `\`Rapport de raid\``,
@@ -6478,8 +6487,8 @@ module.exports = {
                                 ],
                                 timestamp: new Date(),
                             }
-                            const salonGuerre = interaction.client.channels.cache.get(process.env.SALON_GUERRE);
-                            salonGuerre.send({embeds: [embedGuerre]});
+                            interaction.client.channels.fetch(process.env.SALON_GUERRE)
+                                .then((channel: any) => channel.send({embeds: [embedGuerre]}))
 
                             sql = `
                                 UPDATE armee
@@ -6557,8 +6566,8 @@ module.exports = {
                             ],
                             timestamp: new Date(),
                         }
-                        const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
-                        salon_logs.send({embeds: [embed]});
+                        interaction.client.channels.fetch(process.env.SALON_LOGS)
+                            .then((channel: any) => channel.send({embeds: [embed]}))
                     }
                 });
                 //endregion
@@ -6578,9 +6587,8 @@ module.exports = {
                     text: '#' + interaction.channel.name
                 },
             };
-
-            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
-            salon_logs.send({embeds: [log]});
+            interaction.client.channels.fetch(process.env.SALON_LOGS)
+                .then((channel: any) => channel.send({embeds: [log]}))
 
             //region Usine
             if (interaction.customId === 'usine') {
@@ -9563,9 +9571,8 @@ module.exports = {
                     text: '#' + interaction.channel.name
                 },
             };
-
-            const salon_logs = interaction.client.channels.cache.get(process.env.SALON_LOGS);
-            salon_logs.send({embeds: [log]});
+            interaction.client.channels.fetch(process.env.SALON_LOGS)
+                .then((channel: any) => channel.send({embeds: [log]}))
 
             if (interaction.customId.includes('start') == true) {
                 //region Start
@@ -9643,8 +9650,8 @@ module.exports = {
                                         resolve();
 
                                         const attachment = new AttachmentBuilder('flags/output.png', {name: 'drapeau.png'});
-                                        const salon_drapeau = interaction.client.channels.cache.get("942796854389784628");
-                                        salon_drapeau.send({files: [attachment]});
+                                        interaction.client.channels.fetch("942796854389784628")
+                                            .then((channel: any) => channel.send({files: [attachment]}))
                                     });
 
                                     stream.on('error', (error) => {
@@ -10283,8 +10290,8 @@ module.exports = {
                                     text: `Paz Nation, le meilleur serveur Discord français`
                                 },
                             };
-                            interaction.client.channels.cache.get(process.env.SALON_CARTE)
-                                .send({embeds: [embedCarte], files: [attachment]});
+                            interaction.client.channels.fetch(process.env.SALON_CARTE)
+                                .then((channel: any) => channel.send({embeds: [embedCarte], files: [attachment]}))
                         }
 
                         const {ViewChannel, SendMessages, ManageRoles, ReadMessageHistory, ManageMessages, UseApplicationCommands} = PermissionFlagsBits
@@ -10321,7 +10328,6 @@ module.exports = {
                 //endregion
             } else if (interaction.customId.includes('annonce') == true) {
                 //region Annonce
-                const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
                 const annonce = interaction.fields.getTextInputValue('text_annonce');
                 const image = interaction.fields.getTextInputValue('image_annonce');
 
@@ -10355,10 +10361,12 @@ module.exports = {
                                     text: `${Pays.devise}`
                                 },
                             };
-
-                            SalonAnnonce.send({embeds: [embed]})
-                            const failReply = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
-                            await interaction.reply({content: failReply});
+                            interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                                .then((channel: any) => {
+                                    channel.send({embeds: [embed]})
+                                    const failReply = `__**Votre annonce a été publié dans ${channel}**__`;
+                                    interaction.reply({content: failReply});
+                                })
                         } else {
                             failReply = codeBlock('ansi', `\u001b[0;0m\u001b[1;31mVous n'avez pas fourni une URL valide`);
                             await interaction.reply({content: failReply, ephemeral: true});
@@ -10380,17 +10388,18 @@ module.exports = {
                                 text: `${Pays.devise}`
                             },
                         };
-
-                        SalonAnnonce.send({embeds: [embed]})
-                        const failReply = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
-                        await interaction.reply({content: failReply});
+                        interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                            .then((channel: any) => {
+                                channel.send({embeds: [embed]})
+                                const failReply = `__**Votre annonce a été publié dans ${channel}**__`;
+                                interaction.reply({content: failReply});
+                            })
                     }
                 });
                 //endregion
             } else if (interaction.customId.includes('devise') == true) {
                 //region Devise
 
-                const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
                 const devise = interaction.fields.getTextInputValue('text_devise');
                 const discours = interaction.fields.getTextInputValue('discours');
                 let newdevise = "";
@@ -10436,10 +10445,12 @@ module.exports = {
                         color: interaction.member.displayColor,
                         footer: {text: `${Pays.devise}`},
                     };
-
-                    SalonAnnonce.send({embeds: [embed]})
-                    const failReply = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
-                    await interaction.reply({content: failReply});
+                    interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                        .then((channel: any) => {
+                            channel.send({embeds: [embed]})
+                            const failReply = `__**Votre annonce a été publié dans ${channel}**__`;
+                            interaction.reply({content: failReply});
+                        })
                     await deviseCommandCooldown.addUser(interaction.member.id);
                 });
                 //endregion
@@ -10476,12 +10487,12 @@ module.exports = {
                                 text: `${Pays.devise}`
                             },
                         };
-
-                        const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                        SalonAnnonce.send({embeds: [embed]})
-
-                        const failReply = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
-                        await interaction.reply({content: failReply});
+                        interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                            .then((channel: any) => {
+                                channel.send({embeds: [embed]})
+                                const failReply = `__**Votre annonce a été publié dans ${channel}**__`;
+                                interaction.reply({content: failReply});
+                            })
                         await drapeauCommandCooldown.addUser(interaction.member.id);
 
                         let sql = `UPDATE pays
@@ -10655,14 +10666,14 @@ module.exports = {
                                                     )
                                             }
 
-                                            interaction.client.channels.cache.get(Pays2.id_salon)
-                                                .send({embeds: [embedInvite], components: [row1]})
-                                                .then((message: any) => playerToInvite.send({
-                                                    // @ts-ignore
-                                                    embeds: [embedInvite],
-                                                    // @ts-ignore
-                                                    components: [bouton(message)]
-                                                }))
+                                            interaction.client.channels.fetch(Pays2.id_salon)
+                                                .then((channel: any) => channel.send({embeds: [embedInvite], components: [row1]})
+                                                    .then((message: any) => playerToInvite.send({
+                                                        // @ts-ignore
+                                                        embeds: [embedInvite],
+                                                        // @ts-ignore
+                                                        components: [bouton(message)]
+                                                    })))
 
 
                                             const embed = {
@@ -10696,7 +10707,6 @@ module.exports = {
             } else if (interaction.customId.includes('organisation') == true) {
                 //region Organisation
 
-                const SalonAnnonce = interaction.client.channels.cache.get(process.env.SALON_ORGANISATION);
                 const nom = interaction.fields.getTextInputValue('text_nom');
                 const annonce = interaction.fields.getTextInputValue('text_annonce');
                 const image = interaction.fields.getTextInputValue('image_annonce');
@@ -10765,22 +10775,22 @@ module.exports = {
                                 text: `${Pays.devise}`
                             },
                         };
-
-                        SalonAnnonce.send({embeds: [embed]})
-                        failReply = `__**Votre annonce a été publié dans ${SalonAnnonce}**__`;
-                        await interaction.reply({content: failReply});
-
+                        interaction.client.channels.fetch(process.env.SALON_ORGANISATION)
+                            .then((channel: any) => {
+                                channel.send({embeds: [embed]})
+                                failReply = `__**Votre annonce a été publié dans ${channel}**__`;
+                                interaction.reply({content: failReply});
+                            })
                         // @ts-ignore
-                        const channel = client.channels.cache.get(process.env.SALON_ORGANISATION);
-                        // @ts-ignore
-                        channel.threads.create({
-                            name: `${nom}`,
-                            autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
-                            type: ChannelType.PrivateThread,
-                            reason: 'Nouvelle organisation',
-                        })
-                            .then((channel: any) => organisation(channel))
-                            .catch(console.error);
+                        client.channels.fetch(process.env.SALON_ORGANISATION)
+                            .then((channel: any) => channel.threads.create({
+                                name: `${nom}`,
+                                autoArchiveDuration: ThreadAutoArchiveDuration.OneWeek,
+                                type: ChannelType.PrivateThread,
+                                reason: 'Nouvelle organisation',
+                            })
+                                .then((channel: any) => organisation(channel))
+                                .catch(console.error))
 
                         await organisationCommandCooldown.addUser(interaction.member.id);
                     } else {

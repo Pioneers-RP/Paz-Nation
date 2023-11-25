@@ -65,9 +65,11 @@ module.exports = {
                     color: interaction.member.displayColor,
                     footer: { text: `${Pays.devise}` }
                 };
-                const channelAnnouncement = interaction.client.channels.cache.get(process.env.SALON_ANNONCE);
-                channelAnnouncement.send({ embeds: [annonce] });
-                await interaction.reply({ content: `__**Votre annonce a été publié dans ${channelAnnouncement}**__` });
+                interaction.client.channels.fetch(process.env.SALON_ANNONCE)
+                    .then((channel: any) => {
+                        channel.send({ embeds: [annonce] })
+                        interaction.reply({ content: `__**Votre annonce a été publié dans ${channel}**__` })
+                    })
                 await ideologieCommandCooldown.addUser(interaction.member.id);
             });
 
