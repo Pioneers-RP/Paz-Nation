@@ -34,26 +34,31 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: HOST
+            - name: DATABASE_HOST
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "charts.fullname" . }}-database
-                  key: HOST
-            - name: USER
+                  key: DATABASE_HOST
+            - name: DATABASE_USER
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "charts.fullname" . }}-database
-                  key: USER
-            - name: PASSWORD
+                  key: DATABASE_USER
+            - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: {{ include "charts.fullname" . }}-database
-                  key: PASSWORD
-            - name: DATABASE
+                  key: DATABASE_PASSWORD
+            - name: DATABASE_DATABASE
               valueFrom:
                 configMapKeyRef:
                   name: {{ include "charts.fullname" . }}-database
-                  key: DATABASE
+                  key: DATABASE_DATABASE
+            - name: DATABASE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ include "charts.fullname" . }}-database
+                  key: DATABASE_PORT
             - name: CLIENT_ID
               valueFrom:
                 configMapKeyRef:

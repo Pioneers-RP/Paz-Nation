@@ -1,0 +1,68 @@
+name: ON/OFF
+
+on:
+  workflow_dispatch:
+    inputs:
+      Enable:
+        description: Enable ?
+        required: true
+        type: boolean
+        default: false
+  
+env:
+  AWS_REGION: eu-west-1
+  ECR_REPOSITORY: jemoco/paznation-server
+  EKS_CLUSTER_NAME: jemoco2
+  EKS_CLUSTER_SERVICE: paznation
+  APPLICATION: paznation
+  ENV: staging
+  NODE_ENV: development
+  ENABLE: ${{ github.event.inputs.Enable == 'true' && '1' || '0' }}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    environment: staging
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID__CICD }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY__CICD }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup kubeconfig
+        id: setup-kubeconfig
+        run: |
+          aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+
+      - name: Deploy k8s yaml
+        id: deploy-k8s-yaml
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
+        run: |
+          kubectl scale deployment paznation --replicas=${{ env.ENABLE }}
+
+  notification:
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs: [deploy]
+
+    steps:
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@master
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: '#3278BD'
+          SLACK_ICON: https://github.com/rtCamp.png?size=48
+          SLACK_TITLE: Build terminé
+          SLACK_USERNAME: Github-bot
+          SLACK_MESSAGE: 'Switch Staging OK: eu-west-1'
