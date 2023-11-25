@@ -4,14 +4,14 @@ import { Client, GatewayIntentBits, Partials, Collection } from 'discord.js';
 import { AppDataSource } from "./data-source"
 import mysql from 'mysql';
 
-console.log("Starting1 Index.ts")
+console.log("Starting Index.ts")
 console.log("process.env.DATABASE_HOST : " + process.env.DATABASE_HOST)
 console.log("process.env.DATABASE_PORT : " + process.env.DATABASE_PORT)
 console.log("process.env.DATABASE_USER : " + process.env.DATABASE_USER)
 console.log("process.env.DATABASE_PASSWORD : " + process.env.DATABASE_PASSWORD)
 console.log("process.env.DATABASE_DATABASE : " + process.env.DATABASE_DATABASE)
 console.log("process.env.TOKEN : " + process.env.TOKEN)
-console.log("Ending1 Index.ts")
+console.log("Ending Index.ts")
 
 export const connect = AppDataSource.initialize()
     .then(() => {
