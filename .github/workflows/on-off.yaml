@@ -49,7 +49,7 @@ jobs:
           ECR_REPOSITORY: ${{ env.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ steps.image-tag.outputs.sha }}
         run: |
-          kubectl scale deployment paznation --replicas=${{ env.ENABLE }}
+          kubectl scale deployment paznation --replicas=${{ env.ENABLE }} --namespace=${{ env.APPLICATION }}-${{ env.ENV }}
 
   notification:
     runs-on: ubuntu-latest
