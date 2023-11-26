@@ -62,7 +62,10 @@ module.exports = {
         let failReply: string;
         if (interaction.isChatInputCommand()) {
             sql = `SELECT * FROM pays WHERE id_joueur='${interaction.member.id}'`;
-            connection.query(sql, async (err, results) => {if (err) {throw err;}
+            connection.query(sql, async (err, results) => {
+                if (err) {
+                    throw err;
+                }
                 const Pays = results[0];
 
                 if (Pays.vacances === 1) {
