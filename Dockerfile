@@ -27,7 +27,7 @@ RUN yarn install --immutable
 # Compilation du TypeScript en JavaScript
 RUN yarn build
 # Commande pour démarrer l'application en mode de développement
-CMD ["yarn", "start"]
+CMD ["yarn", "start:staging"]
 
 # Environnement de production avec uniquement les dépendances nécessaires
 FROM base AS production
