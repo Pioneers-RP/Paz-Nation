@@ -36,7 +36,6 @@
         "discord-command-cooldown": "1.0.9",
         "discord.js": "14.13.0",
         "dlay-core": "2.0.2",
-        "dotenv": "16.0.0",
         "global-box": "1.2.0",
         "image-url-validator": "1.0.4",
         "mariadb": "3.2.1",
